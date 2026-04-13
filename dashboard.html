@@ -19,7 +19,6 @@
       flex: 1;
     }
 
-    /* SIDEBAR */
     .sidebar {
       width: 240px;
       background: white;
@@ -28,7 +27,7 @@
       flex-direction: column;
       justify-content: space-between;
       border-right: 1px solid #ddd;
-      align-items: center; /* 🔥 CENTRALIZA TUDO */
+      align-items: center;
     }
 
     .logo {
@@ -36,7 +35,7 @@
       margin-bottom: 20px;
       display: block;
       margin-left: auto;
-      margin-right: auto; /* 🔥 CENTRALIZA PERFEITO */
+      margin-right: auto;
     }
 
     .menu {
@@ -66,7 +65,6 @@
       color: white;
     }
 
-    /* BOTÃO SAIR */
     .logout {
       background: black;
       color: white;
@@ -78,11 +76,6 @@
       width: 100%;
     }
 
-    .logout:hover {
-      background: #222;
-    }
-
-    /* CONTEÚDO */
     .content {
       flex: 1;
       padding: 25px;
@@ -109,11 +102,6 @@
       border-radius: 12px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.05);
       text-align: center;
-      transition: 0.3s;
-    }
-
-    .card-mini:hover {
-      transform: translateY(-3px);
     }
 
     .box {
@@ -121,12 +109,6 @@
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(10px);}
-      to {opacity: 1; transform: translateY(0);}
     }
 
     table {
@@ -140,21 +122,9 @@
       border-bottom: 1px solid #ddd;
     }
 
-    th {
-      background: #f8fafc;
-    }
+    .aprovado { color: green; font-weight: bold; }
+    .reprovado { color: red; font-weight: bold; }
 
-    .aprovado {
-      color: green;
-      font-weight: bold;
-    }
-
-    .reprovado {
-      color: red;
-      font-weight: bold;
-    }
-
-    /* 🔥 RODAPÉ */
     .footer {
       background: #1e293b;
       color: white;
@@ -169,7 +139,6 @@
 
 <div class="main">
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
 
     <div style="width:100%;">
@@ -179,6 +148,7 @@
       <div class="menu">
         <button id="btnDisciplinas" onclick="disciplinas()">📊 Disciplinas</button>
         <button id="btnConcluidas" onclick="concluidas()">📚 Concluídas</button>
+        <button id="btnFinanceiro" onclick="financeiro()">💰 Financeiro</button>
       </div>
     </div>
 
@@ -186,7 +156,6 @@
 
   </div>
 
-  <!-- CONTEÚDO -->
   <div class="content">
 
     <div class="header">
@@ -219,7 +188,6 @@
 
 </div>
 
-<!-- 🔥 RODAPÉ -->
 <div class="footer">
   AD. Belém - Rua Rio Tiete, número 126 - Jardim Europa - Campo Limpo Paulista - SP
 </div>
@@ -227,7 +195,7 @@
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "SUA_CHAVE_AQUI"
 );
 
 const usuario = JSON.parse(localStorage.getItem("usuario"));
@@ -250,13 +218,11 @@ function sair() {
   window.location.href = "index.html";
 }
 
+// DISCIPLINAS
 async function disciplinas() {
   ativar(document.getElementById("btnDisciplinas"));
 
-  const { data } = await client
-    .from("notas")
-    .select("*")
-    .eq("email", usuario.email);
+  const { data } = await client.from("notas").select("*").eq("email", usuario.email);
 
   let soma = 0;
 
@@ -267,49 +233,69 @@ async function disciplinas() {
     soma += Number(d.nota || 0);
     let classe = d.status === "Aprovado" ? "aprovado" : "reprovado";
 
-    html += `
-      <tr>
-        <td>${d.disciplina}</td>
-        <td>${d.nota ?? 0}</td>
-        <td class="${classe}">${d.status}</td>
-      </tr>
-    `;
+    html += `<tr>
+      <td>${d.disciplina}</td>
+      <td>${d.nota ?? 0}</td>
+      <td class="${classe}">${d.status}</td>
+    </tr>`;
   });
 
   html += "</table>";
   document.getElementById("conteudo").innerHTML = html;
 
   document.getElementById("totalDisciplinas").innerText = data.length;
-  document.getElementById("mediaGeral").innerText =
-    (soma / data.length).toFixed(1);
+  document.getElementById("mediaGeral").innerText = (soma / data.length).toFixed(1);
 }
 
+// CONCLUÍDAS
 async function concluidas() {
   ativar(document.getElementById("btnConcluidas"));
 
-  const { data } = await client
-    .from("disciplinas_concluidas")
-    .select("*")
-    .eq("email", usuario.email);
+  const { data } = await client.from("disciplinas_concluidas").select("*").eq("email", usuario.email);
 
   let html = "<h3>📚 Concluídas</h3><table>";
   html += "<tr><th>Matéria</th><th>Data</th><th>Professor</th><th>Livro</th></tr>";
 
   data.forEach(d => {
-    html += `
-      <tr>
-        <td>${d.disciplina}</td>
-        <td>${d.data_conclusao}</td>
-        <td>${d.professor}</td>
-        <td>${d.livro ? "Sim" : "Não"}</td>
-      </tr>
-    `;
+    html += `<tr>
+      <td>${d.disciplina}</td>
+      <td>${d.data_conclusao}</td>
+      <td>${d.professor}</td>
+      <td>${d.livro ? "Sim" : "Não"}</td>
+    </tr>`;
   });
 
   html += "</table>";
   document.getElementById("conteudo").innerHTML = html;
 
   document.getElementById("totalConcluidas").innerText = data.length;
+}
+
+// 💰 FINANCEIRO
+async function financeiro() {
+  ativar(document.getElementById("btnFinanceiro"));
+
+  const { data } = await client.from("financeiro").select("*").eq("email", usuario.email);
+
+  let html = "<h3>💰 Financeiro</h3><table>";
+  html += "<tr><th>Matéria</th><th>Valor</th><th>Status</th><th>Data</th><th>Comprovante</th></tr>";
+
+  data.forEach(f => {
+    let status = f.status === "Pago"
+      ? "<span style='color:green;font-weight:bold;'>✅ Pago</span>"
+      : "<span style='color:red;font-weight:bold;'>⏳ Pendente</span>";
+
+    html += `<tr>
+      <td>${f.disciplina}</td>
+      <td>R$ ${f.valor}</td>
+      <td>${status}</td>
+      <td>${f.data_pagamento ?? "-"}</td>
+      <td>${f.comprovante ? `<a href="${f.comprovante}" target="_blank">📄 Baixar</a>` : "-"}</td>
+    </tr>`;
+  });
+
+  html += "</table>";
+  document.getElementById("conteudo").innerHTML = html;
 }
 </script>
 
