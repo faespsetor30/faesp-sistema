@@ -58,6 +58,7 @@
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
+      margin-top: 5px;
     }
 
     #resultado {
@@ -82,8 +83,45 @@
 
   <button onclick="login()">Entrar</button>
 
+  <!-- 🔥 NOVO BOTÃO -->
+  <button onclick="abrirCadastro()">➕ Criar conta</button>
+
   <div id="resultado"></div>
 
+</div>
+
+<!-- 🔥 MODAL CADASTRO -->
+<div id="modalCadastro" style="
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.5);
+  justify-content:center;
+  align-items:center;
+">
+
+  <div style="
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    width:300px;
+  ">
+
+    <h3>📋 Cadastro de Aluno</h3>
+
+    <input id="novoNome" placeholder="Nome"><br>
+    <input id="novoEmail" placeholder="Email"><br>
+    <input id="novaMatricula" placeholder="Matrícula"><br>
+
+    <button onclick="salvarCadastro()">Cadastrar</button>
+    <button onclick="fecharCadastro()">Cancelar</button>
+
+    <p id="msgCadastro"></p>
+
+  </div>
 </div>
 
 <script>
@@ -92,6 +130,7 @@ const client = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
+// LOGIN
 async function login() {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
@@ -106,18 +145,50 @@ async function login() {
     return;
   }
 
-  // 🔥 BUSCAR USUÁRIO
   const { data: usuario } = await client
     .from("usuarios")
     .select("*")
     .eq("email", email)
     .single();
 
-  // 🔥 SALVAR DADOS (para usar no dashboard)
-  localStorage.setItem("usuario", JSON.stringify(usuario));
+  // 🔥 BLOQUEIO SE NÃO APROVADO
+  if (usuario.status !== "ativo") {
+    document.getElementById("resultado").innerText =
+      "⏳ Cadastro aguardando aprovação.";
+    return;
+  }
 
-  // 🔥 REDIRECIONAR
+  localStorage.setItem("usuario", JSON.stringify(usuario));
   window.location.href = "dashboard.html";
+}
+
+// ABRIR MODAL
+function abrirCadastro() {
+  document.getElementById("modalCadastro").style.display = "flex";
+}
+
+// FECHAR MODAL
+function fecharCadastro() {
+  document.getElementById("modalCadastro").style.display = "none";
+}
+
+// SALVAR CADASTRO
+async function salvarCadastro() {
+  const nome = document.getElementById("novoNome").value;
+  const email = document.getElementById("novoEmail").value;
+  const matricula = document.getElementById("novaMatricula").value;
+
+  const { error } = await client
+    .from("usuarios")
+    .insert([{ nome, email, matricula, status: "pendente" }]);
+
+  if (error) {
+    document.getElementById("msgCadastro").innerText =
+      "❌ " + error.message;
+  } else {
+    document.getElementById("msgCadastro").innerText =
+      "✅ Cadastro enviado! Aguarde aprovação.";
+  }
 }
 </script>
 
