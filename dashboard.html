@@ -14,10 +14,7 @@
       flex-direction: column;
     }
 
-    .main {
-      display: flex;
-      flex: 1;
-    }
+    .main { display: flex; flex: 1; }
 
     .sidebar {
       width: 240px;
@@ -30,17 +27,9 @@
       align-items: center;
     }
 
-    .logo {
-      width: 120px;
-      margin-bottom: 20px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
+    .logo { width: 120px; margin-bottom: 20px; }
 
-    .menu {
-      width: 100%;
-    }
+    .menu { width: 100%; }
 
     .menu button {
       width: 100%;
@@ -51,13 +40,6 @@
       border-radius: 10px;
       cursor: pointer;
       text-align: left;
-      transition: 0.3s;
-      font-weight: 500;
-    }
-
-    .menu button:hover {
-      background: #e2e8f0;
-      transform: translateX(3px);
     }
 
     .menu .ativo {
@@ -72,76 +54,22 @@
       padding: 12px;
       border-radius: 10px;
       border: none;
-      cursor: pointer;
       width: 100%;
     }
 
-    .content {
-      flex: 1;
-      padding: 25px;
-    }
+    .content { flex: 1; padding: 25px; }
 
     .header {
       background: white;
       padding: 20px;
       border-radius: 12px;
       margin-bottom: 20px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-    }
-
-    .progress-bar {
-      background:#e5e7eb;
-      border-radius:10px;
-      height:20px;
-      overflow:hidden;
-      margin-top:10px;
-    }
-
-    .progress-fill {
-      height:100%;
-      width:0%;
-      background:#2c5364;
-      text-align:center;
-      color:white;
-      font-size:12px;
-      line-height:20px;
-    }
-
-    .cards {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .card-mini {
-      flex: 1;
-      background: white;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-      text-align: center;
     }
 
     .box {
       background: white;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-
-    th {
-      background: #f8fafc;
     }
 
     .footer {
@@ -149,7 +77,23 @@
       color: white;
       text-align: center;
       padding: 10px;
-      font-size: 13px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .btn {
+      background:#2c5364;
+      color:white;
+      border:none;
+      padding:10px;
+      border-radius:8px;
+      cursor:pointer;
     }
   </style>
 </head>
@@ -165,9 +109,10 @@
       <h3 id="nomeAluno" style="text-align:center;"></h3>
 
       <div class="menu">
-        <button id="btnDisciplinas" onclick="disciplinas()">📊 Disciplinas</button>
-        <button id="btnConcluidas" onclick="concluidas()">📚 Concluídas</button>
-        <button id="btnFinanceiro" onclick="financeiro()">💰 Financeiro</button>
+        <button onclick="disciplinas()">📊 Disciplinas</button>
+        <button onclick="concluidas()">📚 Concluídas</button>
+        <button onclick="financeiro()">💰 Financeiro</button>
+        <button onclick="avisos()">📢 Avisos</button>
       </div>
     </div>
 
@@ -180,29 +125,6 @@
     <div class="header">
       <h2>FAESP - SETOR 30</h2>
       <p id="boasVindas"></p>
-
-      <!-- 📈 PROGRESSO -->
-      <p><strong>📈 Progresso do Curso</strong></p>
-      <div class="progress-bar">
-        <div id="barraProgresso" class="progress-fill">0%</div>
-      </div>
-    </div>
-
-    <div class="cards">
-      <div class="card-mini">
-        <h4>📊 Disciplinas</h4>
-        <p id="totalDisciplinas">0</p>
-      </div>
-
-      <div class="card-mini">
-        <h4>📚 Concluídas</h4>
-        <p id="totalConcluidas">0</p>
-      </div>
-
-      <div class="card-mini">
-        <h4>⭐ Média</h4>
-        <p id="mediaGeral">0</p>
-      </div>
     </div>
 
     <div class="box" id="conteudo">
@@ -214,7 +136,7 @@
 </div>
 
 <div class="footer">
-  AD. Belém - Rua Rio Tiete, número 126 - Jardim Europa - Campo Limpo Paulista - SP
+  AD. Belém - Rua Rio Tiete, 126 - Campo Limpo Paulista - SP
 </div>
 
 <script>
@@ -225,113 +147,68 @@ const client = supabase.createClient(
 
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-if (!usuario) {
-  window.location.href = "index.html";
-}
+if (!usuario) window.location.href = "index.html";
 
-document.getElementById("nomeAluno").innerText = "👤 " + usuario.nome;
-document.getElementById("boasVindas").innerText =
-  "Bem-vinda, " + usuario.nome + " 👋";
+document.getElementById("nomeAluno").innerText = usuario.nome;
+document.getElementById("boasVindas").innerText = "Bem-vinda, " + usuario.nome;
 
-calcularProgresso();
+// 🔥 DEFINIR SE É ADM
+const isAdmin = usuario.tipo === "admin";
 
-function ativar(botao) {
-  document.querySelectorAll(".menu button").forEach(b => b.classList.remove("ativo"));
-  botao.classList.add("ativo");
-}
-
+// LOGOUT
 function sair() {
   localStorage.removeItem("usuario");
   window.location.href = "index.html";
 }
 
-// 📈 PROGRESSO
-async function calcularProgresso() {
-  const { data: notas } = await client.from("notas").select("*").eq("email", usuario.email);
-  const { data: concluidas } = await client.from("disciplinas_concluidas").select("*").eq("email", usuario.email);
+// 📢 AVISOS
+async function avisos() {
+  const { data } = await client.from("avisos").select("*").order("data", { ascending: false });
 
-  const total = notas.length || 1;
-  const feitas = concluidas.length;
+  let html = "<h3>📢 Avisos</h3>";
 
-  const progresso = Math.round((feitas / total) * 100);
+  // 🔥 BOTÃO APENAS PARA ADM
+  if (isAdmin) {
+    html += `
+      <button class="btn" onclick="abrirNovoAviso()">➕ Novo Aviso</button>
+      <div id="formAviso" style="display:none;">
+        <input id="tituloAviso" placeholder="Título">
+        <textarea id="msgAviso" placeholder="Mensagem"></textarea>
+        <button class="btn" onclick="salvarAviso()">Salvar</button>
+      </div>
+    `;
+  }
 
-  const barra = document.getElementById("barraProgresso");
-  barra.style.width = progresso + "%";
-  barra.innerText = progresso + "%";
+  if (!data || data.length === 0) {
+    html += "<p>Sem avisos</p>";
+  } else {
+    data.forEach(a => {
+      html += `
+        <div style="margin-top:10px; padding:10px; border-left:5px solid #2c5364; background:#f8fafc;">
+          <strong>${a.titulo}</strong><br>
+          <small>${a.data}</small>
+          <p>${a.mensagem}</p>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("conteudo").innerHTML = html;
 }
 
-// 📊 DISCIPLINAS
-async function disciplinas() {
-  ativar(document.getElementById("btnDisciplinas"));
-
-  const { data } = await client.from("notas").select("*").eq("email", usuario.email);
-
-  let soma = 0;
-  let html = "<h3>📊 Disciplinas</h3><table><tr><th>Matéria</th><th>Nota</th><th>Status</th></tr>";
-
-  data.forEach(d => {
-    soma += Number(d.nota || 0);
-    html += `<tr>
-      <td>${d.disciplina}</td>
-      <td>${d.nota ?? 0}</td>
-      <td>${d.status}</td>
-    </tr>`;
-  });
-
-  html += "</table>";
-  document.getElementById("conteudo").innerHTML = html;
-
-  document.getElementById("totalDisciplinas").innerText = data.length;
-  document.getElementById("mediaGeral").innerText = (soma / data.length).toFixed(1);
+// ABRIR FORM
+function abrirNovoAviso() {
+  document.getElementById("formAviso").style.display = "block";
 }
 
-// 📚 CONCLUÍDAS
-async function concluidas() {
-  ativar(document.getElementById("btnConcluidas"));
+// SALVAR AVISO
+async function salvarAviso() {
+  const titulo = document.getElementById("tituloAviso").value;
+  const mensagem = document.getElementById("msgAviso").value;
 
-  const { data } = await client.from("disciplinas_concluidas").select("*").eq("email", usuario.email);
+  await client.from("avisos").insert([{ titulo, mensagem }]);
 
-  let html = "<h3>📚 Concluídas</h3><table><tr><th>Matéria</th><th>Data</th><th>Professor</th><th>Livro</th></tr>";
-
-  data.forEach(d => {
-    html += `<tr>
-      <td>${d.disciplina}</td>
-      <td>${d.data_conclusao}</td>
-      <td>${d.professor}</td>
-      <td>${d.livro ? "Sim" : "Não"}</td>
-    </tr>`;
-  });
-
-  html += "</table>";
-  document.getElementById("conteudo").innerHTML = html;
-
-  document.getElementById("totalConcluidas").innerText = data.length;
-}
-
-// 💰 FINANCEIRO
-async function financeiro() {
-  ativar(document.getElementById("btnFinanceiro"));
-
-  const { data } = await client.from("financeiro").select("*").eq("email", usuario.email);
-
-  let html = "<h3>💰 Financeiro</h3><table><tr><th>Matéria</th><th>Valor</th><th>Status</th><th>Data</th><th>Comprovante</th></tr>";
-
-  data.forEach(f => {
-    let status = f.status === "Pago"
-      ? "✅ Pago"
-      : "⏳ Pendente";
-
-    html += `<tr>
-      <td>${f.disciplina}</td>
-      <td>R$ ${f.valor}</td>
-      <td>${status}</td>
-      <td>${f.data_pagamento ?? "-"}</td>
-      <td>${f.comprovante ? `<a href="${f.comprovante}" target="_blank">📄 Baixar</a>` : "-"}</td>
-    </tr>`;
-  });
-
-  html += "</table>";
-  document.getElementById("conteudo").innerHTML = html;
+  avisos(); // recarrega
 }
 </script>
 
