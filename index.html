@@ -1,24 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>FAESP Sistema</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-</head>
-<body>
-
-<h2>Login FAESP</h2>
-
-<input id="email" placeholder="Email"><br><br>
-<input id="senha" type="password" placeholder="Senha"><br><br>
-
-<button onclick="login()">Entrar</button>
-
-<h3 id="resultado"></h3>
-
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 );
 
 async function login() {
@@ -34,13 +17,26 @@ async function login() {
     if (error) {
       document.getElementById("resultado").innerText = "Erro: " + error.message;
     } else {
-      document.getElementById("resultado").innerText = "Login realizado!";
+
+      // 🔥 pega usuário logado
+      const user = data.user;
+
+      // 🔥 busca no banco
+      const { data: usuario, error: erroUsuario } = await client
+        .from("usuarios")
+        .select("*")
+        .eq("email", user.email)
+        .single();
+
+      if (erroUsuario) {
+        document.getElementById("resultado").innerText = "Erro ao buscar usuário";
+      } else {
+        document.getElementById("resultado").innerText =
+          "Bem-vinda, " + usuario.nome + "!";
+      }
     }
   } catch (e) {
     document.getElementById("resultado").innerText = "Erro geral: " + e.message;
   }
 }
 </script>
-
-</body>
-</html>
