@@ -1,4 +1,19 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FAESP Sistema</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<h2>Login FAESP</h2>
+
+<input id="email" placeholder="Email"><br><br>
+<input id="senha" type="password" placeholder="Senha"><br><br>
+
+<button onclick="login()">Entrar</button>
+
+<h3 id="resultado"></h3>
 
 <script>
 const client = supabase.createClient(
@@ -26,3 +41,6 @@ async function login() {
   }
 }
 </script>
+
+</body>
+</html>
