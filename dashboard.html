@@ -13,15 +13,16 @@
       background: #f5f6fa;
     }
 
-    /* MENU */
+    /* 🔵 MENU */
     .sidebar {
       width: 240px;
-      background: #1e293b;
-      color: white;
+      background: white;
+      color: #1e293b;
       padding: 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      border-right: 1px solid #ddd;
     }
 
     .logo {
@@ -34,26 +35,34 @@
       padding: 12px;
       margin-bottom: 8px;
       border: none;
-      background: #334155;
-      color: white;
+      background: #f1f5f9;
+      color: #1e293b;
       border-radius: 8px;
       cursor: pointer;
       text-align: left;
+      font-weight: 500;
     }
 
     .menu button:hover {
-      background: #475569;
+      background: #e2e8f0;
     }
 
+    /* 🔥 BOTÃO SAIR */
     .logout {
-      background: #dc2626;
+      background: black;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      padding: 12px;
+      border: none;
+      cursor: pointer;
     }
 
     .logout:hover {
-      background: #b91c1c;
+      background: #222;
     }
 
-    /* CONTEÚDO */
+    /* ⚪ CONTEÚDO */
     .content {
       flex: 1;
       padding: 20px;
@@ -129,7 +138,7 @@ const client = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
-// 🔥 PROTEÇÃO (não entra sem login)
+// 🔥 PROTEÇÃO
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
 if (!usuario) {
