@@ -1,9 +1,7 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
-const { createClient } = supabase;
-
-const client = createClient(
+const client = supabase.createClient(
   "https://rivxqnwrgzdhboisysf.supabase.co",
   "sb_publishable_ghUuFhZvrQf6sEHURVwsWQ_z6ZWmYPV"
 );
