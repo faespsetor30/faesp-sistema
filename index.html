@@ -3,24 +3,114 @@
 <head>
   <title>FAESP Sistema</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      width: 380px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 5px 0;
+      color: #2c5364;
+    }
+
+    h2 {
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #555;
+    }
+
+    input {
+      width: 92%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input:focus {
+      border-color: #2c5364;
+      box-shadow: 0 0 5px rgba(44,83,100,0.3);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2c5364;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #203a43;
+    }
+
+    #resultado {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #2c5364;
+    }
+
+    #notas {
+      margin-top: 15px;
+      text-align: left;
+      font-size: 14px;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Login FAESP</h2>
+<div class="card">
 
-<input id="email" placeholder="Email"><br><br>
-<input id="senha" type="password" placeholder="Senha"><br><br>
+  <!-- 🔥 LOGO -->
+  <img src="logo.png" class="logo">
 
-<button onclick="login()">Entrar</button>
+  <!-- 🔥 TÍTULO -->
+  <h1>FAESP - SETOR 30</h1>
+  <h2>Campo Limpo Paulista/SP</h2>
 
-<h3 id="resultado"></h3>
+  <input id="email" placeholder="Email">
+  <input id="senha" type="password" placeholder="Senha">
 
-<div id="notas"></div>
+  <button onclick="login()">Entrar</button>
+
+  <div id="resultado"></div>
+  <div id="notas"></div>
+
+</div>
 
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "SUA_CHAVE_COMPLETA_AQUI"
 );
 
 async function login() {
@@ -34,38 +124,33 @@ async function login() {
     });
 
     if (error) {
-      document.getElementById("resultado").innerText = "Erro: " + error.message;
-    } else {
-
-      const user = data.user;
-
-      // 🔹 Busca nome
-      const { data: usuario } = await client
-        .from("usuarios")
-        .select("*")
-        .eq("email", user.email)
-        .single();
-
-      document.getElementById("resultado").innerText =
-        "Bem-vinda, " + usuario.nome + "!";
-
-      // 🔥 Busca notas
-      const { data: notas } = await client
-        .from("notas")
-        .select("*")
-        .eq("email", user.email);
-
-      let htmlNotas = "<h3>Suas notas:</h3>";
-
-      notas.forEach(nota => {
-        htmlNotas += nota.disciplina + ": " + nota.nota + "<br>";
-      });
-
-      document.getElementById("notas").innerHTML = htmlNotas;
+      document.getElementById("resultado").innerText = "❌ " + error.message;
+      return;
     }
 
+    const user = data.user;
+
+    const [usuarioRes, notasRes] = await Promise.all([
+      client.from("usuarios").select("*").eq("email", user.email).single(),
+      client.from("notas").select("*").eq("email", user.email)
+    ]);
+
+    const usuario = usuarioRes.data;
+    const notas = notasRes.data;
+
+    document.getElementById("resultado").innerText =
+      "✨ Bem-vinda, " + usuario.nome + "!";
+
+    let htmlNotas = "<h3>📊 Suas notas:</h3>";
+
+    notas.forEach(nota => {
+      htmlNotas += `• ${nota.disciplina}: ${nota.nota}<br>`;
+    });
+
+    document.getElementById("notas").innerHTML = htmlNotas;
+
   } catch (e) {
-    document.getElementById("resultado").innerText = "Erro geral: " + e.message;
+    document.getElementById("resultado").innerText = "Erro: " + e.message;
   }
 }
 </script>
