@@ -15,10 +15,12 @@
 
 <h3 id="resultado"></h3>
 
+<div id="notas"></div>
+
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 );
 
 async function login() {
@@ -37,18 +39,29 @@ async function login() {
 
       const user = data.user;
 
-      const { data: usuario, error: erroUsuario } = await client
+      // 🔹 Busca nome
+      const { data: usuario } = await client
         .from("usuarios")
         .select("*")
         .eq("email", user.email)
         .single();
 
-      if (erroUsuario || !usuario) {
-        document.getElementById("resultado").innerText = "Usuário não encontrado no banco";
-      } else {
-        document.getElementById("resultado").innerText =
-          "Bem-vinda, " + usuario.nome + "!";
-      }
+      document.getElementById("resultado").innerText =
+        "Bem-vinda, " + usuario.nome + "!";
+
+      // 🔥 Busca notas
+      const { data: notas } = await client
+        .from("notas")
+        .select("*")
+        .eq("email", user.email);
+
+      let htmlNotas = "<h3>Suas notas:</h3>";
+
+      notas.forEach(nota => {
+        htmlNotas += nota.disciplina + ": " + nota.nota + "<br>";
+      });
+
+      document.getElementById("notas").innerHTML = htmlNotas;
     }
 
   } catch (e) {
