@@ -1,4 +1,4 @@
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <script>
 const client = supabase.createClient(
@@ -10,15 +10,19 @@ async function login() {
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
 
-  const { data, error } = await client.auth.signInWithPassword({
-    email: email,
-    password: senha
-  });
+  try {
+    const { data, error } = await client.auth.signInWithPassword({
+      email: email,
+      password: senha
+    });
 
-  if (error) {
-    document.getElementById("resultado").innerText = "Erro: " + error.message;
-  } else {
-    document.getElementById("resultado").innerText = "Login realizado!";
+    if (error) {
+      document.getElementById("resultado").innerText = "Erro: " + error.message;
+    } else {
+      document.getElementById("resultado").innerText = "Login realizado!";
+    }
+  } catch (e) {
+    document.getElementById("resultado").innerText = "Erro geral: " + e.message;
   }
 }
 </script>
