@@ -13,23 +13,20 @@
       background: #f5f6fa;
     }
 
-    /* 🔵 MENU LATERAL */
+    /* MENU */
     .sidebar {
       width: 240px;
       background: #1e293b;
       color: white;
       padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
     .logo {
       width: 120px;
       margin-bottom: 20px;
-    }
-
-    .sidebar h2 {
-      font-size: 14px;
-      margin-bottom: 20px;
-      color: #cbd5e1;
     }
 
     .menu button {
@@ -48,7 +45,15 @@
       background: #475569;
     }
 
-    /* ⚪ ÁREA PRINCIPAL */
+    .logout {
+      background: #dc2626;
+    }
+
+    .logout:hover {
+      background: #b91c1c;
+    }
+
+    /* CONTEÚDO */
     .content {
       flex: 1;
       padding: 20px;
@@ -86,21 +91,25 @@
 
 <body>
 
-<!-- 🔵 MENU -->
+<!-- MENU -->
 <div class="sidebar">
 
-  <img src="logo faesp.png" class="logo">
+  <div>
+    <img src="logo faesp.png" class="logo">
+    <h3 id="nomeAluno"></h3>
 
-  <h2 id="nomeAluno"></h2>
-
-  <div class="menu">
-    <button onclick="disciplinas()">📊 Disciplinas</button>
-    <button onclick="concluidas()">📚 Concluídas</button>
+    <div class="menu">
+      <button onclick="disciplinas()">📊 Disciplinas</button>
+      <button onclick="concluidas()">📚 Concluídas</button>
+    </div>
   </div>
+
+  <!-- 🔥 BOTÃO SAIR -->
+  <button class="logout" onclick="sair()">🚪 Sair</button>
 
 </div>
 
-<!-- ⚪ CONTEÚDO -->
+<!-- CONTEÚDO -->
 <div class="content">
 
   <div class="header">
@@ -109,7 +118,7 @@
   </div>
 
   <div class="box" id="conteudo">
-    Clique em uma opção ao lado 👈
+    Bem-vindo ao portal 👈
   </div>
 
 </div>
@@ -117,12 +126,24 @@
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "SUA_CHAVE_AQUI"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
+// 🔥 PROTEÇÃO (não entra sem login)
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
+if (!usuario) {
+  window.location.href = "index.html";
+}
+
+// MOSTRAR NOME
 document.getElementById("nomeAluno").innerText = "👤 " + usuario.nome;
+
+// 🚪 LOGOUT
+function sair() {
+  localStorage.removeItem("usuario");
+  window.location.href = "index.html";
+}
 
 // 📊 DISCIPLINAS
 async function disciplinas() {
@@ -157,7 +178,7 @@ async function concluidas() {
     .select("*")
     .eq("email", usuario.email);
 
-  let html = "<h3>📚 Disciplinas Concluídas</h3><table>";
+  let html = "<h3>📚 Concluídas</h3><table>";
   html += "<tr><th>Matéria</th><th>Data</th><th>Professor</th><th>Livro</th></tr>";
 
   data.forEach(d => {
