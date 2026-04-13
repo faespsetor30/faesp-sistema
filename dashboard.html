@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FAESP - Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #f5f6fa;
+    }
+
+    /* 🔵 MENU LATERAL */
+    .sidebar {
+      width: 240px;
+      background: #1e293b;
+      color: white;
+      padding: 20px;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar h2 {
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #cbd5e1;
+    }
+
+    .menu button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 8px;
+      border: none;
+      background: #334155;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .menu button:hover {
+      background: #475569;
+    }
+
+    /* ⚪ ÁREA PRINCIPAL */
+    .content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .header {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .aprovado { color: green; font-weight: bold; }
+    .reprovado { color: red; font-weight: bold; }
+  </style>
+</head>
+
+<body>
+
+<!-- 🔵 MENU -->
+<div class="sidebar">
+
+  <img src="logo faesp.png" class="logo">
+
+  <h2 id="nomeAluno"></h2>
+
+  <div class="menu">
+    <button onclick="disciplinas()">📊 Disciplinas</button>
+    <button onclick="concluidas()">📚 Concluídas</button>
+  </div>
+
+</div>
+
+<!-- ⚪ CONTEÚDO -->
+<div class="content">
+
+  <div class="header">
+    <h2>FAESP - SETOR 30</h2>
+    <p>Campo Limpo Paulista/SP</p>
+  </div>
+
+  <div class="box" id="conteudo">
+    Clique em uma opção ao lado 👈
+  </div>
+
+</div>
+
+<script>
+const client = supabase.createClient(
+  "https://nzygdvixqmiltelgzzrn.supabase.co",
+  "SUA_CHAVE_AQUI"
+);
+
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+document.getElementById("nomeAluno").innerText = "👤 " + usuario.nome;
+
+// 📊 DISCIPLINAS
+async function disciplinas() {
+  const { data } = await client
+    .from("notas")
+    .select("*")
+    .eq("email", usuario.email);
+
+  let html = "<h3>📊 Disciplinas</h3><table>";
+  html += "<tr><th>Matéria</th><th>Nota</th><th>Status</th></tr>";
+
+  data.forEach(d => {
+    let classe = d.status === "Aprovado" ? "aprovado" : "reprovado";
+
+    html += `
+      <tr>
+        <td>${d.disciplina}</td>
+        <td>${d.nota ?? 0}</td>
+        <td class="${classe}">${d.status}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+// 📚 CONCLUÍDAS
+async function concluidas() {
+  const { data } = await client
+    .from("disciplinas_concluidas")
+    .select("*")
+    .eq("email", usuario.email);
+
+  let html = "<h3>📚 Disciplinas Concluídas</h3><table>";
+  html += "<tr><th>Matéria</th><th>Data</th><th>Professor</th><th>Livro</th></tr>";
+
+  data.forEach(d => {
+    html += `
+      <tr>
+        <td>${d.disciplina}</td>
+        <td>${d.data_conclusao}</td>
+        <td>${d.professor}</td>
+        <td>${d.livro ? "Sim" : "Não"}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+  document.getElementById("conteudo").innerHTML = html;
+}
+</script>
+
+</body>
+</html>
