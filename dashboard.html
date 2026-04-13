@@ -10,82 +10,129 @@
       font-family: 'Segoe UI', sans-serif;
       display: flex;
       height: 100vh;
-      background: #f5f6fa;
+      background: #eef2f7;
+      flex-direction: column;
     }
 
-    /* 🔵 MENU */
+    .main {
+      display: flex;
+      flex: 1;
+    }
+
+    /* SIDEBAR */
     .sidebar {
       width: 240px;
       background: white;
-      color: #1e293b;
       padding: 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       border-right: 1px solid #ddd;
+      align-items: center; /* 🔥 CENTRALIZA TUDO */
     }
 
     .logo {
       width: 120px;
       margin-bottom: 20px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto; /* 🔥 CENTRALIZA PERFEITO */
+    }
+
+    .menu {
+      width: 100%;
     }
 
     .menu button {
       width: 100%;
       padding: 12px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       border: none;
       background: #f1f5f9;
-      color: #1e293b;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       text-align: left;
+      transition: 0.3s;
       font-weight: 500;
     }
 
     .menu button:hover {
       background: #e2e8f0;
+      transform: translateX(3px);
     }
 
-    /* 🔥 BOTÃO SAIR */
+    .menu .ativo {
+      background: #2c5364;
+      color: white;
+    }
+
+    /* BOTÃO SAIR */
     .logout {
       background: black;
       color: white;
       font-weight: bold;
-      border-radius: 8px;
       padding: 12px;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
+      width: 100%;
     }
 
     .logout:hover {
       background: #222;
     }
 
-    /* ⚪ CONTEÚDO */
+    /* CONTEÚDO */
     .content {
       flex: 1;
-      padding: 20px;
+      padding: 25px;
     }
 
     .header {
       background: white;
-      padding: 15px;
-      border-radius: 10px;
+      padding: 20px;
+      border-radius: 12px;
       margin-bottom: 20px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+
+    .cards {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .card-mini {
+      flex: 1;
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .card-mini:hover {
+      transform: translateY(-3px);
     }
 
     .box {
       background: white;
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 10px;
     }
 
     th, td {
@@ -93,43 +140,88 @@
       border-bottom: 1px solid #ddd;
     }
 
-    .aprovado { color: green; font-weight: bold; }
-    .reprovado { color: red; font-weight: bold; }
+    th {
+      background: #f8fafc;
+    }
+
+    .aprovado {
+      color: green;
+      font-weight: bold;
+    }
+
+    .reprovado {
+      color: red;
+      font-weight: bold;
+    }
+
+    /* 🔥 RODAPÉ */
+    .footer {
+      background: #1e293b;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 13px;
+    }
   </style>
 </head>
 
 <body>
 
-<!-- MENU -->
-<div class="sidebar">
+<div class="main">
 
-  <div>
-    <img src="logo faesp.png" class="logo">
-    <h3 id="nomeAluno"></h3>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
 
-    <div class="menu">
-      <button onclick="disciplinas()">📊 Disciplinas</button>
-      <button onclick="concluidas()">📚 Concluídas</button>
+    <div style="width:100%;">
+      <img src="logo faesp.png" class="logo">
+      <h3 id="nomeAluno" style="text-align:center;"></h3>
+
+      <div class="menu">
+        <button id="btnDisciplinas" onclick="disciplinas()">📊 Disciplinas</button>
+        <button id="btnConcluidas" onclick="concluidas()">📚 Concluídas</button>
+      </div>
     </div>
+
+    <button class="logout" onclick="sair()">🚪 Sair</button>
+
   </div>
 
-  <!-- 🔥 BOTÃO SAIR -->
-  <button class="logout" onclick="sair()">🚪 Sair</button>
+  <!-- CONTEÚDO -->
+  <div class="content">
+
+    <div class="header">
+      <h2>FAESP - SETOR 30</h2>
+      <p id="boasVindas"></p>
+    </div>
+
+    <div class="cards">
+      <div class="card-mini">
+        <h4>📊 Disciplinas</h4>
+        <p id="totalDisciplinas">0</p>
+      </div>
+
+      <div class="card-mini">
+        <h4>📚 Concluídas</h4>
+        <p id="totalConcluidas">0</p>
+      </div>
+
+      <div class="card-mini">
+        <h4>⭐ Média</h4>
+        <p id="mediaGeral">0</p>
+      </div>
+    </div>
+
+    <div class="box" id="conteudo">
+      Bem-vindo ao portal 👈
+    </div>
+
+  </div>
 
 </div>
 
-<!-- CONTEÚDO -->
-<div class="content">
-
-  <div class="header">
-    <h2>FAESP - SETOR 30</h2>
-    <p>Campo Limpo Paulista/SP</p>
-  </div>
-
-  <div class="box" id="conteudo">
-    Bem-vindo ao portal 👈
-  </div>
-
+<!-- 🔥 RODAPÉ -->
+<div class="footer">
+  AD. Belém - Rua Rio Tiete, número 126 - Jardim Europa - Campo Limpo Paulista - SP
 </div>
 
 <script>
@@ -138,33 +230,41 @@ const client = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
-// 🔥 PROTEÇÃO
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
 if (!usuario) {
   window.location.href = "index.html";
 }
 
-// MOSTRAR NOME
 document.getElementById("nomeAluno").innerText = "👤 " + usuario.nome;
+document.getElementById("boasVindas").innerText =
+  "Bem-vinda, " + usuario.nome + " 👋";
 
-// 🚪 LOGOUT
+function ativar(botao) {
+  document.querySelectorAll(".menu button").forEach(b => b.classList.remove("ativo"));
+  botao.classList.add("ativo");
+}
+
 function sair() {
   localStorage.removeItem("usuario");
   window.location.href = "index.html";
 }
 
-// 📊 DISCIPLINAS
 async function disciplinas() {
+  ativar(document.getElementById("btnDisciplinas"));
+
   const { data } = await client
     .from("notas")
     .select("*")
     .eq("email", usuario.email);
 
+  let soma = 0;
+
   let html = "<h3>📊 Disciplinas</h3><table>";
   html += "<tr><th>Matéria</th><th>Nota</th><th>Status</th></tr>";
 
   data.forEach(d => {
+    soma += Number(d.nota || 0);
     let classe = d.status === "Aprovado" ? "aprovado" : "reprovado";
 
     html += `
@@ -178,10 +278,15 @@ async function disciplinas() {
 
   html += "</table>";
   document.getElementById("conteudo").innerHTML = html;
+
+  document.getElementById("totalDisciplinas").innerText = data.length;
+  document.getElementById("mediaGeral").innerText =
+    (soma / data.length).toFixed(1);
 }
 
-// 📚 CONCLUÍDAS
 async function concluidas() {
+  ativar(document.getElementById("btnConcluidas"));
+
   const { data } = await client
     .from("disciplinas_concluidas")
     .select("*")
@@ -203,6 +308,8 @@ async function concluidas() {
 
   html += "</table>";
   document.getElementById("conteudo").innerHTML = html;
+
+  document.getElementById("totalConcluidas").innerText = data.length;
 }
 </script>
 
