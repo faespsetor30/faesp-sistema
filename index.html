@@ -83,7 +83,6 @@
 
   <button onclick="login()">Entrar</button>
 
-  <!-- 🔥 NOVO BOTÃO -->
   <button onclick="abrirCadastro()">➕ Criar conta</button>
 
   <div id="resultado"></div>
@@ -107,14 +106,17 @@
     background:white;
     padding:20px;
     border-radius:10px;
-    width:300px;
+    width:320px;
   ">
 
     <h3>📋 Cadastro de Aluno</h3>
 
-    <input id="novoNome" placeholder="Nome"><br>
-    <input id="novoEmail" placeholder="Email"><br>
-    <input id="novaMatricula" placeholder="Matrícula"><br>
+    <input id="novoNome" placeholder="Nome Completo">
+    <input id="novoEmail" placeholder="E-mail">
+    <input id="novoCpf" placeholder="CPF">
+    <input id="novoRg" placeholder="RG">
+    <input id="novaData" type="date">
+    <input id="novoEndereco" placeholder="Endereço">
 
     <button onclick="salvarCadastro()">Cadastrar</button>
     <button onclick="fecharCadastro()">Cancelar</button>
@@ -151,7 +153,6 @@ async function login() {
     .eq("email", email)
     .single();
 
-  // 🔥 BLOQUEIO SE NÃO APROVADO
   if (usuario.status !== "ativo") {
     document.getElementById("resultado").innerText =
       "⏳ Cadastro aguardando aprovação.";
@@ -162,12 +163,11 @@ async function login() {
   window.location.href = "dashboard.html";
 }
 
-// ABRIR MODAL
+// MODAL
 function abrirCadastro() {
   document.getElementById("modalCadastro").style.display = "flex";
 }
 
-// FECHAR MODAL
 function fecharCadastro() {
   document.getElementById("modalCadastro").style.display = "none";
 }
@@ -176,11 +176,22 @@ function fecharCadastro() {
 async function salvarCadastro() {
   const nome = document.getElementById("novoNome").value;
   const email = document.getElementById("novoEmail").value;
-  const matricula = document.getElementById("novaMatricula").value;
+  const cpf = document.getElementById("novoCpf").value;
+  const rg = document.getElementById("novoRg").value;
+  const data = document.getElementById("novaData").value;
+  const endereco = document.getElementById("novoEndereco").value;
 
   const { error } = await client
     .from("usuarios")
-    .insert([{ nome, email, matricula, status: "pendente" }]);
+    .insert([{
+      nome,
+      email,
+      cpf,
+      rg,
+      data_nascimento: data,
+      endereco,
+      status: "pendente"
+    }]);
 
   if (error) {
     document.getElementById("msgCadastro").innerText =
@@ -192,5 +203,7 @@ async function salvarCadastro() {
 }
 </script>
 
+</body>
+</html>
 </body>
 </html>
