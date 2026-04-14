@@ -44,6 +44,52 @@
     }
 
     .menu button:hover {
+      background: #e2e8f0;<!DOCTYPE html>
+
+<html>
+<head>
+  <title>FAESP - Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #eef2f7;
+      flex-direction: column;
+    }
+
+    .main { display: flex; flex: 1; }
+
+    .sidebar {
+      width: 240px;
+      background: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-right: 1px solid #ddd;
+      align-items: center;
+    }
+
+    .logo { width: 120px; margin-bottom: 20px; }
+
+    .menu { width: 100%; }
+
+    .menu button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: none;
+      background: #f1f5f9;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .menu button:hover {
       background: #e2e8f0;
     }
 
@@ -166,13 +212,11 @@ document.getElementById("boasVindas").innerText = "Bem-vinda, " + usuario.nome;
 
 const isAdmin = usuario.tipo === "admin";
 
-// LOGOUT
 function sair() {
   localStorage.removeItem("usuario");
   window.location.href = "index.html";
 }
 
-// PLACEHOLDERS (não quebrar sistema)
 function disciplinas() {
   document.getElementById("conteudo").innerHTML = "<h3>📊 Disciplinas</h3><p>Em desenvolvimento</p>";
 }
@@ -185,7 +229,6 @@ function financeiro() {
   document.getElementById("conteudo").innerHTML = "<h3>💰 Financeiro</h3><p>Em desenvolvimento</p>";
 }
 
-// 📢 AVISOS
 async function avisos() {
   try {
     const { data } = await client.from("avisos").select("*").order("data", { ascending: false });
@@ -239,7 +282,6 @@ await client.from("avisos").insert([{ titulo, mensagem }]);
 avisos();
 }
 
-// 📅 CRONOGRAMA
 async function cronograma() {
 try {
 const { data } = await client
