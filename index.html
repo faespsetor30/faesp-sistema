@@ -117,6 +117,7 @@
     <input id="novoRg" placeholder="RG">
     <input id="novaData" type="date">
     <input id="novoEndereco" placeholder="Endereço">
+    <input id="novoCelular" placeholder="Celular (WhatsApp)">
 
     <button onclick="salvarCadastro()">Cadastrar</button>
     <button onclick="fecharCadastro()">Cancelar</button>
@@ -180,6 +181,7 @@ async function salvarCadastro() {
   const rg = document.getElementById("novoRg").value;
   const data = document.getElementById("novaData").value;
   const endereco = document.getElementById("novoEndereco").value;
+  const celular = document.getElementById("novoCelular").value;
 
   const { error } = await client
     .from("usuarios")
@@ -190,6 +192,7 @@ async function salvarCadastro() {
       rg,
       data_nascimento: data,
       endereco,
+      celular,
       status: "pendente"
     }]);
 
@@ -203,7 +206,5 @@ async function salvarCadastro() {
 }
 </script>
 
-</body>
-</html>
 </body>
 </html>
