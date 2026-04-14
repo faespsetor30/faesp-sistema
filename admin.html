@@ -65,7 +65,7 @@
 
     input, select {
       padding:8px; border-radius:6px; border:1px solid #ccc;
-      margin-top:5px;
+      margin-top:5px; width:100%;
     }
   </style>
 </head>
@@ -118,14 +118,45 @@ function sair() {
   window.location.href = "index.html";
 }
 
+// GERAR SENHA
+function gerarSenha() {
+  return Math.random().toString(36).slice(-8);
+}
+
 // 📋 CADASTROS
 async function alunos() {
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-
   const { data } = await client.from("usuarios").select("*");
 
-  let html = "<h3>📋 Cadastros</h3><table>";
-  html += "<tr><th>Nome</th><th>Email</th><th>Status</th><th>Tipo</th></tr>";
+  let html = `
+    <h3>📋 Cadastros</h3>
+
+    <div style="margin-bottom:20px;">
+      <h4>➕ Novo Cadastro</h4>
+
+      <input id="nome" placeholder="Nome">
+      <input id="email" placeholder="Email">
+      <input id="celular" placeholder="Celular">
+
+      <select id="tipo">
+        <option value="Aluno">Aluno</option>
+        <option value="Professor">Professor</option>
+        <option value="Coordenacao">Coordenação</option>
+      </select>
+
+      <input id="curso" placeholder="Curso">
+
+      <br><br>
+      <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
+    </div>
+
+    <table>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Tipo</th>
+      </tr>
+  `;
 
   data.forEach(u => {
     html += `
@@ -133,18 +164,7 @@ async function alunos() {
         <td>${u.nome}</td>
         <td>${u.email}</td>
         <td>${u.status}</td>
-
-        <td>
-          <select 
-            onchange="definirTipo('${u.id}', this.value)"
-            ${usuario?.tipo !== "Coordenacao" ? "disabled" : ""}
-          >
-            <option value="">Selecionar</option>
-            <option value="Aluno" ${u.tipo === "Aluno" ? "selected" : ""}>Aluno</option>
-            <option value="Professor" ${u.tipo === "Professor" ? "selected" : ""}>Professor</option>
-            <option value="Coordenacao" ${u.tipo === "Coordenacao" ? "selected" : ""}>Coordenação</option>
-          </select>
-        </td>
+        <td>${u.tipo}</td>
       </tr>
     `;
   });
@@ -153,14 +173,57 @@ async function alunos() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// DEFINIR TIPO
-async function definirTipo(id, tipo) {
-  if (!tipo) return;
+// 🚀 CADASTRAR COM LOGIN
+async function cadastrarUsuario() {
+  const nome = document.getElementById("nome").value;
+  const email = document.getElementById("email").value;
+  const celular = document.getElementById("celular").value;
+  const tipo = document.getElementById("tipo").value;
+  const curso = document.getElementById("curso").value;
 
-  await client
-    .from("usuarios")
-    .update({ tipo })
-    .eq("id", id);
+  const senha = gerarSenha();
+
+  // cria no AUTH
+  const { error: authError } = await client.auth.signUp({
+    email: email,
+    password: senha
+  });
+
+  if (authError) {
+    alert("Erro no Auth 😢");
+    return;
+  }
+
+  // salva no banco
+  await client.from("usuarios").insert([
+    {
+      nome,
+      email,
+      celular,
+      tipo,
+      curso,
+      status: "ativo"
+    }
+  ]);
+
+  // envia whatsapp
+  await fetch("https://api.z-api.io/instances/SEU_ID/token/SEU_TOKEN/send-text", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      phone: celular,
+      message: `Olá ${nome} 🙌
+
+Seu acesso à FAESP foi criado!
+
+📧 Email: ${email}
+🔑 Senha: ${senha}
+
+Acesse o sistema e altere sua senha após login.`
+    })
+  });
+
+  alert("Usuário criado e enviado no WhatsApp! 🚀");
 
   alunos();
 }
