@@ -61,6 +61,7 @@
     .btn {
       background:#2c5364; color:white; border:none;
       padding:6px 10px; border-radius:6px; cursor:pointer;
+      margin:2px;
     }
 
     input, select {
@@ -155,6 +156,7 @@ async function alunos() {
         <th>Email</th>
         <th>Status</th>
         <th>Tipo</th>
+        <th>Ações</th>
       </tr>
   `;
 
@@ -164,7 +166,25 @@ async function alunos() {
         <td>${u.nome}</td>
         <td>${u.email}</td>
         <td>${u.status}</td>
-        <td>${u.tipo}</td>
+
+        <td>
+          <select onchange="alterarTipo('${u.id}', this.value)">
+            <option value="Aluno" ${u.tipo === "Aluno" ? "selected" : ""}>Aluno</option>
+            <option value="Professor" ${u.tipo === "Professor" ? "selected" : ""}>Professor</option>
+            <option value="Coordenacao" ${u.tipo === "Coordenacao" ? "selected" : ""}>Coordenação</option>
+          </select>
+        </td>
+
+        <td>
+          ${
+            u.status === "pendente"
+              ? `
+                <button class="btn" onclick="aprovar('${u.id}')">✅</button>
+                <button class="btn" style="background:red;" onclick="recusar('${u.id}')">❌</button>
+              `
+              : "✔️"
+          }
+        </td>
       </tr>
     `;
   });
@@ -173,7 +193,27 @@ async function alunos() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// 🚀 CADASTRAR COM LOGIN
+// ALTERAR TIPO
+async function alterarTipo(id, tipo) {
+  await client.from("usuarios").update({ tipo }).eq("id", id);
+  alunos();
+}
+
+// APROVAR
+async function aprovar(id) {
+  await client.from("usuarios").update({ status: "ativo" }).eq("id", id);
+  alert("Aprovado!");
+  alunos();
+}
+
+// RECUSAR
+async function recusar(id) {
+  await client.from("usuarios").update({ status: "recusado" }).eq("id", id);
+  alert("Recusado!");
+  alunos();
+}
+
+// CADASTRAR
 async function cadastrarUsuario() {
   const nome = document.getElementById("nome").value;
   const email = document.getElementById("email").value;
@@ -183,48 +223,13 @@ async function cadastrarUsuario() {
 
   const senha = gerarSenha();
 
-  // cria no AUTH
-  const { error: authError } = await client.auth.signUp({
-    email: email,
-    password: senha
-  });
+  await client.auth.signUp({ email, password: senha });
 
-  if (authError) {
-    alert("Erro no Auth 😢");
-    return;
-  }
-
-  // salva no banco
   await client.from("usuarios").insert([
-    {
-      nome,
-      email,
-      celular,
-      tipo,
-      curso,
-      status: "ativo"
-    }
+    { nome, email, celular, tipo, curso, status: "pendente" }
   ]);
 
-  // envia whatsapp
-  await fetch("https://api.z-api.io/instances/SEU_ID/token/SEU_TOKEN/send-text", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      phone: celular,
-      message: `Olá ${nome} 🙌
-
-Seu acesso à FAESP foi criado!
-
-📧 Email: ${email}
-🔑 Senha: ${senha}
-
-Acesse o sistema e altere sua senha após login.`
-    })
-  });
-
-  alert("Usuário criado e enviado no WhatsApp! 🚀");
-
+  alert("Cadastro enviado! Aguardando aprovação.");
   alunos();
 }
 
