@@ -1,100 +1,137 @@
-<script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "SEU_TOKEN"
 );
 
-const usuario = JSON.parse(localStorage.getItem("usuario"));
+// 🚀 LOAD
+document.addEventListener("DOMContentLoaded", () => {
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-// 🔒 PROTEÇÃO TOTAL
-if (!usuario) {
-  alert("⚠️ Faça login primeiro!");
-  window.location.href = "index.html";
-}
-
-// 🔒 BLOQUEIO POR TIPO
-if (usuario.tipo !== "Aluno") {
-  alert("⛔ Acesso permitido apenas para alunos!");
-
-  if (usuario.tipo === "Coordenacao") {
-    window.location.href = "admin.html";
-  } else {
+  if (!usuario) {
+    alert("⚠️ Faça login primeiro!");
     window.location.href = "index.html";
+    return;
   }
-}
 
-// 👇 SEGUE NORMAL
-document.getElementById("nomeAluno").innerText = usuario.nome;
-document.getElementById("boasVindas").innerText = "Bem-vinda, " + usuario.nome;
+  if (usuario.tipo !== "Aluno") {
+    window.location.href = "admin.html";
+    return;
+  }
 
-// 🔥 AGORA CORRETO
-const isAdmin = usuario.tipo === "Coordenacao";
+  document.getElementById("nomeAluno").innerText = usuario.nome;
+  document.getElementById("boasVindas").innerText = "Bem-vinda, " + usuario.nome;
 
+  // carregar padrão
+  disciplinas();
+});
+
+// LOGOUT
 function sair() {
   localStorage.removeItem("usuario");
   window.location.href = "index.html";
 }
 
-function disciplinas() {
-  document.getElementById("conteudo").innerHTML = "<h3>📊 Disciplinas</h3><p>Em desenvolvimento</p>";
-}
+// 📊 DISCIPLINAS
+async function disciplinas() {
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-function concluidas() {
-  document.getElementById("conteudo").innerHTML = "<h3>📚 Concluídas</h3><p>Em desenvolvimento</p>";
-}
+  const { data } = await client
+    .from("disciplinas")
+    .select("*")
+    .eq("email", usuario.email);
 
-// 💰 FINANCEIRO COM COBRANÇA
-async function financeiro() {
-  const { data } = await client.from("financeiro").select("*");
+  let html = `<h3>📊 Disciplinas</h3>`;
+  html += `<p><strong>Curso:</strong> ${usuario.curso || "Não informado"}</p>`;
+  html += `<table>
+    <tr>
+      <th>Disciplina</th>
+      <th>Professor</th>
+      <th>Nota</th>
+      <th>Início</th>
+      <th>Conclusão</th>
+    </tr>`;
 
-  let html = "<h3>💰 Financeiro</h3>";
-  html += "<table>";
-  html += "<tr><th>Aluno</th><th>Disciplina</th><th>Valor</th><th>Status</th><th>Ação</th></tr>";
-
-  for (const f of data) {
-    const { data: u } = await client.from("usuarios").select("*").eq("email", f.email).single();
-
+  data.forEach(d => {
     html += `
       <tr>
-        <td>${u?.nome || "-"}</td>
-        <td>${f.disciplina}</td>
-        <td>R$ ${f.valor}</td>
-        <td>${f.status}</td>
-        <td>
-          ${f.status !== "pago"
-            ? `<button class="btn" onclick="cobrarAluno('${u?.nome}','${u?.celular}','${f.disciplina}','${f.valor}')">📲 Cobrar</button>`
-            : "✔️ Pago"}
-        </td>
+        <td>${d.nome}</td>
+        <td>${d.professor}</td>
+        <td>${d.nota || "-"}</td>
+        <td>${d.data_inicio || "-"}</td>
+        <td>${d.data_fim || "-"}</td>
       </tr>
     `;
-  }
+  });
 
   html += "</table>";
-
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// 📲 COBRANÇA
-async function cobrarAluno(nome, celular, disciplina, valor) {
-  await enviarWhatsApp(
-    celular,
-    `Olá ${nome} 💰
+// 💰 FINANCEIRO (SÓ DO ALUNO)
+async function financeiro() {
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-Identificamos uma mensalidade pendente:
+  const { data } = await client
+    .from("financeiro")
+    .select("*")
+    .eq("email", usuario.email);
 
-📚 Disciplina: ${disciplina}
-💵 Valor: R$ ${valor}
+  let html = "<h3>💰 Financeiro</h3>";
+  html += `<table>
+    <tr>
+      <th>Disciplina</th>
+      <th>Valor</th>
+      <th>Status</th>
+      <th>Pagamento</th>
+      <th>Comprovante</th>
+    </tr>`;
 
-Por favor, regularize 🙏
+  data.forEach(f => {
+    html += `
+      <tr>
+        <td>${f.disciplina}</td>
+        <td>R$ ${f.valor}</td>
+        <td>${f.status}</td>
+        <td>${f.data_pagamento || "-"}</td>
+        <td>
+          ${f.status === "pago"
+            ? `<a href="${f.comprovante}" target="_blank">📄 Ver PDF</a>`
+            : "Pendente"}
+        </td>
+      </tr>
+    `;
+  });
 
-FAESP`
-  );
-
-  alert("Cobrança enviada!");
+  html += "</table>";
+  document.getElementById("conteudo").innerHTML = html;
 }
 
+// 📅 CRONOGRAMA
+async function cronograma() {
+  const { data } = await client.from("cronograma").select("*");
+
+  let html = "<h3>📅 Cronograma</h3><table>";
+
+  data.forEach(a => {
+    html += `
+      <tr>
+        <td>${a.data}</td>
+        <td>${a.disciplina}</td>
+        <td>${a.descricao || ""}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+// 📢 AVISOS
 async function avisos() {
-  const { data } = await client.from("avisos").select("*").order("data", { ascending: false });
+  const { data } = await client
+    .from("avisos")
+    .select("*")
+    .order("data", { ascending: false });
 
   let html = "<h3>📢 Avisos</h3>";
 
@@ -110,66 +147,3 @@ async function avisos() {
 
   document.getElementById("conteudo").innerHTML = html;
 }
-
-async function cronograma() {
-  const { data } = await client.from("cronograma").select("*");
-
-  let html = "<h3>📅 Cronograma</h3><table>";
-
-  data.forEach(a => {
-    html += `
-      <tr>
-        <td>${a.data}</td>
-        <td>${a.disciplina}</td>
-      </tr>
-    `;
-  });
-
-  html += "</table>";
-
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-// 🔥 WHATSAPP
-async function enviarWhatsApp(numero, mensagem) {
-  await fetch("https://api.z-api.io/instances/3F19C61174D6225336C73A7D2450AC8D/token/DE43E25197F9AEE0CB640CA5/send-text", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ phone: numero, message: mensagem })
-  });
-}
-
-// 👨‍🎓 ALUNOS (NÃO DEVERIA APARECER PRA ALUNO, MAS MANTIVE)
-async function alunos() {
-  const { data } = await client.from("usuarios").select("*");
-
-  let html = "<h3>👨‍🎓 Alunos</h3><table>";
-
-  data.forEach(u => {
-    html += `
-      <tr>
-        <td>${u.nome}</td>
-        <td>${u.status}</td>
-        <td>
-          ${u.status !== "ativo"
-            ? `<button class="btn" onclick="aprovarAluno('${u.id}','${u.nome}','${u.celular}')">Aprovar</button>`
-            : "✔️"}
-        </td>
-      </tr>
-    `;
-  });
-
-  html += "</table>";
-
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-async function aprovarAluno(id, nome, celular) {
-  await client.from("usuarios").update({ status: "ativo" }).eq("id", id);
-
-  await enviarWhatsApp(celular, `Olá ${nome} 🙌 Seu cadastro foi aprovado na FAESP!`);
-
-  alert("Aluno aprovado!");
-  alunos();
-}
-</script>
