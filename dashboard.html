@@ -157,7 +157,7 @@
 
   <div class="sidebar">
 
-```
+ 
 <div style="width:100%;">
   <img src="logo faesp.png" class="logo">
   <h3 id="nomeAluno" style="text-align:center;"></h3>
@@ -172,13 +172,11 @@
 </div>
 
 <button class="logout" onclick="sair()">🚪 Sair</button>
-```
 
   </div>
 
   <div class="content">
-
-```
+ 
 <div class="header">
   <h2>FAESP - SETOR 30</h2>
   <p id="boasVindas"></p>
@@ -187,8 +185,7 @@
 <div class="box" id="conteudo">
   Bem-vindo ao portal 👈
 </div>
-```
-
+ 
   </div>
 
 </div>
@@ -242,7 +239,6 @@ async function avisos() {
           <input id="tituloAviso" placeholder="Título">
           <textarea id="msgAviso" placeholder="Mensagem"></textarea>
 
-```
       <button class="btn" onclick="salvarAviso()">Salvar</button>
     </div>
   `;
@@ -263,7 +259,6 @@ if (!data || data.length === 0) {
 }
 
 document.getElementById("conteudo").innerHTML = html;
-```
 
 } catch (e) {
 document.getElementById("conteudo").innerHTML = "Erro ao carregar avisos";
@@ -289,7 +284,6 @@ const { data } = await client
 .select("*")
 .order("data");
 
-```
 let html = "<h3>📅 Cronograma</h3>";
 
 if (!data || data.length === 0) {
@@ -314,7 +308,7 @@ if (!data || data.length === 0) {
 }
 
 document.getElementById("conteudo").innerHTML = html;
-```
+ 
 
 } catch (e) {
 document.getElementById("conteudo").innerHTML = "Erro ao carregar cronograma";
