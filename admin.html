@@ -110,6 +110,11 @@
       border-radius:6px;
       cursor:pointer;
     }
+
+    .btn-danger {
+      background:#dc2626;
+      margin-left:5px;
+    }
   </style>
 </head>
 
@@ -158,7 +163,7 @@
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "SUA_CHAVE_AQUI"
 );
 
 // LOGOUT
@@ -190,12 +195,14 @@ async function alunos() {
           <td>${u.email}</td>
           <td>${u.status}</td>
           <td>
-            ${u.status !== "ativo"
+            ${u.status === "pendente"
               ? `
                 <button class="btn" onclick="aprovarAluno('${u.id}')">✔️ Aprovar</button>
-                <button class="btn" style="background:#dc2626; margin-left:5px;" onclick="recusarAluno('${u.id}')">❌ Recusar</button>
+                <button class="btn btn-danger" onclick="recusarAluno('${u.id}')">❌ Recusar</button>
               `
-              : "✔️"}
+              : u.status === "ativo"
+                ? "✔️"
+                : "❌"}
           </td>
         </tr>
       `;
@@ -211,7 +218,7 @@ async function alunos() {
   }
 }
 
-// 🔥 APROVAR ALUNO
+// 🔥 APROVAR
 async function aprovarAluno(id) {
   await client
     .from("usuarios")
@@ -222,10 +229,8 @@ async function aprovarAluno(id) {
   alunos();
 }
 
-// 🔥 RECUSAR ALUNO
+// 🔥 RECUSAR
 async function recusarAluno(id) {
-  if (!confirm("Tem certeza que deseja recusar este aluno?")) return;
-
   await client
     .from("usuarios")
     .update({ status: "recusado" })
@@ -235,7 +240,7 @@ async function recusarAluno(id) {
   alunos();
 }
 
-// OUTROS (placeholder)
+// OUTROS
 function disciplinas(){document.getElementById("conteudo").innerHTML="📚 Disciplinas";}
 function notas(){document.getElementById("conteudo").innerHTML="📝 Notas";}
 function professores(){document.getElementById("conteudo").innerHTML="👨‍🏫 Professores";}
