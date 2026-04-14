@@ -112,7 +112,135 @@
         <button onclick="disciplinas()">📊 Disciplinas</button>
         <button onclick="concluidas()">📚 Concluídas</button>
         <button onclick="financeiro()">💰 Financeiro</button>
+        <button onclick="avisos()">📢 Avisos</button><!DOCTYPE html>
+<html>
+<head>
+  <title>FAESP - Portal</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #eef2f7;
+      flex-direction: column;
+    }
+
+    .main { display: flex; flex: 1; }
+
+    .sidebar {
+      width: 240px;
+      background: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-right: 1px solid #ddd;
+      align-items: center;
+    }
+
+    .logo { width: 120px; margin-bottom: 20px; }
+
+    .menu { width: 100%; }
+
+    .menu button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: none;
+      background: #f1f5f9;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .menu .ativo {
+      background: #2c5364;
+      color: white;
+    }
+
+    .logout {
+      background: black;
+      color: white;
+      font-weight: bold;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      width: 100%;
+    }
+
+    .content { flex: 1; padding: 25px; }
+
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .footer {
+      background: #1e293b;
+      color: white;
+      text-align: center;
+      padding: 10px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .btn {
+      background:#2c5364;
+      color:white;
+      border:none;
+      padding:10px;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+    }
+
+    th, td {
+      padding:10px;
+      border-bottom:1px solid #ddd;
+    }
+
+    th { background:#f8fafc; }
+  </style>
+</head>
+
+<body>
+
+<div class="main">
+
+  <div class="sidebar">
+
+    <div style="width:100%;">
+      <img src="logo faesp.png" class="logo">
+      <h3 id="nomeAluno" style="text-align:center;"></h3>
+
+      <div class="menu">
+        <button onclick="disciplinas()">📊 Disciplinas</button>
+        <button onclick="concluidas()">📚 Concluídas</button>
+        <button onclick="financeiro()">💰 Financeiro</button>
         <button onclick="avisos()">📢 Avisos</button>
+        <button onclick="cronograma()">📅 Cronograma</button>
       </div>
     </div>
 
@@ -152,10 +280,8 @@ if (!usuario) window.location.href = "index.html";
 document.getElementById("nomeAluno").innerText = usuario.nome;
 document.getElementById("boasVindas").innerText = "Bem-vinda, " + usuario.nome;
 
-// 🔥 DEFINIR SE É ADM
 const isAdmin = usuario.tipo === "admin";
 
-// LOGOUT
 function sair() {
   localStorage.removeItem("usuario");
   window.location.href = "index.html";
@@ -167,7 +293,6 @@ async function avisos() {
 
   let html = "<h3>📢 Avisos</h3>";
 
-  // 🔥 BOTÃO APENAS PARA ADM
   if (isAdmin) {
     html += `
       <button class="btn" onclick="abrirNovoAviso()">➕ Novo Aviso</button>
@@ -179,36 +304,84 @@ async function avisos() {
     `;
   }
 
-  if (!data || data.length === 0) {
-    html += "<p>Sem avisos</p>";
-  } else {
-    data.forEach(a => {
-      html += `
-        <div style="margin-top:10px; padding:10px; border-left:5px solid #2c5364; background:#f8fafc;">
-          <strong>${a.titulo}</strong><br>
-          <small>${a.data}</small>
-          <p>${a.mensagem}</p>
-        </div>
-      `;
-    });
-  }
+  data.forEach(a => {
+    html += `
+      <div style="margin-top:10px; padding:10px; border-left:5px solid #2c5364; background:#f8fafc;">
+        <strong>${a.titulo}</strong><br>
+        <small>${a.data}</small>
+        <p>${a.mensagem}</p>
+      </div>
+    `;
+  });
 
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// ABRIR FORM
 function abrirNovoAviso() {
   document.getElementById("formAviso").style.display = "block";
 }
 
-// SALVAR AVISO
 async function salvarAviso() {
   const titulo = document.getElementById("tituloAviso").value;
   const mensagem = document.getElementById("msgAviso").value;
 
   await client.from("avisos").insert([{ titulo, mensagem }]);
+  avisos();
+}
 
-  avisos(); // recarrega
+// 📅 CRONOGRAMA
+async function cronograma() {
+  const { data } = await client.from("cronograma").select("*").order("data");
+
+  let html = "<h3>📅 Cronograma de Aulas</h3>";
+
+  if (isAdmin) {
+    html += `
+      <button class="btn" onclick="abrirFormCronograma()">➕ Nova Aula</button>
+      <div id="formCrono" style="display:none;">
+        <input id="disciplina" placeholder="Disciplina">
+        <input id="dataAula" type="date">
+        <input id="horario" placeholder="Horário">
+        <input id="professor" placeholder="Professor">
+        <input id="local" placeholder="Local">
+        <button class="btn" onclick="salvarCronograma()">Salvar</button>
+      </div>
+    `;
+  }
+
+  html += "<table><tr><th>Data</th><th>Horário</th><th>Disciplina</th><th>Professor</th><th>Local</th></tr>";
+
+  data.forEach(a => {
+    html += `
+      <tr>
+        <td>${a.data}</td>
+        <td>${a.horario}</td>
+        <td>${a.disciplina}</td>
+        <td>${a.professor}</td>
+        <td>${a.local}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+function abrirFormCronograma() {
+  document.getElementById("formCrono").style.display = "block";
+}
+
+async function salvarCronograma() {
+  const disciplina = document.getElementById("disciplina").value;
+  const data = document.getElementById("dataAula").value;
+  const horario = document.getElementById("horario").value;
+  const professor = document.getElementById("professor").value;
+  const local = document.getElementById("local").value;
+
+  await client.from("cronograma").insert([{ disciplina, data, horario, professor, local }]);
+
+  cronograma();
 }
 </script>
 
