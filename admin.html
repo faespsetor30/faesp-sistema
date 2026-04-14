@@ -191,7 +191,10 @@ async function alunos() {
           <td>${u.status}</td>
           <td>
             ${u.status !== "ativo"
-              ? `<button class="btn" onclick="aprovarAluno('${u.id}')">Aprovar</button>`
+              ? `
+                <button class="btn" onclick="aprovarAluno('${u.id}')">✔️ Aprovar</button>
+                <button class="btn" style="background:#dc2626; margin-left:5px;" onclick="recusarAluno('${u.id}')">❌ Recusar</button>
+              `
               : "✔️"}
           </td>
         </tr>
@@ -216,6 +219,19 @@ async function aprovarAluno(id) {
     .eq("id", id);
 
   alert("Aluno aprovado!");
+  alunos();
+}
+
+// 🔥 RECUSAR ALUNO
+async function recusarAluno(id) {
+  if (!confirm("Tem certeza que deseja recusar este aluno?")) return;
+
+  await client
+    .from("usuarios")
+    .update({ status: "recusado" })
+    .eq("id", id);
+
+  alert("Aluno recusado!");
   alunos();
 }
 
