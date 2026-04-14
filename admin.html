@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>FAESP - Admin</title>
+  <title>FAESP - Coordenação</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -53,7 +53,7 @@
     th, td {
       padding:10px;
       border-bottom:1px solid #ddd;
-      text-align:center; /* 🔥 CENTRALIZA */
+      text-align:center;
     }
 
     th { background:#f8fafc; }
@@ -63,18 +63,9 @@
       padding:6px 10px; border-radius:6px; cursor:pointer;
     }
 
-    .btn-danger { background:#dc2626; margin-left:5px; }
-
     input, select {
       padding:8px; border-radius:6px; border:1px solid #ccc;
       margin-top:5px;
-    }
-
-    .card {
-      border:1px solid #ddd;
-      border-radius:10px;
-      padding:15px;
-      margin-bottom:15px;
     }
   </style>
 </head>
@@ -86,7 +77,7 @@
   <div class="sidebar">
     <div style="width:100%; text-align:center;">
       <img src="logo faesp.png" class="logo">
-      <h3>👑 ADMIN</h3>
+      <h3>👑 COORDENAÇÃO</h3>
 
       <div class="menu">
         <button onclick="alunos()">📋 Cadastros</button>
@@ -100,12 +91,12 @@
 
   <div class="content">
     <div class="header">
-      <h2>FAESP - SETOR 30 (ADMIN)</h2>
-      <p>Painel administrativo</p>
+      <h2>FAESP - SETOR 30 (COORDENAÇÃO)</h2>
+      <p>Painel da coordenação</p>
     </div>
 
     <div class="box" id="conteudo">
-      Bem-vinda ao painel ADM 👑
+      Bem-vinda ao painel da coordenação 👑
     </div>
   </div>
 
@@ -173,6 +164,10 @@ async function definirTipo(id, tipo) {
 
   alunos();
 }
+
+// OUTROS
+function disciplinas(){document.getElementById("conteudo").innerHTML="📚 Disciplinas";}
+function notas(){document.getElementById("conteudo").innerHTML="📝 Notas";}
 </script>
 
 </body>
