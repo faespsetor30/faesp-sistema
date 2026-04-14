@@ -1,6 +1,6 @@
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "SEU_TOKEN"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
 // 🚀 LOAD
@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("nomeAluno").innerText = usuario.nome;
   document.getElementById("boasVindas").innerText = "Bem-vinda, " + usuario.nome;
 
-  // carregar padrão
   disciplinas();
 });
 
@@ -29,6 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
 function sair() {
   localStorage.removeItem("usuario");
   window.location.href = "index.html";
+}
+
+// 🎨 STATUS COLORIDO
+function getStatusClass(status) {
+  if (status === "pago") return "pago";
+  if (status === "aguardando") return "pendente";
+  return "pendente";
 }
 
 // 📊 DISCIPLINAS
@@ -67,7 +73,7 @@ async function disciplinas() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// 💰 FINANCEIRO (SÓ DO ALUNO)
+// 💰 FINANCEIRO COM UPLOAD
 async function financeiro() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
@@ -91,12 +97,24 @@ async function financeiro() {
       <tr>
         <td>${f.disciplina}</td>
         <td>R$ ${f.valor}</td>
-        <td>${f.status}</td>
+
+        <td class="${getStatusClass(f.status)}">
+          ${f.status}
+        </td>
+
         <td>${f.data_pagamento || "-"}</td>
+
         <td>
-          ${f.status === "pago"
-            ? `<a href="${f.comprovante}" target="_blank">📄 Ver PDF</a>`
-            : "Pendente"}
+          ${
+            f.status === "pago"
+              ? `<a href="${f.comprovante}" target="_blank">📄 Ver PDF</a>`
+              : f.status === "aguardando"
+              ? "⏳ Em análise"
+              : `
+                <input type="file" accept="application/pdf"
+                  onchange="uploadComprovante(event, '${f.id}')">
+              `
+          }
         </td>
       </tr>
     `;
@@ -104,6 +122,47 @@ async function financeiro() {
 
   html += "</table>";
   document.getElementById("conteudo").innerHTML = html;
+}
+
+// 📤 UPLOAD DE COMPROVANTE
+async function uploadComprovante(event, idFinanceiro) {
+  const file = event.target.files[0];
+
+  if (!file) return;
+
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  const fileName = `${usuario.email}_${Date.now()}.pdf`;
+
+  // Upload
+  const { error } = await client.storage
+    .from("comprovantes")
+    .upload(fileName, file);
+
+  if (error) {
+    alert("Erro ao enviar 😢");
+    return;
+  }
+
+  // URL pública
+  const { data } = client.storage
+    .from("comprovantes")
+    .getPublicUrl(fileName);
+
+  const url = data.publicUrl;
+
+  // Atualiza banco
+  await client
+    .from("financeiro")
+    .update({
+      comprovante: url,
+      status: "aguardando"
+    })
+    .eq("id", idFinanceiro);
+
+  alert("Comprovante enviado! ⏳");
+
+  financeiro();
 }
 
 // 📅 CRONOGRAMA
