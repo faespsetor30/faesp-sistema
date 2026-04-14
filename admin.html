@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FAESP - Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body { margin:0; font-family:'Segoe UI'; display:flex; height:100vh; background:#eef2f7;}
+    .sidebar { width:240px; background:#1e293b; color:white; padding:20px;}
+    .sidebar button { width:100%; padding:12px; margin-bottom:10px; border:none; background:#334155; color:white; border-radius:8px; cursor:pointer;}
+    .content { flex:1; padding:20px;}
+    .box { background:white; padding:20px; border-radius:10px;}
+    input, textarea { width:100%; padding:8px; margin:5px 0;}
+    .btn { background:#2c5364; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;}
+    table { width:100%; margin-top:10px; border-collapse:collapse;}
+    td, th { padding:10px; border-bottom:1px solid #ddd;}
+  </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h3>👑 ADMIN</h3>
+  <button onclick="alunos()">👨‍🎓 Alunos</button>
+  <button onclick="disciplinas()">📚 Disciplinas</button>
+  <button onclick="notas()">📝 Notas</button>
+  <button onclick="professores()">👨‍🏫 Professores</button>
+  <button onclick="financeiro()">💰 Financeiro</button>
+  <button onclick="avisos()">📢 Avisos</button>
+  <button onclick="cronograma()">📅 Cronograma</button>
+</div>
+
+<div class="content">
+  <div class="box" id="conteudo">Painel Admin 👑</div>
+</div>
+
+<script>
+const client = supabase.createClient("https://nzygdvixqmiltelgzzrn.supabase.co","SUA_CHAVE_AQUI");
+
+// 📚 DISCIPLINAS
+async function disciplinas() {
+  const { data } = await client.from("disciplinas").select("*");
+
+  let html = "<h3>Disciplinas</h3>";
+  html += `<input id="nomeDisciplina" placeholder="Nome"><button class="btn" onclick="addDisciplina()">Adicionar</button>`;
+
+  data.forEach(d => {
+    html += `<p>📚 ${d.nome}</p>`;
+  });
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+async function addDisciplina() {
+  const nome = document.getElementById("nomeDisciplina").value;
+  await client.from("disciplinas").insert([{ nome }]);
+  disciplinas();
+}
+
+// 📝 NOTAS + FALTAS
+async function notas() {
+  let html = `
+    <h3>Notas e Faltas</h3>
+    <input id="email" placeholder="Email do aluno">
+    <input id="disciplina" placeholder="Disciplina">
+    <input id="nota" placeholder="Nota">
+    <input id="faltas" placeholder="Faltas">
+    <button class="btn" onclick="salvarNota()">Salvar</button>
+  `;
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+async function salvarNota() {
+  const email = document.getElementById("email").value;
+  const disciplina = document.getElementById("disciplina").value;
+  const nota = document.getElementById("nota").value;
+  const faltas = document.getElementById("faltas").value;
+
+  await client.from("notas").insert([{ email, disciplina, nota, faltas }]);
+  alert("Salvo!");
+}
+
+// 👨‍🏫 PROFESSORES
+async function professores() {
+  const { data } = await client.from("professores").select("*");
+
+  let html = "<h3>Professores</h3>";
+  html += `
+    <input id="nomeProf" placeholder="Nome">
+    <input id="disciplinaProf" placeholder="Disciplina">
+    <button class="btn" onclick="addProfessor()">Salvar</button>
+  `;
+
+  data.forEach(p => {
+    html += `<p>👨‍🏫 ${p.nome} - ${p.disciplina}</p>`;
+  });
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+async function addProfessor() {
+  const nome = document.getElementById("nomeProf").value;
+  const disciplina = document.getElementById("disciplinaProf").value;
+
+  await client.from("professores").insert([{ nome, disciplina }]);
+  professores();
+}
+
+// 🔥 (mantém seus outros módulos)
+async function alunos(){document.getElementById("conteudo").innerHTML="Alunos já configurado";}
+async function financeiro(){document.getElementById("conteudo").innerHTML="Financeiro já configurado";}
+async function avisos(){document.getElementById("conteudo").innerHTML="Avisos já configurado";}
+async function cronograma(){document.getElementById("conteudo").innerHTML="Cronograma já configurado";}
+</script>
+
+</body>
+</html>
