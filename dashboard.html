@@ -1,86 +1,119 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Dashboard FAESP</title>
-
-  <!-- ✅ SUPABASE -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <title>FAESP - Aluno</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body { font-family: Arial; margin:0; background:#f1f5f9; }
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; background: #eef2f7; flex-direction: column; }
+    .main { display: flex; flex: 1; }
 
     .sidebar {
-      width:250px; height:100vh; position:fixed;
-      background:#fff; padding:20px;
-      box-shadow:2px 0 10px rgba(0,0,0,0.05);
+      width: 240px; background: white; padding: 20px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      border-right: 1px solid #ddd; align-items: center;
     }
 
-    .sidebar button {
-      width:100%; padding:10px; margin-bottom:10px;
-      border:none; border-radius:8px;
-      background:#f1f5f9; cursor:pointer;
+    .logo { width: 120px; margin-bottom: 10px; }
+
+    .menu { width: 100%; }
+
+    .menu button {
+      width: 100%; padding: 12px; margin-bottom: 10px;
+      border: none; background: #f1f5f9; border-radius: 10px;
+      cursor: pointer; text-align: left; font-weight: 500;
     }
 
-    .sidebar button:hover {
-      background:#2c5364; color:#fff;
+    .menu button:hover { background: #e2e8f0; }
+
+    .logout {
+      background: black; color: white; font-weight: bold;
+      padding: 12px; border-radius: 10px; border: none;
+      width: 100%; cursor: pointer;
     }
+
+    .content { flex: 1; padding: 25px; }
 
     .header {
-      margin-left:270px;
-      padding:20px;
-      background:#fff;
-      display:flex;
-      justify-content:space-between;
+      background: white; padding: 20px; border-radius: 12px;
+      margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
-    .conteudo {
-      margin-left:270px;
-      padding:20px;
+    .box {
+      background: white; padding: 20px; border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
-    table { width:100%; border-collapse:collapse; }
-    th, td { padding:10px; border-bottom:1px solid #eee; }
+    .footer {
+      background: #1e293b; color: white;
+      text-align: center; padding: 10px; font-size: 13px;
+    }
 
-    .pago { color:green; font-weight:bold; }
-    .pendente { color:red; font-weight:bold; }
+    table { width:100%; border-collapse: collapse; margin-top:10px; }
+
+    th, td {
+      padding:10px;
+      border-bottom:1px solid #ddd;
+      text-align:center;
+    }
+
+    th { background:#f8fafc; }
+
+    .pago { color: green; font-weight: bold; }
+    .pendente { color: red; font-weight: bold; }
+
+    input { margin-top:5px; }
   </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h3>🎓 FAESP</h3>
+<div class="main">
 
-  <button onclick="disciplinas()">📊 Disciplinas</button>
-  <button onclick="financeiro()">💰 Financeiro</button>
-  <button onclick="cronograma()">📅 Cronograma</button>
-  <button onclick="avisos()">📢 Avisos</button>
-  <button onclick="sair()">🚪 Sair</button>
+  <div class="sidebar">
+    <div style="width:100%; text-align:center;">
+      <img src="logo faesp.png" class="logo">
+      <h3>🎓 ALUNO</h3>
+
+      <div class="menu">
+        <button onclick="disciplinas()">📊 Disciplinas</button>
+        <button onclick="financeiro()">💰 Financeiro</button>
+        <button onclick="cronograma()">📅 Cronograma</button>
+        <button onclick="avisos()">📢 Avisos</button>
+      </div>
+    </div>
+
+    <button class="logout" onclick="sair()">🚪 Sair</button>
+  </div>
+
+  <div class="content">
+    <div class="header">
+      <h2 id="boasVindas">Bem-vinda</h2>
+      <p>Painel do aluno</p>
+    </div>
+
+    <div class="box" id="conteudo">
+      Carregando...
+    </div>
+  </div>
+
 </div>
 
-<!-- HEADER -->
-<div class="header">
-  <div id="boasVindas"></div>
+<div class="footer">
+  AD. Belém - Rua Rio Tiete, 126 - Campo Limpo Paulista - SP
 </div>
 
-<!-- CONTEÚDO -->
-<div class="conteudo" id="conteudo"></div>
-
-<!-- 🔥 SCRIPT CORRETO -->
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
-// 🚀 LOAD
+// LOAD
 document.addEventListener("DOMContentLoaded", () => {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
   if (!usuario) {
-    alert("⚠️ Faça login primeiro!");
     window.location.href = "index.html";
     return;
   }
@@ -118,7 +151,7 @@ async function disciplinas() {
     .eq("email", usuario.email);
 
   let html = `<h3>📊 Disciplinas</h3>`;
-  html += `<p><strong>Curso:</strong> ${usuario.curso || "Não informado"}</p>`;
+  html += `<p><strong>Curso:</strong> ${usuario.curso || "-"}</p>`;
   html += `<table>
     <tr>
       <th>Disciplina</th>
@@ -153,8 +186,7 @@ async function financeiro() {
     .select("*")
     .eq("email", usuario.email);
 
-  let html = "<h3>💰 Financeiro</h3>";
-  html += `<table>
+  let html = `<h3>💰 Financeiro</h3><table>
     <tr>
       <th>Disciplina</th>
       <th>Valor</th>
@@ -173,11 +205,11 @@ async function financeiro() {
         <td>
           ${
             f.status === "pago"
-              ? `<a href="${f.comprovante}" target="_blank">📄 Ver PDF</a>`
+              ? `<a href="${f.comprovante}" target="_blank">📄 PDF</a>`
               : f.status === "aguardando"
               ? "⏳ Em análise"
               : `<input type="file" accept="application/pdf"
-                  onchange="uploadComprovante(event, '${f.id}')">`
+                 onchange="uploadComprovante(event,'${f.id}')">`
           }
         </td>
       </tr>
@@ -196,14 +228,7 @@ async function uploadComprovante(event, id) {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
   const fileName = `${usuario.email}_${Date.now()}.pdf`;
 
-  const { error } = await client.storage
-    .from("comprovantes")
-    .upload(fileName, file);
-
-  if (error) {
-    alert("Erro ao enviar 😢");
-    return;
-  }
+  await client.storage.from("comprovantes").upload(fileName, file);
 
   const { data } = client.storage
     .from("comprovantes")
@@ -214,7 +239,7 @@ async function uploadComprovante(event, id) {
     status: "aguardando"
   }).eq("id", id);
 
-  alert("Comprovante enviado! ⏳");
+  alert("Comprovante enviado!");
   financeiro();
 }
 
