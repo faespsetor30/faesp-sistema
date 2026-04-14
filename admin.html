@@ -27,10 +27,7 @@
       align-items: center;
     }
 
-    .logo {
-      width: 120px;
-      margin-bottom: 10px;
-    }
+    .logo { width: 120px; margin-bottom: 10px; }
 
     .menu { width: 100%; }
 
@@ -46,9 +43,7 @@
       font-weight: 500;
     }
 
-    .menu button:hover {
-      background: #e2e8f0;
-    }
+    .menu button:hover { background: #e2e8f0; }
 
     .logout {
       background: black;
@@ -61,10 +56,7 @@
       cursor: pointer;
     }
 
-    .content {
-      flex: 1;
-      padding: 25px;
-    }
+    .content { flex: 1; padding: 25px; }
 
     .header {
       background: white;
@@ -114,6 +106,24 @@
     .btn-danger {
       background:#dc2626;
       margin-left:5px;
+    }
+
+    .top-bar {
+      display:flex;
+      gap:10px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+    }
+
+    input, select {
+      padding:8px;
+      border-radius:6px;
+      border:1px solid #ccc;
+    }
+
+    .contador {
+      font-weight:bold;
+      margin-bottom:10px;
     }
   </style>
 </head>
@@ -172,71 +182,103 @@ function sair() {
   window.location.href = "index.html";
 }
 
-// 🔥 FUNÇÃO REAL DE ALUNOS
+// 🔥 ALUNOS COMPLETO
 async function alunos() {
-  try {
-    const { data, error } = await client
-      .from("usuarios")
-      .select("*");
+  const { data } = await client.from("usuarios").select("*");
 
-    if (error) {
-      console.error(error);
-      document.getElementById("conteudo").innerHTML = "Erro ao carregar alunos";
-      return;
-    }
+  let pendentes = data.filter(u => u.status === "pendente").length;
+  let ativos = data.filter(u => u.status === "ativo").length;
 
-    let html = "<h3>👨‍🎓 Alunos</h3>";
-    html += "<table><tr><th>Nome</th><th>Email</th><th>Status</th><th>Ação</th></tr>";
+  let html = `
+    <h3>👨‍🎓 Alunos</h3>
 
-    data.forEach(u => {
-      html += `
-        <tr>
-          <td>${u.nome}</td>
-          <td>${u.email}</td>
-          <td>${u.status}</td>
-          <td>
-            ${u.status === "pendente"
-              ? `
-                <button class="btn" onclick="aprovarAluno('${u.id}')">✔️ Aprovar</button>
-                <button class="btn btn-danger" onclick="recusarAluno('${u.id}')">❌ Recusar</button>
-              `
-              : u.status === "ativo"
-                ? "✔️"
-                : "❌"}
-          </td>
-        </tr>
-      `;
-    });
+    <div class="contador">
+      📊 Ativos: ${ativos} | ⏳ Pendentes: ${pendentes}
+    </div>
 
-    html += "</table>";
+    <div class="top-bar">
+      <input id="buscaAluno" placeholder="🔎 Buscar..." onkeyup="filtrar()">
+      <select id="filtroStatus" onchange="filtrar()">
+        <option value="">Todos</option>
+        <option value="ativo">Ativo</option>
+        <option value="pendente">Pendente</option>
+        <option value="recusado">Recusado</option>
+      </select>
+      <button class="btn" onclick="exportarExcel()">📥 Exportar</button>
+    </div>
 
-    document.getElementById("conteudo").innerHTML = html;
+    <table id="tabela">
+      <tr><th>Nome</th><th>Email</th><th>Status</th><th>Ação</th></tr>
+  `;
 
-  } catch (e) {
-    console.error(e);
-    document.getElementById("conteudo").innerHTML = "Erro ao carregar alunos";
+  data.forEach(u => {
+    html += `
+      <tr>
+        <td>${u.nome}</td>
+        <td>${u.email}</td>
+        <td>${u.status}</td>
+        <td>
+          ${u.status === "pendente"
+            ? `
+              <button class="btn" onclick="aprovarAluno('${u.id}','${u.nome}')">✔️</button>
+              <button class="btn btn-danger" onclick="recusarAluno('${u.id}')">❌</button>
+            `
+            : u.status === "ativo" ? "✔️" : "❌"}
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+
+  // 🔔 NOTIFICAÇÃO
+  if (pendentes > 0) {
+    alert("⚠️ Existem " + pendentes + " alunos pendentes!");
   }
 }
 
-// 🔥 APROVAR
-async function aprovarAluno(id) {
-  await client
-    .from("usuarios")
-    .update({ status: "ativo" })
-    .eq("id", id);
+// 🔎 FILTRO
+function filtrar() {
+  const busca = document.getElementById("buscaAluno").value.toLowerCase();
+  const status = document.getElementById("filtroStatus").value;
 
-  alert("Aluno aprovado!");
+  document.querySelectorAll("#tabela tr").forEach((tr, i) => {
+    if (i === 0) return;
+
+    const nome = tr.children[0].innerText.toLowerCase();
+    const email = tr.children[1].innerText.toLowerCase();
+    const st = tr.children[2].innerText;
+
+    const ok = (nome.includes(busca) || email.includes(busca)) &&
+               (!status || st === status);
+
+    tr.style.display = ok ? "" : "none";
+  });
+}
+
+// 📥 EXPORTAR
+function exportarExcel() {
+  let tabela = document.getElementById("tabela").outerHTML;
+  let blob = new Blob([tabela], { type: "application/vnd.ms-excel" });
+  let link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "alunos.xls";
+  link.click();
+}
+
+// 🔥 APROVAR
+async function aprovarAluno(id, nome) {
+  await client.from("usuarios").update({ status: "ativo" }).eq("id", id);
+  alert("✅ " + nome + " aprovado!");
   alunos();
 }
 
 // 🔥 RECUSAR
 async function recusarAluno(id) {
-  await client
-    .from("usuarios")
-    .update({ status: "recusado" })
-    .eq("id", id);
-
-  alert("Aluno recusado!");
+  await client.from("usuarios").update({ status: "recusado" }).eq("id", id);
+  alert("❌ Aluno recusado!");
   alunos();
 }
 
