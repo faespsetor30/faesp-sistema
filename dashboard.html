@@ -188,25 +188,60 @@ function concluidas() {
   document.getElementById("conteudo").innerHTML = "<h3>📚 Concluídas</h3><p>Em desenvolvimento</p>";
 }
 
-function financeiro() {
-  document.getElementById("conteudo").innerHTML = "<h3>💰 Financeiro</h3><p>Em desenvolvimento</p>";
+// 💰 FINANCEIRO COM COBRANÇA
+async function financeiro() {
+  const { data } = await client.from("financeiro").select("*");
+
+  let html = "<h3>💰 Financeiro</h3>";
+  html += "<table>";
+  html += "<tr><th>Aluno</th><th>Disciplina</th><th>Valor</th><th>Status</th><th>Ação</th></tr>";
+
+  for (const f of data) {
+    const { data: u } = await client.from("usuarios").select("*").eq("email", f.email).single();
+
+    html += `
+      <tr>
+        <td>${u?.nome || "-"}</td>
+        <td>${f.disciplina}</td>
+        <td>R$ ${f.valor}</td>
+        <td>${f.status}</td>
+        <td>
+          ${f.status !== "pago"
+            ? `<button class="btn" onclick="cobrarAluno('${u?.nome}','${u?.celular}','${f.disciplina}','${f.valor}')">📲 Cobrar</button>`
+            : "✔️ Pago"}
+        </td>
+      </tr>
+    `;
+  }
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+// 📲 COBRANÇA
+async function cobrarAluno(nome, celular, disciplina, valor) {
+  await enviarWhatsApp(
+    celular,
+    `Olá ${nome} 💰
+
+Identificamos uma mensalidade pendente:
+
+📚 Disciplina: ${disciplina}
+💵 Valor: R$ ${valor}
+
+Por favor, regularize 🙏
+
+FAESP`
+  );
+
+  alert("Cobrança enviada!");
 }
 
 async function avisos() {
   const { data } = await client.from("avisos").select("*").order("data", { ascending: false });
 
   let html = "<h3>📢 Avisos</h3>";
-
-  if (isAdmin) {
-    html += `
-      <button class="btn" onclick="abrirNovoAviso()">➕ Novo Aviso</button>
-      <div id="formAviso" style="display:none;">
-        <input id="tituloAviso" placeholder="Título">
-        <textarea id="msgAviso" placeholder="Mensagem"></textarea>
-        <button class="btn" onclick="salvarAviso()">Salvar</button>
-      </div>
-    `;
-  }
 
   data.forEach(a => {
     html += `
@@ -221,32 +256,16 @@ async function avisos() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-function abrirNovoAviso() {
-  document.getElementById("formAviso").style.display = "block";
-}
-
-async function salvarAviso() {
-  const titulo = document.getElementById("tituloAviso").value;
-  const mensagem = document.getElementById("msgAviso").value;
-
-  await client.from("avisos").insert([{ titulo, mensagem }]);
-  avisos();
-}
-
 async function cronograma() {
-  const { data } = await client.from("cronograma").select("*").order("data");
+  const { data } = await client.from("cronograma").select("*");
 
-  let html = "<h3>📅 Cronograma</h3>";
-  html += "<table><tr><th>Data</th><th>Horário</th><th>Disciplina</th><th>Professor</th><th>Local</th></tr>";
+  let html = "<h3>📅 Cronograma</h3><table>";
 
   data.forEach(a => {
     html += `
       <tr>
         <td>${a.data}</td>
-        <td>${a.horario}</td>
         <td>${a.disciplina}</td>
-        <td>${a.professor}</td>
-        <td>${a.local}</td>
       </tr>
     `;
   });
@@ -265,12 +284,11 @@ async function enviarWhatsApp(numero, mensagem) {
   });
 }
 
-// 👨‍🎓 LISTA
+// 👨‍🎓 ALUNOS
 async function alunos() {
   const { data } = await client.from("usuarios").select("*");
 
-  let html = "<h3>👨‍🎓 Alunos</h3>";
-  html += "<table><tr><th>Nome</th><th>Status</th><th>Ação</th></tr>";
+  let html = "<h3>👨‍🎓 Alunos</h3><table>";
 
   data.forEach(u => {
     html += `
@@ -291,13 +309,12 @@ async function alunos() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// 🚀 APROVAR + WHATS
 async function aprovarAluno(id, nome, celular) {
   await client.from("usuarios").update({ status: "ativo" }).eq("id", id);
 
   await enviarWhatsApp(celular, `Olá ${nome} 🙌 Seu cadastro foi aprovado na FAESP!`);
 
-  alert("Aluno aprovado e notificado!");
+  alert("Aluno aprovado!");
   alunos();
 }
 </script>
