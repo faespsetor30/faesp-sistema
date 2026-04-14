@@ -133,6 +133,7 @@
         <button onclick="financeiro()">💰 Financeiro</button>
         <button onclick="avisos()">📢 Avisos</button>
         <button onclick="cronograma()">📅 Cronograma</button>
+        <button onclick="alunos()">👨‍🎓 Alunos</button>
       </div>
     </div>
 
@@ -192,41 +193,32 @@ function financeiro() {
 }
 
 async function avisos() {
-  try {
-    const { data } = await client.from("avisos").select("*").order("data", { ascending: false });
+  const { data } = await client.from("avisos").select("*").order("data", { ascending: false });
 
-    let html = "<h3>📢 Avisos</h3>";
+  let html = "<h3>📢 Avisos</h3>";
 
-    if (isAdmin) {
-      html += `
-        <button class="btn" onclick="abrirNovoAviso()">➕ Novo Aviso</button>
-        <div id="formAviso" style="display:none;">
-          <input id="tituloAviso" placeholder="Título">
-          <textarea id="msgAviso" placeholder="Mensagem"></textarea>
-          <button class="btn" onclick="salvarAviso()">Salvar</button>
-        </div>
-      `;
-    }
-
-    if (!data || data.length === 0) {
-      html += "<p>Sem avisos</p>";
-    } else {
-      data.forEach(a => {
-        html += `
-          <div style="margin-top:10px; padding:10px; border-left:5px solid #2c5364; background:#f8fafc;">
-            <strong>${a.titulo}</strong><br>
-            <small>${a.data}</small>
-            <p>${a.mensagem}</p>
-          </div>
-        `;
-      });
-    }
-
-    document.getElementById("conteudo").innerHTML = html;
-
-  } catch (e) {
-    document.getElementById("conteudo").innerHTML = "Erro ao carregar avisos";
+  if (isAdmin) {
+    html += `
+      <button class="btn" onclick="abrirNovoAviso()">➕ Novo Aviso</button>
+      <div id="formAviso" style="display:none;">
+        <input id="tituloAviso" placeholder="Título">
+        <textarea id="msgAviso" placeholder="Mensagem"></textarea>
+        <button class="btn" onclick="salvarAviso()">Salvar</button>
+      </div>
+    `;
   }
+
+  data.forEach(a => {
+    html += `
+      <div style="margin-top:10px; padding:10px; border-left:5px solid #2c5364; background:#f8fafc;">
+        <strong>${a.titulo}</strong><br>
+        <small>${a.data}</small>
+        <p>${a.mensagem}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("conteudo").innerHTML = html;
 }
 
 function abrirNovoAviso() {
@@ -242,58 +234,71 @@ async function salvarAviso() {
 }
 
 async function cronograma() {
-  try {
-    const { data } = await client
-      .from("cronograma")
-      .select("*")
-      .order("data");
+  const { data } = await client.from("cronograma").select("*").order("data");
 
-    let html = "<h3>📅 Cronograma</h3>";
+  let html = "<h3>📅 Cronograma</h3>";
+  html += "<table><tr><th>Data</th><th>Horário</th><th>Disciplina</th><th>Professor</th><th>Local</th></tr>";
 
-    if (!data || data.length === 0) {
-      html += "<p>Nenhuma aula cadastrada</p>";
-    } else {
-      html += "<table>";
-      html += "<tr><th>Data</th><th>Horário</th><th>Disciplina</th><th>Professor</th><th>Local</th></tr>";
+  data.forEach(a => {
+    html += `
+      <tr>
+        <td>${a.data}</td>
+        <td>${a.horario}</td>
+        <td>${a.disciplina}</td>
+        <td>${a.professor}</td>
+        <td>${a.local}</td>
+      </tr>
+    `;
+  });
 
-      data.forEach(a => {
-        html += `
-          <tr>
-            <td>${a.data}</td>
-            <td>${a.horario}</td>
-            <td>${a.disciplina}</td>
-            <td>${a.professor}</td>
-            <td>${a.local}</td>
-          </tr>
-        `;
-      });
+  html += "</table>";
 
-      html += "</table>";
-    }
-
-    document.getElementById("conteudo").innerHTML = html;
-
-  } catch (e) {
-    document.getElementById("conteudo").innerHTML = "Erro ao carregar cronograma";
-  }
+  document.getElementById("conteudo").innerHTML = html;
 }
 
-/* 🔥 WHATSAPP INTEGRADO */
+// 🔥 WHATSAPP
 async function enviarWhatsApp(numero, mensagem) {
-  try {
-    await fetch("https://api.z-api.io/instances/3F19C61174D6225336C73A7D2450AC8D/token/DE43E25197F9AEE0CB640CA5/send-text", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        phone: numero,
-        message: mensagem
-      })
-    });
-  } catch (e) {
-    console.log("Erro WhatsApp:", e);
-  }
+  await fetch("https://api.z-api.io/instances/3F19C61174D6225336C73A7D2450AC8D/token/DE43E25197F9AEE0CB640CA5/send-text", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ phone: numero, message: mensagem })
+  });
+}
+
+// 👨‍🎓 LISTA
+async function alunos() {
+  const { data } = await client.from("usuarios").select("*");
+
+  let html = "<h3>👨‍🎓 Alunos</h3>";
+  html += "<table><tr><th>Nome</th><th>Status</th><th>Ação</th></tr>";
+
+  data.forEach(u => {
+    html += `
+      <tr>
+        <td>${u.nome}</td>
+        <td>${u.status}</td>
+        <td>
+          ${u.status !== "ativo"
+            ? `<button class="btn" onclick="aprovarAluno('${u.id}','${u.nome}','${u.celular}')">Aprovar</button>`
+            : "✔️"}
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+// 🚀 APROVAR + WHATS
+async function aprovarAluno(id, nome, celular) {
+  await client.from("usuarios").update({ status: "ativo" }).eq("id", id);
+
+  await enviarWhatsApp(celular, `Olá ${nome} 🙌 Seu cadastro foi aprovado na FAESP!`);
+
+  alert("Aluno aprovado e notificado!");
+  alunos();
 }
 </script>
 
