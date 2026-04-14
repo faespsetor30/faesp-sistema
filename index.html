@@ -160,8 +160,15 @@ async function login() {
     return;
   }
 
+  // 🔥 SALVA USUÁRIO
   localStorage.setItem("usuario", JSON.stringify(usuario));
-  window.location.href = "dashboard.html";
+
+  // 🔥 REDIRECIONAMENTO INTELIGENTE
+  if (usuario.tipo === "admin") {
+    window.location.href = "admin.html";
+  } else {
+    window.location.href = "dashboard.html";
+  }
 }
 
 // MODAL
