@@ -1,3 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard FAESP</title>
+
+  <!-- ✅ SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+    body { font-family: Arial; margin:0; background:#f1f5f9; }
+
+    .sidebar {
+      width:250px; height:100vh; position:fixed;
+      background:#fff; padding:20px;
+      box-shadow:2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    .sidebar button {
+      width:100%; padding:10px; margin-bottom:10px;
+      border:none; border-radius:8px;
+      background:#f1f5f9; cursor:pointer;
+    }
+
+    .sidebar button:hover {
+      background:#2c5364; color:#fff;
+    }
+
+    .header {
+      margin-left:270px;
+      padding:20px;
+      background:#fff;
+      display:flex;
+      justify-content:space-between;
+    }
+
+    .conteudo {
+      margin-left:270px;
+      padding:20px;
+    }
+
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px; border-bottom:1px solid #eee; }
+
+    .pago { color:green; font-weight:bold; }
+    .pendente { color:red; font-weight:bold; }
+  </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h3>🎓 FAESP</h3>
+
+  <button onclick="disciplinas()">📊 Disciplinas</button>
+  <button onclick="financeiro()">💰 Financeiro</button>
+  <button onclick="cronograma()">📅 Cronograma</button>
+  <button onclick="avisos()">📢 Avisos</button>
+  <button onclick="sair()">🚪 Sair</button>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div id="boasVindas"></div>
+</div>
+
+<!-- CONTEÚDO -->
+<div class="conteudo" id="conteudo"></div>
+
+<!-- 🔥 SCRIPT CORRETO -->
+<script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
@@ -18,8 +90,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  document.getElementById("nomeAluno").innerText = usuario.nome;
-  document.getElementById("boasVindas").innerText = "Bem-vinda, " + usuario.nome;
+  document.getElementById("boasVindas").innerText =
+    "Bem-vinda, " + usuario.nome;
 
   disciplinas();
 });
@@ -30,14 +102,13 @@ function sair() {
   window.location.href = "index.html";
 }
 
-// 🎨 STATUS COLORIDO
+// STATUS
 function getStatusClass(status) {
   if (status === "pago") return "pago";
-  if (status === "aguardando") return "pendente";
   return "pendente";
 }
 
-// 📊 DISCIPLINAS
+// DISCIPLINAS
 async function disciplinas() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
@@ -73,7 +144,7 @@ async function disciplinas() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// 💰 FINANCEIRO COM UPLOAD
+// FINANCEIRO + UPLOAD
 async function financeiro() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
@@ -97,23 +168,16 @@ async function financeiro() {
       <tr>
         <td>${f.disciplina}</td>
         <td>R$ ${f.valor}</td>
-
-        <td class="${getStatusClass(f.status)}">
-          ${f.status}
-        </td>
-
+        <td class="${getStatusClass(f.status)}">${f.status}</td>
         <td>${f.data_pagamento || "-"}</td>
-
         <td>
           ${
             f.status === "pago"
               ? `<a href="${f.comprovante}" target="_blank">📄 Ver PDF</a>`
               : f.status === "aguardando"
               ? "⏳ Em análise"
-              : `
-                <input type="file" accept="application/pdf"
-                  onchange="uploadComprovante(event, '${f.id}')">
-              `
+              : `<input type="file" accept="application/pdf"
+                  onchange="uploadComprovante(event, '${f.id}')">`
           }
         </td>
       </tr>
@@ -124,17 +188,14 @@ async function financeiro() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// 📤 UPLOAD DE COMPROVANTE
-async function uploadComprovante(event, idFinanceiro) {
+// UPLOAD
+async function uploadComprovante(event, id) {
   const file = event.target.files[0];
-
   if (!file) return;
 
   const usuario = JSON.parse(localStorage.getItem("usuario"));
-
   const fileName = `${usuario.email}_${Date.now()}.pdf`;
 
-  // Upload
   const { error } = await client.storage
     .from("comprovantes")
     .upload(fileName, file);
@@ -144,28 +205,20 @@ async function uploadComprovante(event, idFinanceiro) {
     return;
   }
 
-  // URL pública
   const { data } = client.storage
     .from("comprovantes")
     .getPublicUrl(fileName);
 
-  const url = data.publicUrl;
-
-  // Atualiza banco
-  await client
-    .from("financeiro")
-    .update({
-      comprovante: url,
-      status: "aguardando"
-    })
-    .eq("id", idFinanceiro);
+  await client.from("financeiro").update({
+    comprovante: data.publicUrl,
+    status: "aguardando"
+  }).eq("id", id);
 
   alert("Comprovante enviado! ⏳");
-
   financeiro();
 }
 
-// 📅 CRONOGRAMA
+// CRONOGRAMA
 async function cronograma() {
   const { data } = await client.from("cronograma").select("*");
 
@@ -185,7 +238,7 @@ async function cronograma() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// 📢 AVISOS
+// AVISOS
 async function avisos() {
   const { data } = await client
     .from("avisos")
@@ -196,7 +249,7 @@ async function avisos() {
 
   data.forEach(a => {
     html += `
-      <div style="margin-top:10px; padding:10px; border-left:5px solid #2c5364; background:#f8fafc;">
+      <div style="margin-top:10px; padding:10px; border-left:5px solid #2c5364;">
         <strong>${a.titulo}</strong><br>
         <small>${a.data}</small>
         <p>${a.mensagem}</p>
@@ -206,3 +259,7 @@ async function avisos() {
 
   document.getElementById("conteudo").innerHTML = html;
 }
+</script>
+
+</body>
+</html>
