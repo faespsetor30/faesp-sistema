@@ -1,179 +1,34 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>FAESP - Portal</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      height: 100vh;
-      background: #eef2f7;
-      flex-direction: column;
-    }
-
-    .main { display: flex; flex: 1; }
-
-    .sidebar {
-      width: 240px;
-      background: white;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border-right: 1px solid #ddd;
-      align-items: center;
-    }
-
-    .logo {
-      width: 120px;
-      margin-bottom: 20px;
-    }
-
-    .menu {
-      width: 100%;
-    }
-
-    .menu button {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 10px;
-      border: none;
-      background: #f1f5f9;
-      border-radius: 10px;
-      cursor: pointer;
-      text-align: left;
-      font-weight: 500;
-    }
-
-    .menu button:hover {
-      background: #e2e8f0;
-    }
-
-    .logout {
-      background: black;
-      color: white;
-      font-weight: bold;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      width: 100%;
-      cursor: pointer;
-    }
-
-    .content {
-      flex: 1;
-      padding: 25px;
-    }
-
-    .header {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    .box {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    .footer {
-      background: #1e293b;
-      color: white;
-      text-align: center;
-      padding: 10px;
-    }
-
-    table {
-      width:100%;
-      border-collapse: collapse;
-      margin-top:10px;
-    }
-
-    th, td {
-      padding:10px;
-      border-bottom:1px solid #ddd;
-    }
-
-    th {
-      background:#f8fafc;
-    }
-
-    .btn {
-      background:#2c5364;
-      color:white;
-      border:none;
-      padding:10px;
-      border-radius:8px;
-      cursor:pointer;
-      margin-top:10px;
-    }
-  </style>
-</head>
-
-<body>
-
-<div class="main">
-
-  <div class="sidebar">
-
-    <div style="width:100%;">
-      <img src="logo faesp.png" class="logo">
-      <h3 id="nomeAluno" style="text-align:center;"></h3>
-
-      <div class="menu">
-        <button onclick="disciplinas()">📊 Disciplinas</button>
-        <button onclick="concluidas()">📚 Concluídas</button>
-        <button onclick="financeiro()">💰 Financeiro</button>
-        <button onclick="avisos()">📢 Avisos</button>
-        <button onclick="cronograma()">📅 Cronograma</button>
-        <button onclick="alunos()">👨‍🎓 Alunos</button>
-      </div>
-    </div>
-
-    <button class="logout" onclick="sair()">🚪 Sair</button>
-
-  </div>
-
-  <div class="content">
-
-    <div class="header">
-      <h2>FAESP - SETOR 30</h2>
-      <p id="boasVindas"></p>
-    </div>
-
-    <div class="box" id="conteudo">
-      Bem-vindo ao portal 👈
-    </div>
-
-  </div>
-
-</div>
-
-<div class="footer">
-  AD. Belém - Rua Rio Tiete, 126 - Campo Limpo Paulista - SP
-</div>
-
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "SUA_CHAVE_AQUI"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-if (!usuario) window.location.href = "index.html";
+// 🔒 PROTEÇÃO TOTAL
+if (!usuario) {
+  alert("⚠️ Faça login primeiro!");
+  window.location.href = "index.html";
+}
 
+// 🔒 BLOQUEIO POR TIPO
+if (usuario.tipo !== "Aluno") {
+  alert("⛔ Acesso permitido apenas para alunos!");
+
+  if (usuario.tipo === "Coordenacao") {
+    window.location.href = "admin.html";
+  } else {
+    window.location.href = "index.html";
+  }
+}
+
+// 👇 SEGUE NORMAL
 document.getElementById("nomeAluno").innerText = usuario.nome;
 document.getElementById("boasVindas").innerText = "Bem-vinda, " + usuario.nome;
 
-const isAdmin = usuario.tipo === "admin";
+// 🔥 AGORA CORRETO
+const isAdmin = usuario.tipo === "Coordenacao";
 
 function sair() {
   localStorage.removeItem("usuario");
@@ -284,7 +139,7 @@ async function enviarWhatsApp(numero, mensagem) {
   });
 }
 
-// 👨‍🎓 ALUNOS
+// 👨‍🎓 ALUNOS (NÃO DEVERIA APARECER PRA ALUNO, MAS MANTIVE)
 async function alunos() {
   const { data } = await client.from("usuarios").select("*");
 
@@ -318,6 +173,3 @@ async function aprovarAluno(id, nome, celular) {
   alunos();
 }
 </script>
-
-</body>
-</html>
