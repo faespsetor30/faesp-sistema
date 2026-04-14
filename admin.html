@@ -16,7 +16,6 @@
 
     .main { display: flex; flex: 1; }
 
-    /* SIDEBAR */
     .sidebar {
       width: 240px;
       background: white;
@@ -64,7 +63,6 @@
       cursor: pointer;
     }
 
-    /* CONTEÚDO */
     .content {
       flex: 1;
       padding: 25px;
@@ -85,13 +83,36 @@
       box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
-    /* RODAPÉ */
     .footer {
       background: #1e293b;
       color: white;
       text-align: center;
       padding: 10px;
       font-size: 13px;
+    }
+
+    table {
+      width:100%;
+      border-collapse: collapse;
+      margin-top:10px;
+    }
+
+    th, td {
+      padding:10px;
+      border-bottom:1px solid #ddd;
+    }
+
+    th {
+      background:#f8fafc;
+    }
+
+    .btn {
+      background:#2c5364;
+      color:white;
+      border:none;
+      padding:8px;
+      border-radius:6px;
+      cursor:pointer;
     }
   </style>
 </head>
@@ -100,7 +121,6 @@
 
 <div class="main">
 
-  <!-- MENU -->
   <div class="sidebar">
 
     <div style="width:100%; text-align:center;">
@@ -123,7 +143,6 @@
 
   </div>
 
-  <!-- CONTEÚDO -->
   <div class="content">
 
     <div class="header">
@@ -139,7 +158,6 @@
 
 </div>
 
-<!-- RODAPÉ -->
 <div class="footer">
   AD. Belém - Rua Rio Tiete, 126 - Jardim Europa - Campo Limpo Paulista - SP
 </div>
@@ -156,8 +174,53 @@ function sair() {
   window.location.href = "index.html";
 }
 
-// TEMP (depois você conecta tudo)
-function alunos(){document.getElementById("conteudo").innerHTML="👨‍🎓 Alunos";}
+// 🔥 LISTAR ALUNOS
+async function alunos() {
+  const { data, error } = await client
+    .from("usuarios")
+    .select("*");
+
+  if (error) {
+    document.getElementById("conteudo").innerHTML = "Erro ao carregar alunos";
+    return;
+  }
+
+  let html = "<h3>👨‍🎓 Alunos</h3>";
+  html += "<table>";
+  html += "<tr><th>Nome</th><th>Email</th><th>Status</th><th>Ação</th></tr>";
+
+  data.forEach(u => {
+    html += `
+      <tr>
+        <td>${u.nome}</td>
+        <td>${u.email}</td>
+        <td>${u.status}</td>
+        <td>
+          ${u.status === "pendente"
+            ? `<button class="btn" onclick="aprovarAluno('${u.id}')">Aprovar</button>`
+            : "✔️ Ativo"}
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+// 🔥 APROVAR
+async function aprovarAluno(id) {
+  await client
+    .from("usuarios")
+    .update({ status: "ativo" })
+    .eq("id", id);
+
+  alert("Aluno aprovado!");
+  alunos();
+}
+
+// TEMP
 function disciplinas(){document.getElementById("conteudo").innerHTML="📚 Disciplinas";}
 function notas(){document.getElementById("conteudo").innerHTML="📝 Notas";}
 function professores(){document.getElementById("conteudo").innerHTML="👨‍🏫 Professores";}
