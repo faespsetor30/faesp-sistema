@@ -5,112 +5,165 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body { margin:0; font-family:'Segoe UI'; display:flex; height:100vh; background:#eef2f7;}
-    .sidebar { width:240px; background:#1e293b; color:white; padding:20px;}
-    .sidebar button { width:100%; padding:12px; margin-bottom:10px; border:none; background:#334155; color:white; border-radius:8px; cursor:pointer;}
-    .content { flex:1; padding:20px;}
-    .box { background:white; padding:20px; border-radius:10px;}
-    input, textarea { width:100%; padding:8px; margin:5px 0;}
-    .btn { background:#2c5364; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;}
-    table { width:100%; margin-top:10px; border-collapse:collapse;}
-    td, th { padding:10px; border-bottom:1px solid #ddd;}
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #eef2f7;
+      flex-direction: column;
+    }
+
+    .main { display: flex; flex: 1; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-right: 1px solid #ddd;
+      align-items: center;
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 10px;
+    }
+
+    .menu {
+      width: 100%;
+    }
+
+    .menu button {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: none;
+      background: #f1f5f9;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .menu button:hover {
+      background: #e2e8f0;
+    }
+
+    .logout {
+      background: black;
+      color: white;
+      font-weight: bold;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    /* CONTEÚDO */
+    .content {
+      flex: 1;
+      padding: 25px;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    /* RODAPÉ */
+    .footer {
+      background: #1e293b;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 13px;
+    }
   </style>
 </head>
 
 <body>
 
-<div class="sidebar">
-  <h3>👑 ADMIN</h3>
-  <button onclick="alunos()">👨‍🎓 Alunos</button>
-  <button onclick="disciplinas()">📚 Disciplinas</button>
-  <button onclick="notas()">📝 Notas</button>
-  <button onclick="professores()">👨‍🏫 Professores</button>
-  <button onclick="financeiro()">💰 Financeiro</button>
-  <button onclick="avisos()">📢 Avisos</button>
-  <button onclick="cronograma()">📅 Cronograma</button>
+<div class="main">
+
+  <!-- MENU -->
+  <div class="sidebar">
+
+    <div style="width:100%; text-align:center;">
+      <img src="logo faesp.png" class="logo">
+
+      <h3>👑 ADMIN</h3>
+
+      <div class="menu">
+        <button onclick="alunos()">👨‍🎓 Alunos</button>
+        <button onclick="disciplinas()">📚 Disciplinas</button>
+        <button onclick="notas()">📝 Notas</button>
+        <button onclick="professores()">👨‍🏫 Professores</button>
+        <button onclick="financeiro()">💰 Financeiro</button>
+        <button onclick="avisos()">📢 Avisos</button>
+        <button onclick="cronograma()">📅 Cronograma</button>
+      </div>
+    </div>
+
+    <button class="logout" onclick="sair()">🚪 Sair</button>
+
+  </div>
+
+  <!-- CONTEÚDO -->
+  <div class="content">
+
+    <div class="header">
+      <h2>FAESP - SETOR 30 (ADMIN)</h2>
+      <p>Painel administrativo</p>
+    </div>
+
+    <div class="box" id="conteudo">
+      Bem-vinda ao painel ADM 👑
+    </div>
+
+  </div>
+
 </div>
 
-<div class="content">
-  <div class="box" id="conteudo">Painel Admin 👑</div>
+<!-- RODAPÉ -->
+<div class="footer">
+  AD. Belém - Rua Rio Tiete, 126 - Jardim Europa - Campo Limpo Paulista - SP
 </div>
 
 <script>
-const client = supabase.createClient("https://nzygdvixqmiltelgzzrn.supabase.co","SUA_CHAVE_AQUI");
+const client = supabase.createClient(
+  "https://nzygdvixqmiltelgzzrn.supabase.co",
+  "SUA_CHAVE_AQUI"
+);
 
-// 📚 DISCIPLINAS
-async function disciplinas() {
-  const { data } = await client.from("disciplinas").select("*");
-
-  let html = "<h3>Disciplinas</h3>";
-  html += `<input id="nomeDisciplina" placeholder="Nome"><button class="btn" onclick="addDisciplina()">Adicionar</button>`;
-
-  data.forEach(d => {
-    html += `<p>📚 ${d.nome}</p>`;
-  });
-
-  document.getElementById("conteudo").innerHTML = html;
+// LOGOUT
+function sair() {
+  localStorage.removeItem("usuario");
+  window.location.href = "index.html";
 }
 
-async function addDisciplina() {
-  const nome = document.getElementById("nomeDisciplina").value;
-  await client.from("disciplinas").insert([{ nome }]);
-  disciplinas();
-}
-
-// 📝 NOTAS + FALTAS
-async function notas() {
-  let html = `
-    <h3>Notas e Faltas</h3>
-    <input id="email" placeholder="Email do aluno">
-    <input id="disciplina" placeholder="Disciplina">
-    <input id="nota" placeholder="Nota">
-    <input id="faltas" placeholder="Faltas">
-    <button class="btn" onclick="salvarNota()">Salvar</button>
-  `;
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-async function salvarNota() {
-  const email = document.getElementById("email").value;
-  const disciplina = document.getElementById("disciplina").value;
-  const nota = document.getElementById("nota").value;
-  const faltas = document.getElementById("faltas").value;
-
-  await client.from("notas").insert([{ email, disciplina, nota, faltas }]);
-  alert("Salvo!");
-}
-
-// 👨‍🏫 PROFESSORES
-async function professores() {
-  const { data } = await client.from("professores").select("*");
-
-  let html = "<h3>Professores</h3>";
-  html += `
-    <input id="nomeProf" placeholder="Nome">
-    <input id="disciplinaProf" placeholder="Disciplina">
-    <button class="btn" onclick="addProfessor()">Salvar</button>
-  `;
-
-  data.forEach(p => {
-    html += `<p>👨‍🏫 ${p.nome} - ${p.disciplina}</p>`;
-  });
-
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-async function addProfessor() {
-  const nome = document.getElementById("nomeProf").value;
-  const disciplina = document.getElementById("disciplinaProf").value;
-
-  await client.from("professores").insert([{ nome, disciplina }]);
-  professores();
-}
-
-// 🔥 (mantém seus outros módulos)
-async function alunos(){document.getElementById("conteudo").innerHTML="Alunos já configurado";}
-async function financeiro(){document.getElementById("conteudo").innerHTML="Financeiro já configurado";}
-async function avisos(){document.getElementById("conteudo").innerHTML="Avisos já configurado";}
-async function cronograma(){document.getElementById("conteudo").innerHTML="Cronograma já configurado";}
+// TEMP (depois você conecta tudo)
+function alunos(){document.getElementById("conteudo").innerHTML="👨‍🎓 Alunos";}
+function disciplinas(){document.getElementById("conteudo").innerHTML="📚 Disciplinas";}
+function notas(){document.getElementById("conteudo").innerHTML="📝 Notas";}
+function professores(){document.getElementById("conteudo").innerHTML="👨‍🏫 Professores";}
+function financeiro(){document.getElementById("conteudo").innerHTML="💰 Financeiro";}
+function avisos(){document.getElementById("conteudo").innerHTML="📢 Avisos";}
+function cronograma(){document.getElementById("conteudo").innerHTML="📅 Cronograma";}
 </script>
 
 </body>
