@@ -49,7 +49,13 @@
     }
 
     table { width:100%; border-collapse: collapse; margin-top:10px; }
-    th, td { padding:10px; border-bottom:1px solid #ddd; }
+
+    th, td {
+      padding:10px;
+      border-bottom:1px solid #ddd;
+      text-align:center; /* 🔥 CENTRALIZA */
+    }
+
     th { background:#f8fafc; }
 
     .btn {
@@ -123,6 +129,8 @@ function sair() {
 
 // 📋 CADASTROS
 async function alunos() {
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
   const { data } = await client.from("usuarios").select("*");
 
   let html = "<h3>📋 Cadastros</h3><table>";
@@ -134,13 +142,16 @@ async function alunos() {
         <td>${u.nome}</td>
         <td>${u.email}</td>
         <td>${u.status}</td>
+
         <td>
-          ${u.tipo || "Não definido"}<br>
-          <select onchange="definirTipo('${u.id}', this.value)">
+          <select 
+            onchange="definirTipo('${u.id}', this.value)"
+            ${usuario?.tipo !== "Coordenacao" ? "disabled" : ""}
+          >
             <option value="">Selecionar</option>
-            <option value="Aluno">Aluno</option>
-            <option value="Professor">Professor</option>
-            <option value="Coordenacao">Coordenação</option>
+            <option value="Aluno" ${u.tipo === "Aluno" ? "selected" : ""}>Aluno</option>
+            <option value="Professor" ${u.tipo === "Professor" ? "selected" : ""}>Professor</option>
+            <option value="Coordenacao" ${u.tipo === "Coordenacao" ? "selected" : ""}>Coordenação</option>
           </select>
         </td>
       </tr>
@@ -151,133 +162,17 @@ async function alunos() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
+// DEFINIR TIPO
 async function definirTipo(id, tipo) {
-  await client.from("usuarios").update({ tipo }).eq("id", id);
+  if (!tipo) return;
+
+  await client
+    .from("usuarios")
+    .update({ tipo })
+    .eq("id", id);
+
   alunos();
 }
-
-// 📝 NOTAS + BOLETIM
-async function notas() {
-  const { data: alunos } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("tipo", "Aluno");
-
-  let html = "<h3>📝 Lançamento de Notas</h3>";
-
-  alunos.forEach(a => {
-    html += `
-      <div class="card">
-        <strong>👨‍🎓 ${a.nome}</strong><br><br>
-
-        <input id="disc_${a.id}" placeholder="Disciplina"><br>
-        <input id="nota_${a.id}" placeholder="Nota"><br>
-        <input id="faltas_${a.id}" placeholder="Faltas"><br>
-
-        <button class="btn" onclick="salvarNota('${a.id}')">Salvar</button>
-        <button class="btn" onclick="verBoletim('${a.id}','${a.nome}')">Boletim</button>
-      </div>
-    `;
-  });
-
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-// SALVAR
-async function salvarNota(id) {
-  const disciplina = document.getElementById(`disc_${id}`).value;
-  const nota = document.getElementById(`nota_${id}`).value;
-  const faltas = document.getElementById(`faltas_${id}`).value;
-
-  await client.from("notas").insert([{
-    aluno_id: id,
-    disciplina,
-    nota,
-    faltas
-  }]);
-
-  alert("Nota salva!");
-}
-
-// 🚀 BOLETIM INTELIGENTE
-async function verBoletim(id, nome) {
-  const { data } = await client
-    .from("notas")
-    .select("*")
-    .eq("aluno_id", id);
-
-  let html = `<h3>📊 Boletim - ${nome}</h3>`;
-
-  if (!data.length) {
-    html += "<p>Sem notas</p>";
-  } else {
-    let soma = 0;
-    let total = data.length;
-    let reprovadoFalta = false;
-
-    html += "<table>";
-    html += "<tr><th>Disciplina</th><th>Nota</th><th>Faltas</th><th>Status</th></tr>";
-
-    data.forEach(n => {
-      soma += Number(n.nota);
-
-      let status = "";
-      let cor = "";
-
-      if (n.faltas > 1) {
-        status = "Reprovado por falta";
-        cor = "red";
-        reprovadoFalta = true;
-      } else if (n.nota < 6) {
-        status = "Reprovado";
-        cor = "red";
-      } else {
-        status = "Aprovado";
-        cor = "green";
-      }
-
-      html += `
-        <tr>
-          <td>${n.disciplina}</td>
-          <td>${n.nota}</td>
-          <td>${n.faltas}</td>
-          <td style="color:${cor}; font-weight:bold;">${status}</td>
-        </tr>
-      `;
-    });
-
-    let media = (soma / total).toFixed(1);
-
-    let statusFinal = "";
-    let corFinal = "";
-
-    if (reprovadoFalta) {
-      statusFinal = "Reprovado por falta";
-      corFinal = "red";
-    } else if (media < 6) {
-      statusFinal = "Reprovado";
-      corFinal = "red";
-    } else {
-      statusFinal = "Aprovado";
-      corFinal = "green";
-    }
-
-    html += "</table>";
-
-    html += `
-      <br>
-      <h3>Média: ${media}</h3>
-      <h2 style="color:${corFinal};">${statusFinal}</h2>
-    `;
-  }
-
-  html += `<br><button class="btn" onclick="notas()">⬅️ Voltar</button>`;
-
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-// OUTROS
-function disciplinas(){document.getElementById("conteudo").innerHTML="📚 Disciplinas";}
 </script>
 
 </body>
