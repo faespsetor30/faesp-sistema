@@ -213,7 +213,7 @@ async function recusar(id) {
   alunos();
 }
 
-// CADASTRAR
+// 🚀 CADASTRAR (CORRIGIDO)
 async function cadastrarUsuario() {
   const nome = document.getElementById("nome").value;
   const email = document.getElementById("email").value;
@@ -223,13 +223,25 @@ async function cadastrarUsuario() {
 
   const senha = gerarSenha();
 
-  await client.auth.signUp({ email, password: senha });
+  const { data, error } = await client.auth.signUp({
+    email,
+    password: senha
+  });
+
+  if (error) {
+    alert("Erro no Auth: " + error.message);
+    return;
+  }
 
   await client.from("usuarios").insert([
     { nome, email, celular, tipo, curso, status: "pendente" }
   ]);
 
-  alert("Cadastro enviado! Aguardando aprovação.");
+  alert(`Usuário criado!
+
+Email: ${email}
+Senha: ${senha}`);
+
   alunos();
 }
 
