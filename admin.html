@@ -5,125 +5,70 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      height: 100vh;
-      background: #eef2f7;
-      flex-direction: column;
-    }
-
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; background: #eef2f7; flex-direction: column; }
     .main { display: flex; flex: 1; }
 
     .sidebar {
-      width: 240px;
-      background: white;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border-right: 1px solid #ddd;
-      align-items: center;
+      width: 240px; background: white; padding: 20px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      border-right: 1px solid #ddd; align-items: center;
     }
 
     .logo { width: 120px; margin-bottom: 10px; }
-
     .menu { width: 100%; }
 
     .menu button {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 10px;
-      border: none;
-      background: #f1f5f9;
-      border-radius: 10px;
-      cursor: pointer;
-      text-align: left;
-      font-weight: 500;
+      width: 100%; padding: 12px; margin-bottom: 10px;
+      border: none; background: #f1f5f9; border-radius: 10px;
+      cursor: pointer; text-align: left; font-weight: 500;
     }
 
     .menu button:hover { background: #e2e8f0; }
 
     .logout {
-      background: black;
-      color: white;
-      font-weight: bold;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      width: 100%;
-      cursor: pointer;
+      background: black; color: white; font-weight: bold;
+      padding: 12px; border-radius: 10px; border: none;
+      width: 100%; cursor: pointer;
     }
 
     .content { flex: 1; padding: 25px; }
 
     .header {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      background: white; padding: 20px; border-radius: 12px;
+      margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
     .box {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
+      background: white; padding: 20px; border-radius: 12px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.05);
     }
 
     .footer {
-      background: #1e293b;
-      color: white;
-      text-align: center;
-      padding: 10px;
-      font-size: 13px;
+      background: #1e293b; color: white;
+      text-align: center; padding: 10px; font-size: 13px;
     }
 
-    table {
-      width:100%;
-      border-collapse: collapse;
-      margin-top:10px;
-    }
-
-    th, td {
-      padding:10px;
-      border-bottom:1px solid #ddd;
-    }
-
+    table { width:100%; border-collapse: collapse; margin-top:10px; }
+    th, td { padding:10px; border-bottom:1px solid #ddd; }
     th { background:#f8fafc; }
 
     .btn {
-      background:#2c5364;
-      color:white;
-      border:none;
-      padding:6px 10px;
-      border-radius:6px;
-      cursor:pointer;
+      background:#2c5364; color:white; border:none;
+      padding:6px 10px; border-radius:6px; cursor:pointer;
     }
 
-    .btn-danger {
-      background:#dc2626;
-      margin-left:5px;
-    }
-
-    .top-bar {
-      display:flex;
-      gap:10px;
-      margin-bottom:10px;
-      flex-wrap:wrap;
-    }
+    .btn-danger { background:#dc2626; margin-left:5px; }
 
     input, select {
-      padding:8px;
-      border-radius:6px;
-      border:1px solid #ccc;
+      padding:8px; border-radius:6px; border:1px solid #ccc;
+      margin-top:5px;
     }
 
-    .contador {
-      font-weight:bold;
-      margin-bottom:10px;
+    .card {
+      border:1px solid #ddd;
+      border-radius:10px;
+      padding:15px;
+      margin-bottom:15px;
     }
   </style>
 </head>
@@ -138,13 +83,9 @@
       <h3>👑 ADMIN</h3>
 
       <div class="menu">
-        <button onclick="alunos()">👨‍🎓 Alunos</button>
+        <button onclick="alunos()">📋 Cadastros</button>
         <button onclick="disciplinas()">📚 Disciplinas</button>
-        <button onclick="notas()">📝 Notas</button>
-        <button onclick="professores()">👨‍🏫 Professores</button>
-        <button onclick="financeiro()">💰 Financeiro</button>
-        <button onclick="avisos()">📢 Avisos</button>
-        <button onclick="cronograma()">📅 Cronograma</button>
+        <button onclick="notas()">📝 Notas / Boletim</button>
       </div>
     </div>
 
@@ -152,7 +93,6 @@
   </div>
 
   <div class="content">
-
     <div class="header">
       <h2>FAESP - SETOR 30 (ADMIN)</h2>
       <p>Painel administrativo</p>
@@ -161,19 +101,18 @@
     <div class="box" id="conteudo">
       Bem-vinda ao painel ADM 👑
     </div>
-
   </div>
 
 </div>
 
 <div class="footer">
-  AD. Belém - Rua Rio Tiete, 126 - Jardim Europa - Campo Limpo Paulista - SP
+  AD. Belém - Rua Rio Tiete, 126 - Campo Limpo Paulista - SP
 </div>
 
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "SUA_CHAVE_AQUI"
 );
 
 // LOGOUT
@@ -182,34 +121,12 @@ function sair() {
   window.location.href = "index.html";
 }
 
-// 🔥 ALUNOS COMPLETO
+// 📋 CADASTROS
 async function alunos() {
   const { data } = await client.from("usuarios").select("*");
 
-  let pendentes = data.filter(u => u.status === "pendente").length;
-  let ativos = data.filter(u => u.status === "ativo").length;
-
-  let html = `
-    <h3>👨‍🎓 Alunos</h3>
-
-    <div class="contador">
-      📊 Ativos: ${ativos} | ⏳ Pendentes: ${pendentes}
-    </div>
-
-    <div class="top-bar">
-      <input id="buscaAluno" placeholder="🔎 Buscar..." onkeyup="filtrar()">
-      <select id="filtroStatus" onchange="filtrar()">
-        <option value="">Todos</option>
-        <option value="ativo">Ativo</option>
-        <option value="pendente">Pendente</option>
-        <option value="recusado">Recusado</option>
-      </select>
-      <button class="btn" onclick="exportarExcel()">📥 Exportar</button>
-    </div>
-
-    <table id="tabela">
-      <tr><th>Nome</th><th>Email</th><th>Status</th><th>Ação</th></tr>
-  `;
+  let html = "<h3>📋 Cadastros</h3><table>";
+  html += "<tr><th>Nome</th><th>Email</th><th>Status</th><th>Tipo</th></tr>";
 
   data.forEach(u => {
     html += `
@@ -218,77 +135,149 @@ async function alunos() {
         <td>${u.email}</td>
         <td>${u.status}</td>
         <td>
-          ${u.status === "pendente"
-            ? `
-              <button class="btn" onclick="aprovarAluno('${u.id}','${u.nome}')">✔️</button>
-              <button class="btn btn-danger" onclick="recusarAluno('${u.id}')">❌</button>
-            `
-            : u.status === "ativo" ? "✔️" : "❌"}
+          ${u.tipo || "Não definido"}<br>
+          <select onchange="definirTipo('${u.id}', this.value)">
+            <option value="">Selecionar</option>
+            <option value="Aluno">Aluno</option>
+            <option value="Professor">Professor</option>
+            <option value="Coordenacao">Coordenação</option>
+          </select>
         </td>
       </tr>
     `;
   });
 
   html += "</table>";
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+async function definirTipo(id, tipo) {
+  await client.from("usuarios").update({ tipo }).eq("id", id);
+  alunos();
+}
+
+// 📝 NOTAS + BOLETIM
+async function notas() {
+  const { data: alunos } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("tipo", "Aluno");
+
+  let html = "<h3>📝 Lançamento de Notas</h3>";
+
+  alunos.forEach(a => {
+    html += `
+      <div class="card">
+        <strong>👨‍🎓 ${a.nome}</strong><br><br>
+
+        <input id="disc_${a.id}" placeholder="Disciplina"><br>
+        <input id="nota_${a.id}" placeholder="Nota"><br>
+        <input id="faltas_${a.id}" placeholder="Faltas"><br>
+
+        <button class="btn" onclick="salvarNota('${a.id}')">Salvar</button>
+        <button class="btn" onclick="verBoletim('${a.id}','${a.nome}')">Boletim</button>
+      </div>
+    `;
+  });
 
   document.getElementById("conteudo").innerHTML = html;
+}
 
-  // 🔔 NOTIFICAÇÃO
-  if (pendentes > 0) {
-    alert("⚠️ Existem " + pendentes + " alunos pendentes!");
+// SALVAR
+async function salvarNota(id) {
+  const disciplina = document.getElementById(`disc_${id}`).value;
+  const nota = document.getElementById(`nota_${id}`).value;
+  const faltas = document.getElementById(`faltas_${id}`).value;
+
+  await client.from("notas").insert([{
+    aluno_id: id,
+    disciplina,
+    nota,
+    faltas
+  }]);
+
+  alert("Nota salva!");
+}
+
+// 🚀 BOLETIM INTELIGENTE
+async function verBoletim(id, nome) {
+  const { data } = await client
+    .from("notas")
+    .select("*")
+    .eq("aluno_id", id);
+
+  let html = `<h3>📊 Boletim - ${nome}</h3>`;
+
+  if (!data.length) {
+    html += "<p>Sem notas</p>";
+  } else {
+    let soma = 0;
+    let total = data.length;
+    let reprovadoFalta = false;
+
+    html += "<table>";
+    html += "<tr><th>Disciplina</th><th>Nota</th><th>Faltas</th><th>Status</th></tr>";
+
+    data.forEach(n => {
+      soma += Number(n.nota);
+
+      let status = "";
+      let cor = "";
+
+      if (n.faltas > 1) {
+        status = "Reprovado por falta";
+        cor = "red";
+        reprovadoFalta = true;
+      } else if (n.nota < 6) {
+        status = "Reprovado";
+        cor = "red";
+      } else {
+        status = "Aprovado";
+        cor = "green";
+      }
+
+      html += `
+        <tr>
+          <td>${n.disciplina}</td>
+          <td>${n.nota}</td>
+          <td>${n.faltas}</td>
+          <td style="color:${cor}; font-weight:bold;">${status}</td>
+        </tr>
+      `;
+    });
+
+    let media = (soma / total).toFixed(1);
+
+    let statusFinal = "";
+    let corFinal = "";
+
+    if (reprovadoFalta) {
+      statusFinal = "Reprovado por falta";
+      corFinal = "red";
+    } else if (media < 6) {
+      statusFinal = "Reprovado";
+      corFinal = "red";
+    } else {
+      statusFinal = "Aprovado";
+      corFinal = "green";
+    }
+
+    html += "</table>";
+
+    html += `
+      <br>
+      <h3>Média: ${media}</h3>
+      <h2 style="color:${corFinal};">${statusFinal}</h2>
+    `;
   }
-}
 
-// 🔎 FILTRO
-function filtrar() {
-  const busca = document.getElementById("buscaAluno").value.toLowerCase();
-  const status = document.getElementById("filtroStatus").value;
+  html += `<br><button class="btn" onclick="notas()">⬅️ Voltar</button>`;
 
-  document.querySelectorAll("#tabela tr").forEach((tr, i) => {
-    if (i === 0) return;
-
-    const nome = tr.children[0].innerText.toLowerCase();
-    const email = tr.children[1].innerText.toLowerCase();
-    const st = tr.children[2].innerText;
-
-    const ok = (nome.includes(busca) || email.includes(busca)) &&
-               (!status || st === status);
-
-    tr.style.display = ok ? "" : "none";
-  });
-}
-
-// 📥 EXPORTAR
-function exportarExcel() {
-  let tabela = document.getElementById("tabela").outerHTML;
-  let blob = new Blob([tabela], { type: "application/vnd.ms-excel" });
-  let link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "alunos.xls";
-  link.click();
-}
-
-// 🔥 APROVAR
-async function aprovarAluno(id, nome) {
-  await client.from("usuarios").update({ status: "ativo" }).eq("id", id);
-  alert("✅ " + nome + " aprovado!");
-  alunos();
-}
-
-// 🔥 RECUSAR
-async function recusarAluno(id) {
-  await client.from("usuarios").update({ status: "recusado" }).eq("id", id);
-  alert("❌ Aluno recusado!");
-  alunos();
+  document.getElementById("conteudo").innerHTML = html;
 }
 
 // OUTROS
 function disciplinas(){document.getElementById("conteudo").innerHTML="📚 Disciplinas";}
-function notas(){document.getElementById("conteudo").innerHTML="📝 Notas";}
-function professores(){document.getElementById("conteudo").innerHTML="👨‍🏫 Professores";}
-function financeiro(){document.getElementById("conteudo").innerHTML="💰 Financeiro";}
-function avisos(){document.getElementById("conteudo").innerHTML="📢 Avisos";}
-function cronograma(){document.getElementById("conteudo").innerHTML="📅 Cronograma";}
 </script>
 
 </body>
