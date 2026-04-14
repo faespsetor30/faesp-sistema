@@ -277,6 +277,24 @@ async function cronograma() {
     document.getElementById("conteudo").innerHTML = "Erro ao carregar cronograma";
   }
 }
+
+/* 🔥 WHATSAPP INTEGRADO */
+async function enviarWhatsApp(numero, mensagem) {
+  try {
+    await fetch("https://api.z-api.io/instances/3F19C61174D6225336C73A7D2450AC8D/token/DE43E25197F9AEE0CB640CA5/send-text", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        phone: numero,
+        message: mensagem
+      })
+    });
+  } catch (e) {
+    console.log("Erro WhatsApp:", e);
+  }
+}
 </script>
 
 </body>
