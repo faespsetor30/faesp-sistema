@@ -108,6 +108,26 @@
 </div>
 
 <script>
+
+// 🔐 PROTEÇÃO DE ACESSO (NOVO)
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if (!usuario) {
+  alert("Faça login primeiro");
+  window.location.href = "index.html";
+}
+
+if (usuario.tipo !== "Coordenacao") {
+  alert("Acesso restrito à coordenação");
+  window.location.href = "dashboard.html";
+}
+
+if (usuario.status !== "ativo") {
+  alert("Usuário não autorizado");
+  window.location.href = "index.html";
+}
+
+// SUPABASE
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
@@ -220,7 +240,7 @@ async function aprovar(id) {
     .update({ status: "ativo", primeiro_acesso: true })
     .eq("id", id);
 
-  alert("✅ Usuário aprovado!");
+  alert("Usuário aprovado!");
   alunos();
 }
 
@@ -282,6 +302,7 @@ function disciplinas(){
 function notas(){
   document.getElementById("conteudo").innerHTML="📝 Notas";
 }
+
 </script>
 
 </body>
