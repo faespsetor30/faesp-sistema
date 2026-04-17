@@ -81,7 +81,7 @@
       <h3>👑 COORDENAÇÃO</h3>
 
       <div class="menu">
-        <button onclick="usuarios()">📋 Cadastros</button>
+        <button onclick="alunos()">📋 Cadastros</button>
         <button onclick="disciplinas()">📚 Disciplinas</button>
         <button onclick="notas()">📝 Notas / Boletim</button>
       </div>
@@ -113,45 +113,174 @@ const client = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
-// ✅ FUNÇÃO usuarios (CORRIGIDA)
-async function usuarios () {
+// LOGOUT
+function sair() {
+  localStorage.removeItem("usuario");
+  window.location.href = "index.html";
+}
 
-  const { data, error } = await client
-    .from('usuarios')
-    .select('*')
+// 📋 CADASTROS
+async function alunos() {
+
+  const { data } = await client.from("usuarios").select("*");
+
+  let html = `
+    <h3>📋 Cadastros</h3>
+
+    <div style="margin-bottom:20px;">
+      <h4>➕ Novo Cadastro</h4>
+      <input id="nome" placeholder="Nome">
+      <input id="email" placeholder="Email">
+      <input id="celular" placeholder="Celular">
+      <select id="tipo">
+        <option value="Aluno">Aluno</option>
+        <option value="Professor">Professor</option>
+        <option value="Coordenacao">Coordenação</option>
+      </select>
+      <input id="curso" placeholder="Curso">
+      <br><br>
+      <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
+    </div>
+
+    <table>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Tipo</th>
+        <th>Ações</th>
+      </tr>
+  `;
+
+  data.forEach(u => {
+    html += `
+      <tr>
+        <td>${u.nome}</td>
+        <td>${u.email}</td>
+        <td>${u.status}</td>
+        <td>
+          <select onchange="alterarTipo('${u.id}', this.value)">
+            <option value="Aluno" ${u.tipo === "Aluno" ? "selected" : ""}>Aluno</option>
+            <option value="Professor" ${u.tipo === "Professor" ? "selected" : ""}>Professor</option>
+            <option value="Coordenacao" ${u.tipo === "Coordenacao" ? "selected" : ""}>Coordenação</option>
+          </select>
+        </td>
+        <td>
+          ${
+            u.status === "pendente"
+            ? `
+              <button class="btn" onclick="aprovar('${u.id}')">✅</button>
+              <button class="btn" style="background:red;" onclick="recusar('${u.id}')">❌</button>
+              <button class="btn" style="background:#6b7280;" onclick="excluir('${u.id}')">🗑️</button>
+            `
+            : `
+              ✔️
+              <button class="btn" style="background:#6b7280;" onclick="excluir('${u.id}')">🗑️</button>
+            `
+          }
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+// ALTERAR TIPO
+async function alterarTipo(id, tipo) {
+  await client.from("usuarios").update({ tipo }).eq("id", id);
+  alunos();
+}
+
+// APROVAR
+async function aprovar(id) {
+
+  const { data: usuario } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  const { error } = await client.auth.signInWithOtp({
+    email: usuario.email,
+    options: {
+      emailRedirectTo: "https://faesp-sistema.vercel.app/primeiro-acesso.html"
+    }
+  });
 
   if (error) {
-    document.getElementById("conteudo").innerHTML = "Erro ao carregar alunos ❌"
-    console.error(error)
-    return
+    alert("Erro ao enviar email: " + error.message);
+    return;
   }
 
-  let html = "<h3>📋 Lista de Alunos</h3><table>"
-  html += "<tr><th>Nome</th><th>Email</th></tr>"
+  await client
+    .from("usuarios")
+    .update({ status: "ativo", primeiro_acesso: true })
+    .eq("id", id);
 
-  data.forEach(aluno => {
-    html += `<tr>
-      <td>${aluno.nome || '-'}</td>
-      <td>${aluno.email || '-'}</td>
-    </tr>`
-  })
-
-  html += "</table>"
-
-  document.getElementById("conteudo").innerHTML = html
+  alert("✅ Usuário aprovado!");
+  alunos();
 }
 
-// ✅ FUNÇÕES TEMPORÁRIAS (pra não dar erro)
-function disciplinas() {
-  document.getElementById("conteudo").innerHTML = "📚 Em desenvolvimento..."
+// RECUSAR
+async function recusar(id) {
+  await client.from("usuarios").update({ status: "recusado" }).eq("id", id);
+  alert("Recusado!");
+  alunos();
 }
 
-function notas() {
-  document.getElementById("conteudo").innerHTML = "📝 Em desenvolvimento..."
+// EXCLUIR
+async function excluir(id) {
+
+  const confirmar = confirm("Tem certeza que deseja excluir?");
+  if (!confirmar) return;
+
+  const { data: usuario } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  await client.from("usuarios").delete().eq("id", id);
+
+  await fetch("https://nzygdvixqmiltelgzzrn.supabase.co/functions/v1/delete-user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ email: usuario.email })
+  });
+
+  alert("Usuário excluído!");
+  alunos();
 }
 
-function sair() {
-  alert("Logout em desenvolvimento 🚪")
+// CADASTRAR
+async function cadastrarUsuario() {
+
+  const nome = document.getElementById("nome").value;
+  const email = document.getElementById("email").value;
+  const celular = document.getElementById("celular").value;
+  const tipo = document.getElementById("tipo").value;
+  const curso = document.getElementById("curso").value;
+
+  await client.from("usuarios").insert([
+    { nome, email, celular, tipo, curso, status: "pendente" }
+  ]);
+
+  alert("Usuário cadastrado!");
+  alunos();
+}
+
+// OUTROS
+function disciplinas(){
+  document.getElementById("conteudo").innerHTML="📚 Disciplinas";
+}
+
+function notas(){
+  document.getElementById("conteudo").innerHTML="📝 Notas";
 }
 </script>
 
