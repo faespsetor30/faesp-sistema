@@ -141,7 +141,7 @@ function getStatusClass(status) {
   return "pendente";
 }
 
-// 🚀 DISCIPLINAS COM CURSO MASTER
+// 🚀 DISCIPLINAS COM BLOQUEIO POR PAGAMENTO
 async function disciplinas() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
@@ -156,6 +156,12 @@ async function disciplinas() {
     .from("disciplinas_master")
     .select("*")
     .eq("curso", usuario.curso);
+
+  // financeiro
+  const { data: financeiro } = await client
+    .from("financeiro")
+    .select("*")
+    .eq("email", usuario.email);
 
   // criar automático
   for (const m of master) {
@@ -185,21 +191,33 @@ async function disciplinas() {
       <th>Professor</th>
       <th>Nota</th>
       <th>Status</th>
+      <th>Acesso</th>
     </tr>`;
 
   data.forEach(d => {
 
-    let status = "Em andamento";
+    let statusNota = "Em andamento";
     let cor = "#6b7280";
 
     if (d.nota) {
       if (d.nota >= 7) {
-        status = "Aprovado";
+        statusNota = "Aprovado";
         cor = "green";
       } else {
-        status = "Reprovado";
+        statusNota = "Reprovado";
         cor = "red";
       }
+    }
+
+    // 🔥 VERIFICA PAGAMENTO
+    const pagamento = financeiro.find(f => f.disciplina === d.nome);
+
+    let acesso = "🔒 Bloqueado";
+    let corAcesso = "red";
+
+    if (pagamento && pagamento.status === "pago") {
+      acesso = "✅ Liberado";
+      corAcesso = "green";
     }
 
     html += `
@@ -207,7 +225,8 @@ async function disciplinas() {
         <td>${d.nome}</td>
         <td>${d.professor || "-"}</td>
         <td>${d.nota || "-"}</td>
-        <td style="color:${cor}; font-weight:bold;">${status}</td>
+        <td style="color:${cor}; font-weight:bold;">${statusNota}</td>
+        <td style="color:${corAcesso}; font-weight:bold;">${acesso}</td>
       </tr>
     `;
   });
@@ -216,7 +235,7 @@ async function disciplinas() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// RESTANTE IGUAL...
+// RESTO IGUAL...
 
 async function financeiro() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
