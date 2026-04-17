@@ -110,7 +110,7 @@
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 );
 
 // LOGOUT
@@ -199,7 +199,7 @@ async function alterarTipo(id, tipo) {
   alunos();
 }
 
-// APROVAR (AJUSTADO)
+// ✅ APROVAR COM EMAIL AUTOMÁTICO
 async function aprovar(id) {
   const { data: usuario } = await client
     .from("usuarios")
@@ -207,27 +207,24 @@ async function aprovar(id) {
     .eq("id", id)
     .single();
 
-  const senha = gerarSenha();
-
-  const { error } = await client.auth.signUp({
+  const { error } = await client.auth.signInWithOtp({
     email: usuario.email,
-    password: senha
+    options: {
+      emailRedirectTo: window.location.origin + "/primeiro-acesso.html"
+    }
   });
 
   if (error) {
-    alert("Erro ao criar no Auth: " + error.message);
+    alert("Erro ao enviar email: " + error.message);
     return;
   }
 
   await client
     .from("usuarios")
-    .update({ status: "ativo" })
+    .update({ status: "ativo", primeiro_acesso: true })
     .eq("id", id);
 
-  alert(`Usuário aprovado! 🚀
-
-Email: ${usuario.email}
-Senha: ${senha}`);
+  alert("✅ Usuário aprovado! Email enviado.");
 
   alunos();
 }
@@ -239,7 +236,7 @@ async function recusar(id) {
   alunos();
 }
 
-// 🚀 CADASTRAR (AJUSTADO)
+// 🚀 CADASTRAR
 async function cadastrarUsuario() {
   const nome = document.getElementById("nome").value;
   const email = document.getElementById("email").value;
