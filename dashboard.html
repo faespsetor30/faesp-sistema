@@ -141,10 +141,36 @@ function getStatusClass(status) {
   return "pendente";
 }
 
-// DISCIPLINAS
+// 🚀 DISCIPLINAS COM CURSO MASTER
 async function disciplinas() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
+  // existentes
+  const { data: existentes } = await client
+    .from("disciplinas")
+    .select("*")
+    .eq("email", usuario.email);
+
+  // master
+  const { data: master } = await client
+    .from("disciplinas_master")
+    .select("*")
+    .eq("curso", usuario.curso);
+
+  // criar automático
+  for (const m of master) {
+    const jaExiste = existentes.find(d => d.nome === m.nome);
+
+    if (!jaExiste) {
+      await client.from("disciplinas").insert([{
+        email: usuario.email,
+        nome: m.nome,
+        curso: usuario.curso
+      }]);
+    }
+  }
+
+  // buscar final
   const { data } = await client
     .from("disciplinas")
     .select("*")
@@ -152,23 +178,36 @@ async function disciplinas() {
 
   let html = `<h3>📊 Disciplinas</h3>`;
   html += `<p><strong>Curso:</strong> ${usuario.curso || "-"}</p>`;
+
   html += `<table>
     <tr>
       <th>Disciplina</th>
       <th>Professor</th>
       <th>Nota</th>
-      <th>Início</th>
-      <th>Conclusão</th>
+      <th>Status</th>
     </tr>`;
 
   data.forEach(d => {
+
+    let status = "Em andamento";
+    let cor = "#6b7280";
+
+    if (d.nota) {
+      if (d.nota >= 7) {
+        status = "Aprovado";
+        cor = "green";
+      } else {
+        status = "Reprovado";
+        cor = "red";
+      }
+    }
+
     html += `
       <tr>
         <td>${d.nome}</td>
-        <td>${d.professor}</td>
+        <td>${d.professor || "-"}</td>
         <td>${d.nota || "-"}</td>
-        <td>${d.data_inicio || "-"}</td>
-        <td>${d.data_fim || "-"}</td>
+        <td style="color:${cor}; font-weight:bold;">${status}</td>
       </tr>
     `;
   });
@@ -177,7 +216,8 @@ async function disciplinas() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// FINANCEIRO + UPLOAD
+// RESTANTE IGUAL...
+
 async function financeiro() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
@@ -220,7 +260,6 @@ async function financeiro() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// UPLOAD
 async function uploadComprovante(event, id) {
   const file = event.target.files[0];
   if (!file) return;
@@ -243,7 +282,6 @@ async function uploadComprovante(event, id) {
   financeiro();
 }
 
-// CRONOGRAMA
 async function cronograma() {
   const { data } = await client.from("cronograma").select("*");
 
@@ -263,7 +301,6 @@ async function cronograma() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// AVISOS
 async function avisos() {
   const { data } = await client
     .from("avisos")
