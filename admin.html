@@ -97,7 +97,7 @@
 
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 );
 
 // 🔐 proteção
@@ -175,7 +175,7 @@ async function alunos(){
 }
 
 async function cadastrarUsuario(){
-  const nome = nomeInput = document.getElementById("nome").value;
+  const nome = document.getElementById("nome").value;
   const email = document.getElementById("email").value;
   const tipo = document.getElementById("tipo").value;
 
@@ -204,21 +204,10 @@ async function excluir(id){
 }
 
 //////////////////////////////////////////////////
-// 📚 DISCIPLINAS
+// 📚 DISCIPLINAS (UPGRADE AQUI)
 //////////////////////////////////////////////////
 
 async function disciplinasMaster(){
-
-  const { data: professores } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("tipo", "Professor");
-
-  let options = `<option value="">Selecione o professor</option>`;
-
-  professores.forEach(p => {
-    options += `<option value="${p.nome}">${p.nome}</option>`;
-  });
 
   let html=`
     <h3>📚 Disciplinas por Curso</h3>
@@ -230,9 +219,7 @@ async function disciplinasMaster(){
 
     <input id="nomeDisciplina" placeholder="Nome da disciplina">
 
-    <select id="professorDisciplina">
-      ${options}
-    </select>
+    <select id="professorDisciplina"></select>
 
     <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
 
@@ -241,29 +228,75 @@ async function disciplinasMaster(){
 
   document.getElementById("conteudo").innerHTML=html;
 
+  carregarProfessoresSelect();
   carregarDisciplinasCurso();
 }
 
+// 🔥 CARREGA PROFESSORES
+async function carregarProfessoresSelect(){
+
+  const { data } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("tipo", "Professor");
+
+  let html = `<option value="">Selecione o professor</option>`;
+
+  data.forEach(p=>{
+    html += `<option value="${p.nome}">${p.nome}</option>`;
+  });
+
+  document.getElementById("professorDisciplina").innerHTML = html;
+}
+
+// 🔥 TABELA COM SELECT EDITÁVEL
 async function carregarDisciplinasCurso(){
 
   const curso = document.getElementById("cursoMaster").value;
 
-  const { data } = await client
+  const { data: disciplinas } = await client
     .from("disciplinas_master")
     .select("*")
     .eq("curso", curso);
 
+  const { data: professores } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("tipo", "Professor");
+
   let html=`
     <table>
-      <tr><th>Curso</th><th>Disciplina</th><th>Professor</th><th>Histórico</th><th>Ação</th></tr>
+      <tr>
+        <th>Curso</th>
+        <th>Disciplina</th>
+        <th>Professor</th>
+        <th>Histórico</th>
+        <th>Ação</th>
+      </tr>
   `;
 
-  data.forEach(d=>{
+  disciplinas.forEach(d=>{
+
+    let options = `<option value="">-</option>`;
+
+    professores.forEach(p=>{
+      options += `
+        <option value="${p.nome}" ${d.professor === p.nome ? "selected" : ""}>
+          ${p.nome}
+        </option>
+      `;
+    });
+
     html+=`
       <tr>
         <td>${d.curso}</td>
         <td>${d.nome}</td>
-        <td>${d.professor || "-"}</td>
+
+        <td>
+          <select onchange="alterarProfessor('${d.id}', this.value)">
+            ${options}
+          </select>
+        </td>
 
         <td>
           <button class="btn" onclick="abrirHistorico('${d.nome}','${d.curso}')">📄</button>
@@ -281,8 +314,14 @@ async function carregarDisciplinasCurso(){
   document.getElementById("tabela").innerHTML=html;
 }
 
-async function salvarDisciplinaMaster(){
+// 🔥 ALTERAÇÃO DIRETA
+async function alterarProfessor(id, professor){
+  await client.from("disciplinas_master")
+    .update({ professor })
+    .eq("id", id);
+}
 
+async function salvarDisciplinaMaster(){
   const curso = document.getElementById("cursoMaster").value;
   const nome = document.getElementById("nomeDisciplina").value.trim();
   const professor = document.getElementById("professorDisciplina").value;
@@ -297,14 +336,12 @@ async function salvarDisciplinaMaster(){
 
 async function excluirDisciplina(id){
   if(!confirm("Excluir disciplina?")) return;
-
   await client.from("disciplinas_master").delete().eq("id",id);
-
   carregarDisciplinasCurso();
 }
 
 //////////////////////////////////////////////////
-// 📄 HISTÓRICO
+// 📄 HISTÓRICO (SEM ALTERAÇÃO)
 //////////////////////////////////////////////////
 
 async function abrirHistorico(disciplina, curso){
