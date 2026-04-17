@@ -119,6 +119,7 @@ async function alunos() {
       <input id="email" placeholder="Email">
 
       <select id="curso">
+        <option value="">Selecione o curso</option>
         <option value="Curso Básico">Curso Básico</option>
         <option value="Curso Médio">Curso Médio</option>
       </select>
@@ -132,7 +133,10 @@ async function alunos() {
   `;
 
   data.forEach(u => {
-    html += `<tr><td>${u.nome}</td><td>${u.curso}</td></tr>`;
+    html += `<tr>
+      <td>${u.nome}</td>
+      <td>${u.curso || "Não definido"}</td>
+    </tr>`;
   });
 
   html += "</table>";
@@ -140,12 +144,22 @@ async function alunos() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// SALVAR USUÁRIO
+// SALVAR USUÁRIO (COM VALIDAÇÃO)
 async function cadastrarUsuario() {
+
+  const nome = document.getElementById("nome").value;
+  const email = document.getElementById("email").value;
+  const curso = document.getElementById("curso").value;
+
+  if (!curso) {
+    alert("Selecione o curso!");
+    return;
+  }
+
   await client.from("usuarios").insert([{
-    nome: document.getElementById("nome").value,
-    email: document.getElementById("email").value,
-    curso: document.getElementById("curso").value,
+    nome,
+    email,
+    curso,
     status: "pendente"
   }]);
 
@@ -153,7 +167,7 @@ async function cadastrarUsuario() {
   alunos();
 }
 
-// 📚 DISCIPLINAS MASTER (AGORA FILTRADO POR CURSO)
+// 📚 DISCIPLINAS MASTER (SEM ALTERAÇÃO)
 async function disciplinasMaster() {
 
   let html = `
@@ -176,7 +190,6 @@ async function disciplinasMaster() {
   carregarDisciplinasCurso();
 }
 
-// 🔥 FILTRO POR CURSO
 async function carregarDisciplinasCurso() {
 
   const curso = document.getElementById("cursoMaster").value;
@@ -184,7 +197,7 @@ async function carregarDisciplinasCurso() {
   const { data } = await client
     .from("disciplinas_master")
     .select("*")
-    .eq("curso", curso); // 🚀 AQUI ESTÁ A CORREÇÃO
+    .eq("curso", curso);
 
   let html = `
     <table>
@@ -211,7 +224,6 @@ async function carregarDisciplinasCurso() {
   document.getElementById("tabelaDisciplinas").innerHTML = html;
 }
 
-// SALVAR
 async function salvarDisciplinaMaster() {
 
   const curso = document.getElementById("cursoMaster").value;
@@ -227,7 +239,6 @@ async function salvarDisciplinaMaster() {
   carregarDisciplinasCurso();
 }
 
-// EXCLUIR
 async function excluirDisciplinaMaster(id) {
 
   const confirmar = confirm("Deseja excluir?");
