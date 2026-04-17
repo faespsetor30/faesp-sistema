@@ -163,8 +163,8 @@ async function login() {
   // 🔥 SALVA USUÁRIO
   localStorage.setItem("usuario", JSON.stringify(usuario));
 
-  // 🔥 REDIRECIONAMENTO INTELIGENTE
-  if (usuario.tipo === "admin") {
+  // 🔥 REDIRECIONAMENTO AJUSTADO
+  if (usuario.tipo === "Coordenacao") {
     window.location.href = "admin.html";
   } else {
     window.location.href = "dashboard.html";
