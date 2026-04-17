@@ -93,7 +93,7 @@
 
       <div class="menu">
         <button onclick="alunos()">📋 Cadastros</button>
-        <button onclick="disciplinas()">📚 Disciplinas</button>
+        <button onclick="disciplinasMaster()">📚 Disciplinas (Curso)</button>
         <button onclick="notas()">📝 Notas / Boletim</button>
       </div>
     </div>
@@ -150,38 +150,20 @@ function sair() {
   window.location.href = "index.html";
 }
 
-// 📋 CADASTROS
+// 📋 CADASTROS (igual ao seu)
 async function alunos() {
 
   const { data } = await client.from("usuarios").select("*");
 
-  let html = `
-    <h3>📋 Cadastros</h3>
+  let html = `<h3>📋 Cadastros</h3>`;
 
-    <div style="margin-bottom:20px;">
-      <h4>➕ Novo Cadastro</h4>
-      <input id="nome" placeholder="Nome">
-      <input id="email" placeholder="Email">
-      <input id="celular" placeholder="Celular">
-      <select id="tipo">
-        <option value="Aluno">Aluno</option>
-        <option value="Professor">Professor</option>
-        <option value="Coordenacao">Coordenação</option>
-      </select>
-      <input id="curso" placeholder="Curso">
-      <br><br>
-      <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
-    </div>
-
-    <table>
-      <tr>
-        <th>Nome</th>
-        <th>Email</th>
-        <th>Status</th>
-        <th>Tipo</th>
-        <th>Ações</th>
-      </tr>
-  `;
+  html += `<table>
+    <tr>
+      <th>Nome</th>
+      <th>Email</th>
+      <th>Status</th>
+      <th>Tipo</th>
+    </tr>`;
 
   data.forEach(u => {
     html += `
@@ -193,26 +175,58 @@ async function alunos() {
         </td>
         <td>${u.email}</td>
         <td>${u.status}</td>
+        <td>${u.tipo}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+// 📚 NOVO: DISCIPLINAS MASTER
+async function disciplinasMaster() {
+
+  const { data } = await client
+    .from("disciplinas_master")
+    .select("*");
+
+  let html = `
+    <h3>📚 Disciplinas por Curso</h3>
+
+    <div style="margin-bottom:20px;">
+      <h4>➕ Nova Disciplina</h4>
+
+      <select id="cursoMaster">
+        <option value="Curso Básico">Curso Básico</option>
+        <option value="Curso Médio">Curso Médio</option>
+      </select>
+
+      <input id="nomeDisciplina" placeholder="Nome da disciplina">
+
+      <br><br>
+      <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
+    </div>
+
+    <table>
+      <tr>
+        <th>Curso</th>
+        <th>Disciplina</th>
+        <th>Ação</th>
+      </tr>
+  `;
+
+  data.forEach(d => {
+    html += `
+      <tr>
+        <td>${d.curso}</td>
+        <td>${d.nome}</td>
         <td>
-          <select onchange="alterarTipo('${u.id}', this.value)">
-            <option value="Aluno" ${u.tipo === "Aluno" ? "selected" : ""}>Aluno</option>
-            <option value="Professor" ${u.tipo === "Professor" ? "selected" : ""}>Professor</option>
-            <option value="Coordenacao" ${u.tipo === "Coordenacao" ? "selected" : ""}>Coordenação</option>
-          </select>
-        </td>
-        <td>
-          ${
-            u.status === "pendente"
-            ? `
-              <button class="btn" onclick="aprovar('${u.id}')">✅</button>
-              <button class="btn" style="background:red;" onclick="recusar('${u.id}')">❌</button>
-              <button class="btn" style="background:#6b7280;" onclick="excluir('${u.id}')">🗑️</button>
-            `
-            : `
-              ✔️
-              <button class="btn" style="background:#6b7280;" onclick="excluir('${u.id}')">🗑️</button>
-            `
-          }
+          <button class="btn" style="background:red;"
+            onclick="excluirDisciplinaMaster('${d.id}')">
+            🗑️
+          </button>
         </td>
       </tr>
     `;
@@ -223,89 +237,38 @@ async function alunos() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// RESTO DO CÓDIGO (SEM ALTERAÇÃO)
-async function alterarTipo(id, tipo) {
-  await client.from("usuarios").update({ tipo }).eq("id", id);
-  alunos();
-}
+// SALVAR
+async function salvarDisciplinaMaster() {
 
-async function aprovar(id) {
-  const { data: usuario } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const curso = document.getElementById("cursoMaster").value;
+  const nome = document.getElementById("nomeDisciplina").value;
 
-  const { error } = await client.auth.signInWithOtp({
-    email: usuario.email,
-    options: {
-      emailRedirectTo: "https://faesp-sistema.vercel.app/primeiro-acesso.html"
-    }
-  });
-
-  if (error) {
-    alert("Erro ao enviar email: " + error.message);
+  if (!nome) {
+    alert("Digite o nome da disciplina");
     return;
   }
 
-  await client
-    .from("usuarios")
-    .update({ status: "ativo", primeiro_acesso: true })
-    .eq("id", id);
-
-  alert("Usuário aprovado!");
-  alunos();
-}
-
-async function recusar(id) {
-  await client.from("usuarios").update({ status: "recusado" }).eq("id", id);
-  alert("Recusado!");
-  alunos();
-}
-
-async function excluir(id) {
-  const confirmar = confirm("Tem certeza que deseja excluir?");
-  if (!confirmar) return;
-
-  const { data: usuario } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  await client.from("usuarios").delete().eq("id", id);
-
-  await fetch("https://nzygdvixqmiltelgzzrn.supabase.co/functions/v1/delete-user", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ email: usuario.email })
-  });
-
-  alert("Usuário excluído!");
-  alunos();
-}
-
-async function cadastrarUsuario() {
-  const nome = document.getElementById("nome").value;
-  const email = document.getElementById("email").value;
-  const celular = document.getElementById("celular").value;
-  const tipo = document.getElementById("tipo").value;
-  const curso = document.getElementById("curso").value;
-
-  await client.from("usuarios").insert([
-    { nome, email, celular, tipo, curso, status: "pendente" }
+  await client.from("disciplinas_master").insert([
+    { curso, nome }
   ]);
 
-  alert("Usuário cadastrado!");
-  alunos();
+  alert("Disciplina cadastrada!");
+  disciplinasMaster();
 }
 
-function disciplinas(){
-  document.getElementById("conteudo").innerHTML="📚 Disciplinas";
+// EXCLUIR
+async function excluirDisciplinaMaster(id) {
+
+  const confirmar = confirm("Deseja excluir?");
+  if (!confirmar) return;
+
+  await client.from("disciplinas_master").delete().eq("id", id);
+
+  alert("Excluído!");
+  disciplinasMaster();
 }
 
+// OUTROS
 function notas(){
   document.getElementById("conteudo").innerHTML="📝 Notas";
 }
