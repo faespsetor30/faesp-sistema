@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Primeiro Acesso - FAESP</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #2c5364, #203a43);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      width: 350px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      color: #2c5364;
+    }
+
+    p {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2c5364;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    #msg {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #2c5364;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <h2>🔐 Primeiro Acesso</h2>
+  <p>Defina sua nova senha para continuar</p>
+
+  <input id="novaSenha" type="password" placeholder="Nova senha">
+  <input id="confirmarSenha" type="password" placeholder="Confirmar senha">
+
+  <button onclick="alterarSenha()">Salvar nova senha</button>
+
+  <p id="msg"></p>
+
+</div>
+
+<script>
+const client = supabase.createClient(
+  "https://nzygdvixqmiltelgzzrn.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+);
+
+async function alterarSenha() {
+  const senha = document.getElementById("novaSenha").value;
+  const confirmar = document.getElementById("confirmarSenha").value;
+
+  if (!senha || senha.length < 6) {
+    document.getElementById("msg").innerText = "Senha deve ter pelo menos 6 caracteres";
+    return;
+  }
+
+  if (senha !== confirmar) {
+    document.getElementById("msg").innerText = "As senhas não conferem";
+    return;
+  }
+
+  // 🔐 ALTERA SENHA NO AUTH
+  const { error } = await client.auth.updateUser({
+    password: senha
+  });
+
+  if (error) {
+    document.getElementById("msg").innerText = "Erro: " + error.message;
+    return;
+  }
+
+  const usuario = JSON.parse(localStorage.getItem("usuario_temp"));
+
+  // 🔄 ATUALIZA NO BANCO
+  await client
+    .from("usuarios")
+    .update({ primeiro_acesso: false })
+    .eq("id", usuario.id);
+
+  // 🔥 SALVA USUÁRIO DEFINITIVO
+  localStorage.setItem("usuario", JSON.stringify(usuario));
+  localStorage.removeItem("usuario_temp");
+
+  document.getElementById("msg").innerText = "Senha alterada com sucesso! 🚀";
+
+  setTimeout(() => {
+    window.location.href = "dashboard.html";
+  }, 1500);
+}
+</script>
+
+</body>
+</html>
