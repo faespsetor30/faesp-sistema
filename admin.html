@@ -68,6 +68,17 @@
       padding:8px; border-radius:6px; border:1px solid #ccc;
       margin-top:5px; width:100%;
     }
+
+    a.nome-link {
+      color:#2c5364;
+      font-weight:bold;
+      text-decoration:none;
+    }
+
+    a.nome-link:hover {
+      text-decoration:underline;
+    }
+
   </style>
 </head>
 
@@ -109,7 +120,7 @@
 
 <script>
 
-// 🔐 PROTEÇÃO DE ACESSO (NOVO)
+// 🔐 PROTEÇÃO
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
 if (!usuario) {
@@ -175,7 +186,11 @@ async function alunos() {
   data.forEach(u => {
     html += `
       <tr>
-        <td>${u.nome}</td>
+        <td>
+          <a class="nome-link" href="detalhe-aluno.html?id=${u.id}">
+            ${u.nome}
+          </a>
+        </td>
         <td>${u.email}</td>
         <td>${u.status}</td>
         <td>
@@ -208,15 +223,13 @@ async function alunos() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// ALTERAR TIPO
+// RESTO DO CÓDIGO (SEM ALTERAÇÃO)
 async function alterarTipo(id, tipo) {
   await client.from("usuarios").update({ tipo }).eq("id", id);
   alunos();
 }
 
-// APROVAR
 async function aprovar(id) {
-
   const { data: usuario } = await client
     .from("usuarios")
     .select("*")
@@ -244,16 +257,13 @@ async function aprovar(id) {
   alunos();
 }
 
-// RECUSAR
 async function recusar(id) {
   await client.from("usuarios").update({ status: "recusado" }).eq("id", id);
   alert("Recusado!");
   alunos();
 }
 
-// EXCLUIR
 async function excluir(id) {
-
   const confirmar = confirm("Tem certeza que deseja excluir?");
   if (!confirmar) return;
 
@@ -277,9 +287,7 @@ async function excluir(id) {
   alunos();
 }
 
-// CADASTRAR
 async function cadastrarUsuario() {
-
   const nome = document.getElementById("nome").value;
   const email = document.getElementById("email").value;
   const celular = document.getElementById("celular").value;
@@ -294,7 +302,6 @@ async function cadastrarUsuario() {
   alunos();
 }
 
-// OUTROS
 function disciplinas(){
   document.getElementById("conteudo").innerHTML="📚 Disciplinas";
 }
