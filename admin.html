@@ -112,3 +112,48 @@ const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
+
+// ✅ FUNÇÃO ALUNOS (CORRIGIDA)
+async function alunos() {
+
+  const { data, error } = await client
+    .from('alunos')
+    .select('*')
+
+  if (error) {
+    document.getElementById("conteudo").innerHTML = "Erro ao carregar alunos ❌"
+    console.error(error)
+    return
+  }
+
+  let html = "<h3>📋 Lista de Alunos</h3><table>"
+  html += "<tr><th>Nome</th><th>Email</th></tr>"
+
+  data.forEach(aluno => {
+    html += `<tr>
+      <td>${aluno.nome || '-'}</td>
+      <td>${aluno.email || '-'}</td>
+    </tr>`
+  })
+
+  html += "</table>"
+
+  document.getElementById("conteudo").innerHTML = html
+}
+
+// ✅ FUNÇÕES TEMPORÁRIAS (pra não dar erro)
+function disciplinas() {
+  document.getElementById("conteudo").innerHTML = "📚 Em desenvolvimento..."
+}
+
+function notas() {
+  document.getElementById("conteudo").innerHTML = "📝 Em desenvolvimento..."
+}
+
+function sair() {
+  alert("Logout em desenvolvimento 🚪")
+}
+</script>
+
+</body>
+</html>
