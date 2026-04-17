@@ -110,7 +110,7 @@ function sair(){
 }
 
 //////////////////////////////////////////////////
-// 👤 CADASTROS (VOLTOU COMPLETO)
+// 👤 CADASTROS (SEM CURSO)
 //////////////////////////////////////////////////
 
 async function alunos(){
@@ -122,12 +122,6 @@ async function alunos(){
 
     <input id="nome" placeholder="Nome">
     <input id="email" placeholder="Email">
-
-    <select id="curso">
-      <option value="">Selecione o curso</option>
-      <option value="Curso Básico">Curso Básico</option>
-      <option value="Curso Médio">Curso Médio</option>
-    </select>
 
     <select id="tipo">
       <option value="Aluno">Aluno</option>
@@ -176,11 +170,17 @@ async function alunos(){
 }
 
 async function cadastrarUsuario(){
+
+  const nome = document.getElementById("nome").value;
+  const email = document.getElementById("email").value;
+  const tipo = document.getElementById("tipo").value;
+
+  if(!nome || !email) return alert("Preencha os campos");
+
   await client.from("usuarios").insert([{
-    nome: nome.value,
-    email: email.value,
-    curso: curso.value,
-    tipo: tipo.value,
+    nome,
+    email,
+    tipo,
     status:"pendente"
   }]);
 
@@ -205,7 +205,7 @@ async function excluir(id){
 }
 
 //////////////////////////////////////////////////
-// 📚 DISCIPLINAS (ARRUMADO DE VERDADE)
+// 📚 DISCIPLINAS (SEM MUDAR)
 //////////////////////////////////////////////////
 
 async function disciplinasMaster(){
@@ -225,19 +225,19 @@ async function disciplinasMaster(){
     <div id="tabela"></div>
   `;
 
-  conteudo.innerHTML=html;
+  document.getElementById("conteudo").innerHTML=html;
 
   carregarDisciplinasCurso();
 }
 
 async function carregarDisciplinasCurso(){
 
-  const curso = cursoMaster.value;
+  const curso = document.getElementById("cursoMaster").value;
 
   const { data } = await client
     .from("disciplinas_master")
     .select("*")
-    .eq("curso", curso); // 🔥 separação correta
+    .eq("curso", curso);
 
   let html=`
     <table>
@@ -250,9 +250,7 @@ async function carregarDisciplinasCurso(){
         <td>${d.curso}</td>
         <td>${d.nome}</td>
         <td>
-          <button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">
-            🗑️
-          </button>
+          <button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">🗑️</button>
         </td>
       </tr>
     `;
@@ -260,27 +258,15 @@ async function carregarDisciplinasCurso(){
 
   html+="</table>";
 
-  tabela.innerHTML=html;
+  document.getElementById("tabela").innerHTML=html;
 }
 
 async function salvarDisciplinaMaster(){
 
-  const curso = cursoMaster.value;
-  const nome = nomeDisciplina.value.trim();
+  const curso = document.getElementById("cursoMaster").value;
+  const nome = document.getElementById("nomeDisciplina").value.trim();
 
   if(!nome) return alert("Digite o nome");
-
-  // 🔥 impede duplicar no mesmo curso
-  const { data } = await client
-    .from("disciplinas_master")
-    .select("*")
-    .eq("curso", curso)
-    .eq("nome", nome);
-
-  if(data.length){
-    alert("Já existe nesse curso!");
-    return;
-  }
 
   await client.from("disciplinas_master").insert([{curso,nome}]);
 
