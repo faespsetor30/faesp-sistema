@@ -7,15 +7,43 @@
 
   <style>
     body { font-family:'Segoe UI'; background:#eef2f7; padding:20px; }
+
     .card {
       background:white; padding:20px; border-radius:12px;
       margin-bottom:20px; box-shadow:0 5px 15px rgba(0,0,0,0.05);
     }
-    input { width:100%; padding:8px; margin:5px 0; }
-    button { padding:8px 12px; margin-top:5px; cursor:pointer; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    th, td { padding:10px; border-bottom:1px solid #ddd; text-align:center; }
-    th { background:#f8fafc; }
+
+    input {
+      width:100%; padding:8px; margin:5px 0;
+    }
+
+    input[readonly] {
+      background:#f1f5f9;
+      cursor:not-allowed;
+    }
+
+    label {
+      font-weight:600;
+      display:block;
+      margin-top:10px;
+      color:#2c5364;
+    }
+
+    button {
+      padding:8px 12px; margin-top:10px; cursor:pointer;
+    }
+
+    table {
+      width:100%; border-collapse:collapse; margin-top:10px;
+    }
+
+    th, td {
+      padding:10px; border-bottom:1px solid #ddd; text-align:center;
+    }
+
+    th {
+      background:#f8fafc;
+    }
   </style>
 </head>
 
@@ -48,17 +76,50 @@ const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
 let aluno = null;
-let listaNotas = [];
+
+// 🧠 FORMATAR NOME
+function formatarNome(nome) {
+  return nome?.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+}
+
+// 🧠 MÁSCARAS
+function formatarCPF(valor) {
+  return valor.replace(/\D/g,'')
+    .replace(/(\d{3})(\d)/,'$1.$2')
+    .replace(/(\d{3})(\d)/,'$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+}
+
+function formatarCelular(valor) {
+  return valor.replace(/\D/g,'')
+    .replace(/(\d{2})(\d)/,'($1) $2')
+    .replace(/(\d{5})(\d)/,'$1-$2');
+}
+
+function aplicarMascaras() {
+  const cpf = document.getElementById("cpf");
+  const celular = document.getElementById("celular");
+
+  cpf.addEventListener("input", () => cpf.value = formatarCPF(cpf.value));
+  celular.addEventListener("input", () => celular.value = formatarCelular(celular.value));
+}
+
+// 📋 COPIAR
+function copiarDados() {
+  const texto = `
+Nome: ${document.getElementById("nome").value}
+Email: ${document.getElementById("email").value}
+CPF: ${document.getElementById("cpf").value}
+Celular: ${document.getElementById("celular").value}
+Curso: ${document.getElementById("curso").value}
+  `;
+  navigator.clipboard.writeText(texto);
+  alert("Dados copiados!");
+}
 
 // 🚀 CARREGAR
 async function carregar() {
-
-  const { data } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("id", id)
-    .single();
-
+  const { data } = await client.from("usuarios").select("*").eq("id", id).single();
   aluno = data;
 
   renderDados();
@@ -67,33 +128,49 @@ async function carregar() {
   carregarFinanceiro();
 }
 
-// 👤 DADOS + EDIÇÃO
+// 👤 DADOS
 function renderDados() {
 
   document.getElementById("dados").innerHTML = `
     <div class="card">
-      <h3>👤 Dados (editável)</h3>
+      <h3>👤 Dados do Aluno</h3>
 
-      <input id="nome" value="${aluno.nome}">
-      <input id="email" value="${aluno.email}">
+      <label>Nome Completo</label>
+      <input id="nome" value="${formatarNome(aluno.nome)}">
+
+      <label>Email</label>
+      <input id="email" value="${aluno.email}" readonly>
+
+      <label>CPF</label>
       <input id="cpf" value="${aluno.cpf || ""}">
+
+      <label>RG</label>
       <input id="rg" value="${aluno.rg || ""}">
-      <input id="data" value="${aluno.data_nascimento || ""}">
+
+      <label>Data de Nascimento</label>
+      <input id="data" type="date" value="${aluno.data_nascimento || ""}">
+
+      <label>Endereço</label>
       <input id="endereco" value="${aluno.endereco || ""}">
+
+      <label>Celular</label>
       <input id="celular" value="${aluno.celular || ""}">
+
+      <label>Curso</label>
       <input id="curso" value="${aluno.curso || ""}">
 
       <button onclick="salvarEdicao()">💾 Salvar</button>
+      <button onclick="copiarDados()">📋 Copiar</button>
     </div>
   `;
+
+  aplicarMascaras();
 }
 
-// 💾 SALVAR EDIÇÃO
+// 💾 SALVAR
 async function salvarEdicao() {
-
   await client.from("usuarios").update({
     nome: document.getElementById("nome").value,
-    email: document.getElementById("email").value,
     cpf: document.getElementById("cpf").value,
     rg: document.getElementById("rg").value,
     data_nascimento: document.getElementById("data").value,
@@ -105,67 +182,42 @@ async function salvarEdicao() {
   alert("Dados atualizados!");
 }
 
-// ✅ AÇÕES
+// ⚙️ AÇÕES
 function renderAcoes() {
-
   document.getElementById("acoes").innerHTML = `
     <div class="card">
       <h3>⚙️ Ações</h3>
-
       <button onclick="aprovar()">✅ Aprovar</button>
-      <button onclick="recusar()" style="background:red; color:white;">❌ Recusar</button>
+      <button onclick="recusar()" style="background:red;color:white;">❌ Recusar</button>
     </div>
   `;
 }
 
 async function aprovar() {
-  await client.from("usuarios")
-    .update({ status:"ativo" })
-    .eq("id", id);
-
+  await client.from("usuarios").update({ status:"ativo" }).eq("id", id);
   alert("Aprovado!");
   carregar();
 }
 
 async function recusar() {
-  await client.from("usuarios")
-    .update({ status:"recusado" })
-    .eq("id", id);
-
+  await client.from("usuarios").update({ status:"recusado" }).eq("id", id);
   alert("Recusado!");
   carregar();
 }
 
-// 📚 DISCIPLINAS + MÉDIA + GRÁFICO
+// 📚 DISCIPLINAS
 async function carregarDisciplinas() {
 
-  const { data } = await client
-    .from("disciplinas")
-    .select("*")
-    .eq("email", aluno.email);
+  const { data } = await client.from("disciplinas").select("*").eq("email", aluno.email);
 
-  let soma = 0;
-  let qtd = 0;
-  let nomes = [];
-  let notas = [];
+  let soma = 0, qtd = 0;
+  let nomes = [], notas = [];
 
-  let html = `
-    <div class="card">
-    <h3>📊 Disciplinas</h3>
-    <table>
-      <tr>
-        <th>Disciplina</th>
-        <th>Nota</th>
-      </tr>
-  `;
+  let html = `<div class="card"><h3>📊 Disciplinas</h3><table>
+  <tr><th>Disciplina</th><th>Nota</th></tr>`;
 
   data.forEach(d => {
-    html += `
-      <tr>
-        <td>${d.nome}</td>
-        <td>${d.nota || "-"}</td>
-      </tr>
-    `;
+    html += `<tr><td>${d.nome}</td><td>${d.nota || "-"}</td></tr>`;
 
     if (d.nota) {
       soma += Number(d.nota);
@@ -176,11 +228,9 @@ async function carregarDisciplinas() {
   });
 
   html += "</table></div>";
-
   document.getElementById("disciplinas").innerHTML = html;
 
-  // 📊 MÉDIA
-  const media = qtd ? (soma / qtd).toFixed(1) : "-";
+  const media = qtd ? (soma/qtd).toFixed(1) : "-";
 
   document.getElementById("media").innerHTML = `
     <div class="card">
@@ -189,59 +239,38 @@ async function carregarDisciplinas() {
     </div>
   `;
 
-  // 📉 GRÁFICO
   document.getElementById("grafico").innerHTML = `
     <div class="card">
-      <h3>📊 Gráfico de Notas</h3>
+      <h3>📊 Gráfico</h3>
       <canvas id="chart"></canvas>
     </div>
   `;
 
   setTimeout(() => {
     new Chart(document.getElementById("chart"), {
-      type: 'bar',
-      data: {
-        labels: nomes,
-        datasets: [{
-          label: 'Notas',
-          data: notas
-        }]
-      }
+      type:'bar',
+      data:{ labels:nomes, datasets:[{label:'Notas',data:notas}] }
     });
-  }, 200);
+  },200);
 }
 
 // 💰 FINANCEIRO
 async function carregarFinanceiro() {
 
-  const { data } = await client
-    .from("financeiro")
-    .select("*")
-    .eq("email", aluno.email);
+  const { data } = await client.from("financeiro").select("*").eq("email", aluno.email);
 
-  let html = `
-    <div class="card">
-    <h3>💰 Financeiro</h3>
-    <table>
-      <tr>
-        <th>Disciplina</th>
-        <th>Valor</th>
-        <th>Status</th>
-      </tr>
-  `;
+  let html = `<div class="card"><h3>💰 Financeiro</h3><table>
+  <tr><th>Disciplina</th><th>Valor</th><th>Status</th></tr>`;
 
   data.forEach(f => {
-    html += `
-      <tr>
-        <td>${f.disciplina}</td>
-        <td>R$ ${f.valor}</td>
-        <td>${f.status}</td>
-      </tr>
-    `;
+    html += `<tr>
+      <td>${f.disciplina}</td>
+      <td>R$ ${f.valor}</td>
+      <td>${f.status}</td>
+    </tr>`;
   });
 
   html += "</table></div>";
-
   document.getElementById("financeiro").innerHTML = html;
 }
 
