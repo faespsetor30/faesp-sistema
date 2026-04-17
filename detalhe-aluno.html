@@ -13,7 +13,7 @@
       margin-bottom:20px; box-shadow:0 5px 15px rgba(0,0,0,0.05);
     }
 
-    input {
+    input, select {
       width:100%; padding:8px; margin:5px 0;
     }
 
@@ -41,13 +41,19 @@
       padding:10px; border-bottom:1px solid #ddd; text-align:center;
     }
 
-    th {
-      background:#f8fafc;
+    th { background:#f8fafc; }
+
+    .top-bar {
+      margin-bottom:15px;
     }
   </style>
 </head>
 
 <body>
+
+<div class="top-bar">
+  <button onclick="voltar()">⬅️ Voltar</button>
+</div>
 
 <h2>📋 Ficha do Aluno</h2>
 
@@ -77,12 +83,16 @@ const id = params.get("id");
 
 let aluno = null;
 
-// 🧠 FORMATAR NOME
+// 🔙 VOLTAR
+function voltar() {
+  window.location.href = "admin.html";
+}
+
+// 🧠 FORMATAR
 function formatarNome(nome) {
   return nome?.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
 }
 
-// 🧠 MÁSCARAS
 function formatarCPF(valor) {
   return valor.replace(/\D/g,'')
     .replace(/(\d{3})(\d)/,'$1.$2')
@@ -108,9 +118,7 @@ function aplicarMascaras() {
 function copiarDados() {
   const texto = `
 Nome: ${document.getElementById("nome").value}
-Email: ${document.getElementById("email").value}
-CPF: ${document.getElementById("cpf").value}
-Celular: ${document.getElementById("celular").value}
+Matrícula: ${document.getElementById("matricula").value}
 Curso: ${document.getElementById("curso").value}
   `;
   navigator.clipboard.writeText(texto);
@@ -119,7 +127,13 @@ Curso: ${document.getElementById("curso").value}
 
 // 🚀 CARREGAR
 async function carregar() {
-  const { data } = await client.from("usuarios").select("*").eq("id", id).single();
+
+  const { data } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
   aluno = data;
 
   renderDados();
@@ -141,23 +155,29 @@ function renderDados() {
       <label>Email</label>
       <input id="email" value="${aluno.email}" readonly>
 
+      <label>Número da Matrícula</label>
+      <input id="matricula" value="${aluno.matricula || ""}">
+
+      <label>Data de Início do Curso</label>
+      <input id="data_inicio" type="date" value="${aluno.data_inicio || ""}">
+
+      <label>Curso</label>
+      <select id="curso">
+        <option value="Curso Básico" ${aluno.curso==="Curso Básico"?"selected":""}>Curso Básico</option>
+        <option value="Curso Médio" ${aluno.curso==="Curso Médio"?"selected":""}>Curso Médio</option>
+      </select>
+
       <label>CPF</label>
       <input id="cpf" value="${aluno.cpf || ""}">
 
       <label>RG</label>
       <input id="rg" value="${aluno.rg || ""}">
 
-      <label>Data de Nascimento</label>
-      <input id="data" type="date" value="${aluno.data_nascimento || ""}">
-
-      <label>Endereço</label>
-      <input id="endereco" value="${aluno.endereco || ""}">
-
       <label>Celular</label>
       <input id="celular" value="${aluno.celular || ""}">
 
-      <label>Curso</label>
-      <input id="curso" value="${aluno.curso || ""}">
+      <label>Endereço</label>
+      <input id="endereco" value="${aluno.endereco || ""}">
 
       <button onclick="salvarEdicao()">💾 Salvar</button>
       <button onclick="copiarDados()">📋 Copiar</button>
@@ -169,17 +189,19 @@ function renderDados() {
 
 // 💾 SALVAR
 async function salvarEdicao() {
+
   await client.from("usuarios").update({
     nome: document.getElementById("nome").value,
+    matricula: document.getElementById("matricula").value,
+    data_inicio: document.getElementById("data_inicio").value,
+    curso: document.getElementById("curso").value,
     cpf: document.getElementById("cpf").value,
     rg: document.getElementById("rg").value,
-    data_nascimento: document.getElementById("data").value,
-    endereco: document.getElementById("endereco").value,
     celular: document.getElementById("celular").value,
-    curso: document.getElementById("curso").value
+    endereco: document.getElementById("endereco").value
   }).eq("id", id);
 
-  alert("Dados atualizados!");
+  alert("Atualizado!");
 }
 
 // ⚙️ AÇÕES
@@ -205,73 +227,58 @@ async function recusar() {
   carregar();
 }
 
-// 📚 DISCIPLINAS
+// 📚 DISCIPLINAS + GRÁFICO + MÉDIA
 async function carregarDisciplinas() {
 
   const { data } = await client.from("disciplinas").select("*").eq("email", aluno.email);
 
-  let soma = 0, qtd = 0;
-  let nomes = [], notas = [];
+  let soma=0,qtd=0,nomes=[],notas=[];
 
   let html = `<div class="card"><h3>📊 Disciplinas</h3><table>
   <tr><th>Disciplina</th><th>Nota</th></tr>`;
 
-  data.forEach(d => {
-    html += `<tr><td>${d.nome}</td><td>${d.nota || "-"}</td></tr>`;
-
-    if (d.nota) {
-      soma += Number(d.nota);
-      qtd++;
-      nomes.push(d.nome);
-      notas.push(d.nota);
-    }
+  data.forEach(d=>{
+    html+=`<tr><td>${d.nome}</td><td>${d.nota||"-"}</td></tr>`;
+    if(d.nota){soma+=+d.nota;qtd++;nomes.push(d.nome);notas.push(d.nota);}
   });
 
-  html += "</table></div>";
-  document.getElementById("disciplinas").innerHTML = html;
+  html+="</table></div>";
+  document.getElementById("disciplinas").innerHTML=html;
 
-  const media = qtd ? (soma/qtd).toFixed(1) : "-";
+  const media=qtd?(soma/qtd).toFixed(1):"-";
 
-  document.getElementById("media").innerHTML = `
+  document.getElementById("media").innerHTML=`
     <div class="card">
-      <h3>📈 Média do Aluno</h3>
+      <h3>📈 Média</h3>
       <h2>${media}</h2>
-    </div>
-  `;
+    </div>`;
 
-  document.getElementById("grafico").innerHTML = `
+  document.getElementById("grafico").innerHTML=`
     <div class="card">
-      <h3>📊 Gráfico</h3>
       <canvas id="chart"></canvas>
-    </div>
-  `;
+    </div>`;
 
-  setTimeout(() => {
-    new Chart(document.getElementById("chart"), {
+  setTimeout(()=>{
+    new Chart(document.getElementById("chart"),{
       type:'bar',
-      data:{ labels:nomes, datasets:[{label:'Notas',data:notas}] }
+      data:{labels:nomes,datasets:[{label:'Notas',data:notas}]}
     });
   },200);
 }
 
 // 💰 FINANCEIRO
-async function carregarFinanceiro() {
+async function carregarFinanceiro(){
+  const {data}=await client.from("financeiro").select("*").eq("email",aluno.email);
 
-  const { data } = await client.from("financeiro").select("*").eq("email", aluno.email);
-
-  let html = `<div class="card"><h3>💰 Financeiro</h3><table>
+  let html=`<div class="card"><h3>💰 Financeiro</h3><table>
   <tr><th>Disciplina</th><th>Valor</th><th>Status</th></tr>`;
 
-  data.forEach(f => {
-    html += `<tr>
-      <td>${f.disciplina}</td>
-      <td>R$ ${f.valor}</td>
-      <td>${f.status}</td>
-    </tr>`;
+  data.forEach(f=>{
+    html+=`<tr><td>${f.disciplina}</td><td>R$ ${f.valor}</td><td>${f.status}</td></tr>`;
   });
 
-  html += "</table></div>";
-  document.getElementById("financeiro").innerHTML = html;
+  html+="</table></div>";
+  document.getElementById("financeiro").innerHTML=html;
 }
 
 carregar();
