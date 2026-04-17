@@ -199,10 +199,36 @@ async function alterarTipo(id, tipo) {
   alunos();
 }
 
-// APROVAR
+// APROVAR (AJUSTADO)
 async function aprovar(id) {
-  await client.from("usuarios").update({ status: "ativo" }).eq("id", id);
-  alert("Aprovado!");
+  const { data: usuario } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  const senha = gerarSenha();
+
+  const { error } = await client.auth.signUp({
+    email: usuario.email,
+    password: senha
+  });
+
+  if (error) {
+    alert("Erro ao criar no Auth: " + error.message);
+    return;
+  }
+
+  await client
+    .from("usuarios")
+    .update({ status: "ativo" })
+    .eq("id", id);
+
+  alert(`Usuário aprovado! 🚀
+
+Email: ${usuario.email}
+Senha: ${senha}`);
+
   alunos();
 }
 
@@ -213,7 +239,7 @@ async function recusar(id) {
   alunos();
 }
 
-// 🚀 CADASTRAR (CORRIGIDO)
+// 🚀 CADASTRAR (AJUSTADO)
 async function cadastrarUsuario() {
   const nome = document.getElementById("nome").value;
   const email = document.getElementById("email").value;
@@ -221,26 +247,11 @@ async function cadastrarUsuario() {
   const tipo = document.getElementById("tipo").value;
   const curso = document.getElementById("curso").value;
 
-  const senha = gerarSenha();
-
-  const { data, error } = await client.auth.signUp({
-    email,
-    password: senha
-  });
-
-  if (error) {
-    alert("Erro no Auth: " + error.message);
-    return;
-  }
-
   await client.from("usuarios").insert([
     { nome, email, celular, tipo, curso, status: "pendente" }
   ]);
 
-  alert(`Usuário criado!
-
-Email: ${email}
-Senha: ${senha}`);
+  alert(`Usuário cadastrado e aguardando aprovação!`);
 
   alunos();
 }
