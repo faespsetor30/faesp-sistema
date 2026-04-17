@@ -1,24 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Detalhe do Aluno</title>
+  <title>Ficha do Aluno</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI';
+      background:#eef2f7;
+      padding:20px;
+    }
+
+    .card {
+      background:white;
+      padding:20px;
+      border-radius:12px;
+      margin-bottom:20px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      color:#2c5364;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+    }
+
+    th, td {
+      padding:10px;
+      border-bottom:1px solid #ddd;
+      text-align:center;
+    }
+
+    th {
+      background:#f8fafc;
+    }
+  </style>
 </head>
 
-<body style="font-family: Arial; padding:20px;">
+<body>
 
-<h2>📋 Detalhes do Aluno</h2>
+<h2>📋 Ficha do Aluno</h2>
 
-<div id="dados">Carregando...</div>
+<div id="dados"></div>
+<div id="disciplinas"></div>
+<div id="financeiro"></div>
 
 <script>
 
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "SUA_CHAVE_AQUI"
 );
 
-// 🔐 PROTEÇÃO (SÓ ADMIN)
+// 🔐 PROTEÇÃO
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
 if (!usuario || usuario.tipo !== "Coordenacao") {
@@ -26,33 +64,115 @@ if (!usuario || usuario.tipo !== "Coordenacao") {
   window.location.href = "index.html";
 }
 
-// PEGAR ID DA URL
+// PEGAR ID
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
-// CARREGAR DADOS
+let aluno = null;
+
+// CARREGAR TUDO
 async function carregar() {
 
+  // 👤 DADOS
   const { data } = await client
     .from("usuarios")
     .select("*")
     .eq("id", id)
     .single();
 
-  let html = `
-    <p><strong>Nome:</strong> ${data.nome}</p>
-    <p><strong>Email:</strong> ${data.email}</p>
-    <p><strong>CPF:</strong> ${data.cpf || "-"}</p>
-    <p><strong>RG:</strong> ${data.rg || "-"}</p>
-    <p><strong>Data Nascimento:</strong> ${data.data_nascimento || "-"}</p>
-    <p><strong>Endereço:</strong> ${data.endereco || "-"}</p>
-    <p><strong>Celular:</strong> ${data.celular || "-"}</p>
-    <p><strong>Curso:</strong> ${data.curso || "-"}</p>
-    <p><strong>Status:</strong> ${data.status}</p>
-    <p><strong>Tipo:</strong> ${data.tipo}</p>
+  aluno = data;
+
+  document.getElementById("dados").innerHTML = `
+    <div class="card">
+      <h3>👤 Dados Pessoais</h3>
+      <p><strong>Nome:</strong> ${aluno.nome}</p>
+      <p><strong>Email:</strong> ${aluno.email}</p>
+      <p><strong>CPF:</strong> ${aluno.cpf || "-"}</p>
+      <p><strong>RG:</strong> ${aluno.rg || "-"}</p>
+      <p><strong>Data Nascimento:</strong> ${aluno.data_nascimento || "-"}</p>
+      <p><strong>Endereço:</strong> ${aluno.endereco || "-"}</p>
+      <p><strong>Celular:</strong> ${aluno.celular || "-"}</p>
+      <p><strong>Curso:</strong> ${aluno.curso || "-"}</p>
+      <p><strong>Status:</strong> ${aluno.status}</p>
+    </div>
   `;
 
-  document.getElementById("dados").innerHTML = html;
+  carregarDisciplinas();
+  carregarFinanceiro();
+}
+
+// 📚 DISCIPLINAS
+async function carregarDisciplinas() {
+
+  const { data } = await client
+    .from("disciplinas")
+    .select("*")
+    .eq("email", aluno.email);
+
+  let html = `
+    <div class="card">
+    <h3>📊 Disciplinas</h3>
+    <table>
+      <tr>
+        <th>Disciplina</th>
+        <th>Professor</th>
+        <th>Nota</th>
+        <th>Início</th>
+        <th>Fim</th>
+      </tr>
+  `;
+
+  data.forEach(d => {
+    html += `
+      <tr>
+        <td>${d.nome}</td>
+        <td>${d.professor}</td>
+        <td>${d.nota || "-"}</td>
+        <td>${d.data_inicio || "-"}</td>
+        <td>${d.data_fim || "-"}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table></div>";
+
+  document.getElementById("disciplinas").innerHTML = html;
+}
+
+// 💰 FINANCEIRO
+async function carregarFinanceiro() {
+
+  const { data } = await client
+    .from("financeiro")
+    .select("*")
+    .eq("email", aluno.email);
+
+  let html = `
+    <div class="card">
+    <h3>💰 Financeiro</h3>
+    <table>
+      <tr>
+        <th>Disciplina</th>
+        <th>Valor</th>
+        <th>Status</th>
+        <th>Pagamento</th>
+      </tr>
+  `;
+
+  data.forEach(f => {
+    html += `
+      <tr>
+        <td>${f.disciplina}</td>
+        <td>R$ ${f.valor}</td>
+        <td>${f.status}</td>
+        <td>${f.data_pagamento || "-"}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table></div>";
+
+  document.getElementById("financeiro").innerHTML = html;
 }
 
 carregar();
