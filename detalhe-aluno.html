@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Detalhe do Aluno</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body style="font-family: Arial; padding:20px;">
+
+<h2>📋 Detalhes do Aluno</h2>
+
+<div id="dados">Carregando...</div>
+
+<script>
+
+const client = supabase.createClient(
+  "https://nzygdvixqmiltelgzzrn.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+);
+
+// 🔐 PROTEÇÃO (SÓ ADMIN)
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if (!usuario || usuario.tipo !== "Coordenacao") {
+  alert("Acesso restrito");
+  window.location.href = "index.html";
+}
+
+// PEGAR ID DA URL
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+// CARREGAR DADOS
+async function carregar() {
+
+  const { data } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  let html = `
+    <p><strong>Nome:</strong> ${data.nome}</p>
+    <p><strong>Email:</strong> ${data.email}</p>
+    <p><strong>CPF:</strong> ${data.cpf || "-"}</p>
+    <p><strong>RG:</strong> ${data.rg || "-"}</p>
+    <p><strong>Data Nascimento:</strong> ${data.data_nascimento || "-"}</p>
+    <p><strong>Endereço:</strong> ${data.endereco || "-"}</p>
+    <p><strong>Celular:</strong> ${data.celular || "-"}</p>
+    <p><strong>Curso:</strong> ${data.curso || "-"}</p>
+    <p><strong>Status:</strong> ${data.status}</p>
+    <p><strong>Tipo:</strong> ${data.tipo}</p>
+  `;
+
+  document.getElementById("dados").innerHTML = html;
+}
+
+carregar();
+
+</script>
+
+</body>
+</html>
