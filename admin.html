@@ -15,6 +15,7 @@
     }
 
     .logo { width: 120px; margin-bottom: 10px; }
+
     .menu button {
       width: 100%; padding: 12px; margin-bottom: 10px;
       border: none; background: #f1f5f9; border-radius: 10px;
@@ -48,6 +49,7 @@
     .btn {
       background:#2c5364; color:white; border:none;
       padding:6px 10px; border-radius:6px;
+      cursor:pointer;
     }
 
     input, select {
@@ -104,7 +106,7 @@ function sair() {
   window.location.href = "index.html";
 }
 
-// 👤 CADASTRO (CURSO PADRONIZADO)
+// 👤 CADASTROS
 async function alunos() {
 
   const { data } = await client.from("usuarios").select("*");
@@ -151,15 +153,13 @@ async function cadastrarUsuario() {
   alunos();
 }
 
-// 📚 DISCIPLINAS MASTER (CORRIGIDO)
+// 📚 DISCIPLINAS MASTER (AGORA FILTRADO POR CURSO)
 async function disciplinasMaster() {
-
-  const { data } = await client.from("disciplinas_master").select("*");
 
   let html = `
     <h3>📚 Disciplinas por Curso</h3>
 
-    <select id="cursoMaster">
+    <select id="cursoMaster" onchange="carregarDisciplinasCurso()">
       <option value="Curso Básico">Curso Básico</option>
       <option value="Curso Médio">Curso Médio</option>
     </select>
@@ -168,20 +168,50 @@ async function disciplinasMaster() {
 
     <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
 
+    <div id="tabelaDisciplinas"></div>
+  `;
+
+  document.getElementById("conteudo").innerHTML = html;
+
+  carregarDisciplinasCurso();
+}
+
+// 🔥 FILTRO POR CURSO
+async function carregarDisciplinasCurso() {
+
+  const curso = document.getElementById("cursoMaster").value;
+
+  const { data } = await client
+    .from("disciplinas_master")
+    .select("*")
+    .eq("curso", curso); // 🚀 AQUI ESTÁ A CORREÇÃO
+
+  let html = `
     <table>
-      <tr><th>Curso</th><th>Disciplina</th></tr>
+      <tr><th>Curso</th><th>Disciplina</th><th>Ação</th></tr>
   `;
 
   data.forEach(d => {
-    html += `<tr><td>${d.curso}</td><td>${d.nome}</td></tr>`;
+    html += `
+      <tr>
+        <td>${d.curso}</td>
+        <td>${d.nome}</td>
+        <td>
+          <button class="btn" style="background:red;"
+            onclick="excluirDisciplinaMaster('${d.id}')">
+            🗑️
+          </button>
+        </td>
+      </tr>
+    `;
   });
 
   html += "</table>";
 
-  document.getElementById("conteudo").innerHTML = html;
+  document.getElementById("tabelaDisciplinas").innerHTML = html;
 }
 
-// SALVAR DISCIPLINA (CORRIGIDO)
+// SALVAR
 async function salvarDisciplinaMaster() {
 
   const curso = document.getElementById("cursoMaster").value;
@@ -194,7 +224,22 @@ async function salvarDisciplinaMaster() {
   ]);
 
   alert("Salvo!");
-  disciplinasMaster();
+  carregarDisciplinasCurso();
+}
+
+// EXCLUIR
+async function excluirDisciplinaMaster(id) {
+
+  const confirmar = confirm("Deseja excluir?");
+  if (!confirmar) return;
+
+  await client
+    .from("disciplinas_master")
+    .delete()
+    .eq("id", id);
+
+  alert("Excluído!");
+  carregarDisciplinasCurso();
 }
 
 </script>
