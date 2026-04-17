@@ -15,12 +15,10 @@
     }
 
     .logo { width: 120px; margin-bottom: 10px; }
-    .menu { width: 100%; }
-
     .menu button {
       width: 100%; padding: 12px; margin-bottom: 10px;
       border: none; background: #f1f5f9; border-radius: 10px;
-      cursor: pointer; text-align: left; font-weight: 500;
+      cursor: pointer;
     }
 
     .menu button:hover { background: #e2e8f0; }
@@ -28,24 +26,15 @@
     .logout {
       background: black; color: white; font-weight: bold;
       padding: 12px; border-radius: 10px; border: none;
-      width: 100%; cursor: pointer;
+      width: 100%;
     }
 
     .content { flex: 1; padding: 25px; }
 
-    .header {
+    .header, .box {
       background: white; padding: 20px; border-radius: 12px;
-      margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    .box {
-      background: white; padding: 20px; border-radius: 12px;
+      margin-bottom: 20px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    .footer {
-      background: #1e293b; color: white;
-      text-align: center; padding: 10px; font-size: 13px;
     }
 
     table { width:100%; border-collapse: collapse; margin-top:10px; }
@@ -56,29 +45,14 @@
       text-align:center;
     }
 
-    th { background:#f8fafc; }
-
     .btn {
       background:#2c5364; color:white; border:none;
-      padding:6px 10px; border-radius:6px; cursor:pointer;
-      margin:2px;
+      padding:6px 10px; border-radius:6px;
     }
 
     input, select {
-      padding:8px; border-radius:6px; border:1px solid #ccc;
-      margin-top:5px; width:100%;
+      padding:8px; margin-top:5px; width:100%;
     }
-
-    a.nome-link {
-      color:#2c5364;
-      font-weight:bold;
-      text-decoration:none;
-    }
-
-    a.nome-link:hover {
-      text-decoration:underline;
-    }
-
   </style>
 </head>
 
@@ -94,7 +68,6 @@
       <div class="menu">
         <button onclick="alunos()">📋 Cadastros</button>
         <button onclick="disciplinasMaster()">📚 Disciplinas (Curso)</button>
-        <button onclick="notas()">📝 Notas / Boletim</button>
       </div>
     </div>
 
@@ -103,38 +76,19 @@
 
   <div class="content">
     <div class="header">
-      <h2>FAESP - SETOR 30 (COORDENAÇÃO)</h2>
-      <p>Painel da coordenação</p>
+      <h2>FAESP - SETOR 30</h2>
     </div>
 
-    <div class="box" id="conteudo">
-      Bem-vinda ao painel da coordenação 👑
-    </div>
+    <div class="box" id="conteudo"></div>
   </div>
 
-</div>
-
-<div class="footer">
-  AD. Belém - Rua Rio Tiete, 126 - Campo Limpo Paulista - SP
 </div>
 
 <script>
 
 // 🔐 PROTEÇÃO
 const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-if (!usuario) {
-  alert("Faça login primeiro");
-  window.location.href = "index.html";
-}
-
-if (usuario.tipo !== "Coordenacao") {
-  alert("Acesso restrito à coordenação");
-  window.location.href = "dashboard.html";
-}
-
-if (usuario.status !== "ativo") {
-  alert("Usuário não autorizado");
+if (!usuario || usuario.tipo !== "Coordenacao") {
   window.location.href = "index.html";
 }
 
@@ -150,86 +104,33 @@ function sair() {
   window.location.href = "index.html";
 }
 
-// 📋 CADASTROS (igual ao seu)
+// 👤 CADASTRO (CURSO PADRONIZADO)
 async function alunos() {
 
   const { data } = await client.from("usuarios").select("*");
 
-  let html = `<h3>📋 Cadastros</h3>`;
-
-  html += `<table>
-    <tr>
-      <th>Nome</th>
-      <th>Email</th>
-      <th>Status</th>
-      <th>Tipo</th>
-    </tr>`;
-
-  data.forEach(u => {
-    html += `
-      <tr>
-        <td>
-          <a class="nome-link" href="detalhe-aluno.html?id=${u.id}">
-            ${u.nome}
-          </a>
-        </td>
-        <td>${u.email}</td>
-        <td>${u.status}</td>
-        <td>${u.tipo}</td>
-      </tr>
-    `;
-  });
-
-  html += "</table>";
-
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-// 📚 NOVO: DISCIPLINAS MASTER
-async function disciplinasMaster() {
-
-  const { data } = await client
-    .from("disciplinas_master")
-    .select("*");
-
   let html = `
-    <h3>📚 Disciplinas por Curso</h3>
+    <h3>📋 Cadastros</h3>
 
-    <div style="margin-bottom:20px;">
-      <h4>➕ Nova Disciplina</h4>
+    <div>
+      <input id="nome" placeholder="Nome">
+      <input id="email" placeholder="Email">
 
-      <select id="cursoMaster">
+      <select id="curso">
         <option value="Curso Básico">Curso Básico</option>
         <option value="Curso Médio">Curso Médio</option>
       </select>
 
-      <input id="nomeDisciplina" placeholder="Nome da disciplina">
-
       <br><br>
-      <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
+      <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
     </div>
 
     <table>
-      <tr>
-        <th>Curso</th>
-        <th>Disciplina</th>
-        <th>Ação</th>
-      </tr>
+      <tr><th>Nome</th><th>Curso</th></tr>
   `;
 
-  data.forEach(d => {
-    html += `
-      <tr>
-        <td>${d.curso}</td>
-        <td>${d.nome}</td>
-        <td>
-          <button class="btn" style="background:red;"
-            onclick="excluirDisciplinaMaster('${d.id}')">
-            🗑️
-          </button>
-        </td>
-      </tr>
-    `;
+  data.forEach(u => {
+    html += `<tr><td>${u.nome}</td><td>${u.curso}</td></tr>`;
   });
 
   html += "</table>";
@@ -237,40 +138,63 @@ async function disciplinasMaster() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// SALVAR
+// SALVAR USUÁRIO
+async function cadastrarUsuario() {
+  await client.from("usuarios").insert([{
+    nome: document.getElementById("nome").value,
+    email: document.getElementById("email").value,
+    curso: document.getElementById("curso").value,
+    status: "pendente"
+  }]);
+
+  alert("Cadastrado!");
+  alunos();
+}
+
+// 📚 DISCIPLINAS MASTER (CORRIGIDO)
+async function disciplinasMaster() {
+
+  const { data } = await client.from("disciplinas_master").select("*");
+
+  let html = `
+    <h3>📚 Disciplinas por Curso</h3>
+
+    <select id="cursoMaster">
+      <option value="Curso Básico">Curso Básico</option>
+      <option value="Curso Médio">Curso Médio</option>
+    </select>
+
+    <input id="nomeDisciplina" placeholder="Nome da disciplina">
+
+    <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
+
+    <table>
+      <tr><th>Curso</th><th>Disciplina</th></tr>
+  `;
+
+  data.forEach(d => {
+    html += `<tr><td>${d.curso}</td><td>${d.nome}</td></tr>`;
+  });
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+// SALVAR DISCIPLINA (CORRIGIDO)
 async function salvarDisciplinaMaster() {
 
   const curso = document.getElementById("cursoMaster").value;
-  const nome = document.getElementById("nomeDisciplina").value;
+  const nome = document.getElementById("nomeDisciplina").value.trim();
 
-  if (!nome) {
-    alert("Digite o nome da disciplina");
-    return;
-  }
+  if (!nome) return alert("Digite o nome");
 
   await client.from("disciplinas_master").insert([
     { curso, nome }
   ]);
 
-  alert("Disciplina cadastrada!");
+  alert("Salvo!");
   disciplinasMaster();
-}
-
-// EXCLUIR
-async function excluirDisciplinaMaster(id) {
-
-  const confirmar = confirm("Deseja excluir?");
-  if (!confirmar) return;
-
-  await client.from("disciplinas_master").delete().eq("id", id);
-
-  alert("Excluído!");
-  disciplinasMaster();
-}
-
-// OUTROS
-function notas(){
-  document.getElementById("conteudo").innerHTML="📝 Notas";
 }
 
 </script>
