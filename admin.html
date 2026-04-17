@@ -97,7 +97,7 @@
 
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "SUA_KEY_AQUI"
 );
 
 // 🔐 proteção
@@ -175,19 +175,13 @@ async function alunos(){
 }
 
 async function cadastrarUsuario(){
-
-  const nome = document.getElementById("nome").value;
+  const nome = nomeInput = document.getElementById("nome").value;
   const email = document.getElementById("email").value;
   const tipo = document.getElementById("tipo").value;
 
   if(!nome || !email) return alert("Preencha os campos");
 
-  await client.from("usuarios").insert([{
-    nome,
-    email,
-    tipo,
-    status:"pendente"
-  }]);
+  await client.from("usuarios").insert([{ nome,email,tipo,status:"pendente"}]);
 
   alert("Cadastrado!");
   alunos();
@@ -210,7 +204,7 @@ async function excluir(id){
 }
 
 //////////////////////////////////////////////////
-// 📚 DISCIPLINAS COM PROFESSOR
+// 📚 DISCIPLINAS
 //////////////////////////////////////////////////
 
 async function disciplinasMaster(){
@@ -261,7 +255,7 @@ async function carregarDisciplinasCurso(){
 
   let html=`
     <table>
-      <tr><th>Curso</th><th>Disciplina</th><th>Professor</th><th>Ação</th></tr>
+      <tr><th>Curso</th><th>Disciplina</th><th>Professor</th><th>Histórico</th><th>Ação</th></tr>
   `;
 
   data.forEach(d=>{
@@ -270,6 +264,11 @@ async function carregarDisciplinasCurso(){
         <td>${d.curso}</td>
         <td>${d.nome}</td>
         <td>${d.professor || "-"}</td>
+
+        <td>
+          <button class="btn" onclick="abrirHistorico('${d.nome}','${d.curso}')">📄</button>
+        </td>
+
         <td>
           <button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">🗑️</button>
         </td>
@@ -302,6 +301,78 @@ async function excluirDisciplina(id){
   await client.from("disciplinas_master").delete().eq("id",id);
 
   carregarDisciplinasCurso();
+}
+
+//////////////////////////////////////////////////
+// 📄 HISTÓRICO
+//////////////////////////////////////////////////
+
+async function abrirHistorico(disciplina, curso){
+
+  const { data } = await client
+    .from("disciplinas_historico")
+    .select("*")
+    .eq("disciplina", disciplina)
+    .eq("curso", curso);
+
+  let html = `
+    <h3>📄 Histórico - ${disciplina}</h3>
+
+    <input id="profHist" placeholder="Professor">
+    <input id="inicioHist" type="date">
+    <input id="fimHist" type="date">
+
+    <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">
+      Salvar período
+    </button>
+
+    <br><br>
+
+    <table>
+      <tr>
+        <th>Professor</th>
+        <th>Início</th>
+        <th>Fim</th>
+      </tr>
+  `;
+
+  data.forEach(h=>{
+    html+=`
+      <tr>
+        <td>${h.professor}</td>
+        <td>${h.data_inicio}</td>
+        <td>${h.data_fim || "-"}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+async function salvarHistorico(disciplina, curso){
+
+  const professor = document.getElementById("profHist").value;
+  const inicio = document.getElementById("inicioHist").value;
+  const fim = document.getElementById("fimHist").value;
+
+  if(!professor || !inicio){
+    alert("Preencha os campos");
+    return;
+  }
+
+  await client.from("disciplinas_historico").insert([{
+    disciplina,
+    curso,
+    professor,
+    data_inicio: inicio,
+    data_fim: fim || null
+  }]);
+
+  alert("Histórico salvo!");
+
+  abrirHistorico(disciplina, curso);
 }
 
 </script>
