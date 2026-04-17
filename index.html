@@ -89,7 +89,7 @@
 
 </div>
 
-<!-- 🔥 MODAL CADASTRO -->
+<!-- MODAL CADASTRO -->
 <div id="modalCadastro" style="
   display:none;
   position:fixed;
@@ -109,7 +109,7 @@
     width:320px;
   ">
 
-    <h3>📋 Cadastro de Aluno</h3>
+    <h3>Cadastro de Aluno</h3>
 
     <input id="novoNome" placeholder="Nome Completo">
     <input id="novoEmail" placeholder="E-mail">
@@ -135,42 +135,56 @@ const client = supabase.createClient(
 
 // LOGIN
 async function login() {
+
   const email = document.getElementById("email").value;
   const senha = document.getElementById("senha").value;
 
-  const { data, error } = await client.auth.signInWithPassword({
+  if (!email || !senha) {
+    document.getElementById("resultado").innerText = "Preencha email e senha";
+    return;
+  }
+
+  document.getElementById("resultado").innerText = "Entrando...";
+
+  const { error } = await client.auth.signInWithPassword({
     email: email,
     password: senha
   });
 
   if (error) {
-    document.getElementById("resultado").innerText = "❌ " + error.message;
+    document.getElementById("resultado").innerText = "Email ou senha inválidos";
     return;
   }
 
-  const { data: usuario } = await client
+  // BUSCAR USUÁRIO NA TABELA
+  const { data: usuario, error: erroUsuario } = await client
     .from("usuarios")
     .select("*")
     .eq("email", email)
     .single();
 
-  if (usuario.status !== "ativo") {
-    document.getElementById("resultado").innerText =
-      "⏳ Cadastro aguardando aprovação.";
+  if (erroUsuario || !usuario) {
+    document.getElementById("resultado").innerText = "Usuário não encontrado";
     return;
   }
 
-  // 🔐 PRIMEIRO ACESSO (NOVO)
+  if (usuario.status !== "ativo") {
+    document.getElementById("resultado").innerText =
+      "Cadastro aguardando aprovação";
+    return;
+  }
+
+  // PRIMEIRO ACESSO
   if (usuario.primeiro_acesso) {
     localStorage.setItem("usuario_temp", JSON.stringify(usuario));
     window.location.href = "primeiro-acesso.html";
     return;
   }
 
-  // 🔥 SALVA USUÁRIO
+  // SALVAR USUÁRIO
   localStorage.setItem("usuario", JSON.stringify(usuario));
 
-  // 🔥 REDIRECIONAMENTO
+  // REDIRECIONAR
   if (usuario.tipo === "Coordenacao") {
     window.location.href = "admin.html";
   } else {
@@ -187,8 +201,9 @@ function fecharCadastro() {
   document.getElementById("modalCadastro").style.display = "none";
 }
 
-// SALVAR CADASTRO
+// CADASTRO
 async function salvarCadastro() {
+
   const nome = document.getElementById("novoNome").value;
   const email = document.getElementById("novoEmail").value;
   const cpf = document.getElementById("novoCpf").value;
@@ -196,6 +211,11 @@ async function salvarCadastro() {
   const data = document.getElementById("novaData").value;
   const endereco = document.getElementById("novoEndereco").value;
   const celular = document.getElementById("novoCelular").value;
+
+  if (!nome || !email) {
+    document.getElementById("msgCadastro").innerText = "Preencha nome e email";
+    return;
+  }
 
   const { error } = await client
     .from("usuarios")
@@ -211,11 +231,10 @@ async function salvarCadastro() {
     }]);
 
   if (error) {
-    document.getElementById("msgCadastro").innerText =
-      "❌ " + error.message;
+    document.getElementById("msgCadastro").innerText = "Erro ao cadastrar";
   } else {
     document.getElementById("msgCadastro").innerText =
-      "✅ Cadastro enviado! Aguarde aprovação.";
+      "Cadastro enviado! Aguarde aprovação.";
   }
 }
 </script>
