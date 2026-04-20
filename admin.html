@@ -182,51 +182,167 @@ async function excluir(id){
 // 📚 DISCIPLINAS (mantido)
 //////////////////////////////////////////////////
 
+//////////////////////////////////////////////////
+// 📚 DISCIPLINAS (AJUSTADO COM PROFESSOR 🔥)
+//////////////////////////////////////////////////
+
 async function disciplinasMaster(){
-  const { data } = await client.from("disciplinas_master").select("*");
 
-  let html = `
-    <h3>📚 Disciplinas</h3>
+  let html=`
+    <h3>📚 Disciplinas por Curso</h3>
 
-    <input id="nomeDisc" placeholder="Disciplina">
-    <input id="cursoDisc" placeholder="Curso">
-    <button class="btn" onclick="salvarDisc()">Salvar</button>
+    <select id="cursoMaster" onchange="carregarDisciplinasCurso()">
+      <option value="Curso Básico">Curso Básico</option>
+      <option value="Curso Médio">Curso Médio</option>
+    </select>
 
+    <input id="nomeDisciplina" placeholder="Nome da disciplina">
+
+    <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
+
+    <div id="tabela"></div>
+  `;
+
+  conteudo.innerHTML=html;
+
+  carregarDisciplinasCurso();
+}
+
+async function carregarDisciplinasCurso(){
+
+  const curso = document.getElementById("cursoMaster").value;
+
+  const { data } = await client
+    .from("disciplinas_master")
+    .select("*")
+    .eq("curso", curso);
+
+  let html=`
     <table>
-      <tr><th>Curso</th><th>Disciplina</th></tr>
+      <tr>
+        <th>Curso</th>
+        <th>Disciplina</th>
+        <th>Histórico</th>
+        <th>Ação</th>
+      </tr>
   `;
 
   data.forEach(d=>{
-    html += `<tr><td>${d.curso}</td><td>${d.nome}</td></tr>`;
+    html+=`
+      <tr>
+        <td>${d.curso}</td>
+        <td>${d.nome}</td>
+
+        <td>
+          <button class="btn" onclick="abrirHistorico('${d.nome}','${d.curso}')">📄</button>
+        </td>
+
+        <td>
+          <button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">🗑️</button>
+        </td>
+      </tr>
+    `;
   });
 
-  conteudo.innerHTML = html + "</table>";
+  html+="</table>";
+
+  document.getElementById("tabela").innerHTML=html;
 }
 
-async function salvarDisc(){
-  await client.from("disciplinas_master").insert([{
-    nome: nomeDisc.value,
-    curso: cursoDisc.value
-  }]);
-  disciplinasMaster();
+async function salvarDisciplinaMaster(){
+
+  const curso = document.getElementById("cursoMaster").value;
+  const nome = document.getElementById("nomeDisciplina").value;
+
+  if(!nome){
+    alert("Digite o nome da disciplina");
+    return;
+  }
+
+  await client.from("disciplinas_master").insert([{curso,nome}]);
+
+  document.getElementById("nomeDisciplina").value="";
+  carregarDisciplinasCurso();
+}
+
+async function excluirDisciplina(id){
+  if(!confirm("Excluir disciplina?")) return;
+
+  await client.from("disciplinas_master").delete().eq("id",id);
+
+  carregarDisciplinasCurso();
 }
 
 //////////////////////////////////////////////////
-// 📝 NOTAS + PDF (mantido)
+// 📄 HISTÓRICO COM PROFESSOR 🔥
 //////////////////////////////////////////////////
 
-async function notas(){
-  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
+async function abrirHistorico(disciplina, curso){
 
-  conteudo.innerHTML = `
-    <h3>📝 Notas</h3>
+  const { data } = await client
+    .from("disciplinas_historico")
+    .select("*")
+    .eq("disciplina", disciplina)
+    .eq("curso", curso);
 
-    <select id="alunoSelect">
-      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
-    </select>
+  let html = `
+    <h3>📄 Histórico - ${disciplina}</h3>
 
-    <button class="btn" onclick="gerarBoletim()">📊 Gerar Boletim PDF</button>
+    <input id="profHist" placeholder="Professor">
+    <input id="inicioHist" type="date">
+    <input id="fimHist" type="date">
+
+    <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">
+      Salvar período
+    </button>
+
+    <br><br>
+
+    <table>
+      <tr>
+        <th>Professor</th>
+        <th>Início</th>
+        <th>Fim</th>
+      </tr>
   `;
+
+  data.forEach(h=>{
+    html+=`
+      <tr>
+        <td>${h.professor}</td>
+        <td>${h.data_inicio}</td>
+        <td>${h.data_fim || "-"}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  conteudo.innerHTML = html;
+}
+
+async function salvarHistorico(disciplina, curso){
+
+  const professor = document.getElementById("profHist").value;
+  const inicio = document.getElementById("inicioHist").value;
+  const fim = document.getElementById("fimHist").value;
+
+  if(!professor || !inicio){
+    alert("Preencha os campos");
+    return;
+  }
+
+  await client.from("disciplinas_historico").insert([{
+    disciplina,
+    curso,
+    professor,
+    data_inicio: inicio,
+    data_fim: fim || null
+  }]);
+
+  alert("Histórico salvo!");
+
+  abrirHistorico(disciplina, curso);
 }
 
 //////////////////////////////////////////////////
