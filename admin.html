@@ -77,6 +77,8 @@
       <div class="menu">
         <button onclick="alunos()">📋 Cadastros</button>
         <button onclick="disciplinasMaster()">📚 Disciplinas</button>
+        <button onclick="notas()">📝 Notas</button>
+        <button onclick="frequencia()">📅 Presença</button>
       </div>
     </div>
 
@@ -106,7 +108,6 @@ if (!usuario || usuario.tipo !== "Coordenacao") {
   window.location.href = "index.html";
 }
 
-// logout
 function sair(){
   localStorage.removeItem("usuario");
   window.location.href="index.html";
@@ -117,7 +118,6 @@ function sair(){
 //////////////////////////////////////////////////
 
 async function alunos(){
-
   const { data } = await client.from("usuarios").select("*");
 
   let html = `
@@ -171,19 +171,16 @@ async function alunos(){
   });
 
   html+="</table>";
-  document.getElementById("conteudo").innerHTML=html;
+  conteudo.innerHTML=html;
 }
 
 async function cadastrarUsuario(){
-  const nome = document.getElementById("nome").value;
-  const email = document.getElementById("email").value;
-  const tipo = document.getElementById("tipo").value;
-
-  if(!nome || !email) return alert("Preencha os campos");
-
-  await client.from("usuarios").insert([{ nome,email,tipo,status:"pendente"}]);
-
-  alert("Cadastrado!");
+  await client.from("usuarios").insert([{
+    nome: nome.value,
+    email: email.value,
+    tipo: tipo.value,
+    status:"pendente"
+  }]);
   alunos();
 }
 
@@ -204,7 +201,7 @@ async function excluir(id){
 }
 
 //////////////////////////////////////////////////
-// 📚 DISCIPLINAS (AJUSTADO CORRETAMENTE)
+// 📚 DISCIPLINAS
 //////////////////////////////////////////////////
 
 async function disciplinasMaster(){
@@ -224,62 +221,39 @@ async function disciplinasMaster(){
     <div id="tabela"></div>
   `;
 
-  document.getElementById("conteudo").innerHTML=html;
-
+  conteudo.innerHTML=html;
   carregarDisciplinasCurso();
 }
 
 async function carregarDisciplinasCurso(){
 
-  const curso = document.getElementById("cursoMaster").value;
-
-  const { data: disciplinas } = await client
+  const { data } = await client
     .from("disciplinas_master")
     .select("*")
-    .eq("curso", curso);
+    .eq("curso", cursoMaster.value);
 
-  let html=`
-    <table>
-      <tr>
-        <th>Curso</th>
-        <th>Disciplina</th>
-        <th>Histórico</th>
-        <th>Ação</th>
-      </tr>
-  `;
+  let html=`<table>
+    <tr><th>Curso</th><th>Disciplina</th><th>Histórico</th><th>Ação</th></tr>`;
 
-  disciplinas.forEach(d=>{
+  data.forEach(d=>{
     html+=`
       <tr>
         <td>${d.curso}</td>
         <td>${d.nome}</td>
-
-        <td>
-          <button class="btn" onclick="abrirHistorico('${d.nome}','${d.curso}')">📄</button>
-        </td>
-
-        <td>
-          <button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">🗑️</button>
-        </td>
-      </tr>
-    `;
+        <td><button class="btn" onclick="abrirHistorico('${d.nome}','${d.curso}')">📄</button></td>
+        <td><button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">🗑️</button></td>
+      </tr>`;
   });
 
   html+="</table>";
-
-  document.getElementById("tabela").innerHTML=html;
+  tabela.innerHTML=html;
 }
 
 async function salvarDisciplinaMaster(){
-  const curso = document.getElementById("cursoMaster").value;
-  const nome = document.getElementById("nomeDisciplina").value.trim();
-
-  if(!nome) return alert("Digite o nome da disciplina");
-
-  await client.from("disciplinas_master").insert([{curso,nome}]);
-
-  alert("Disciplina salva!");
-  document.getElementById("nomeDisciplina").value="";
+  await client.from("disciplinas_master").insert([{
+    curso:cursoMaster.value,
+    nome:nomeDisciplina.value
+  }]);
   carregarDisciplinasCurso();
 }
 
@@ -290,7 +264,7 @@ async function excluirDisciplina(id){
 }
 
 //////////////////////////////////////////////////
-// 📄 HISTÓRICO (MANTIDO)
+// 📄 HISTÓRICO
 //////////////////////////////////////////////////
 
 async function abrirHistorico(disciplina, curso){
@@ -308,18 +282,10 @@ async function abrirHistorico(disciplina, curso){
     <input id="inicioHist" type="date">
     <input id="fimHist" type="date">
 
-    <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">
-      Salvar período
-    </button>
-
-    <br><br>
+    <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">Salvar</button>
 
     <table>
-      <tr>
-        <th>Professor</th>
-        <th>Início</th>
-        <th>Fim</th>
-      </tr>
+      <tr><th>Professor</th><th>Início</th><th>Fim</th></tr>
   `;
 
   data.forEach(h=>{
@@ -328,37 +294,172 @@ async function abrirHistorico(disciplina, curso){
         <td>${h.professor}</td>
         <td>${h.data_inicio}</td>
         <td>${h.data_fim || "-"}</td>
+      </tr>`;
+  });
+
+  html+="</table>";
+  conteudo.innerHTML=html;
+}
+
+async function salvarHistorico(disciplina, curso){
+  await client.from("disciplinas_historico").insert([{
+    disciplina,
+    curso,
+    professor:profHist.value,
+    data_inicio:inicioHist.value,
+    data_fim:fimHist.value || null
+  }]);
+  abrirHistorico(disciplina, curso);
+}
+
+//////////////////////////////////////////////////
+// 📝 NOTAS
+//////////////////////////////////////////////////
+
+async function notas(){
+
+  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
+
+  let html=`
+    <h3>📝 Notas</h3>
+
+    <select id="alunoSelect" onchange="carregarNotasAluno()">
+      <option value="">Selecione</option>
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
+    </select>
+
+    <button class="btn" onclick="gerarBoletim()">📊 Boletim</button>
+
+    <div id="tabelaNotas"></div>
+  `;
+
+  conteudo.innerHTML=html;
+}
+
+async function carregarNotasAluno(){
+
+  const email = alunoSelect.value;
+
+  const { data: disciplinasMaster } = await client.from("disciplinas_master").select("*");
+  const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
+
+  let html="<table><tr><th>Disciplina</th><th>Nota</th></tr>";
+
+  disciplinasMaster.forEach(d=>{
+    const nota = notas.find(n=>n.nome===d.nome);
+    html+=`
+      <tr>
+        <td>${d.nome}</td>
+        <td><input value="${nota?nota.nota:""}" onchange="salvarNota('${email}','${d.nome}',this.value)"></td>
+      </tr>`;
+  });
+
+  html+="</table>";
+  tabelaNotas.innerHTML=html;
+}
+
+async function salvarNota(email,nome,nota){
+
+  const { data } = await client.from("disciplinas").select("*").eq("email",email).eq("nome",nome);
+
+  if(data.length>0){
+    await client.from("disciplinas").update({nota}).eq("id",data[0].id);
+  }else{
+    await client.from("disciplinas").insert([{email,nome,nota}]);
+  }
+}
+
+//////////////////////////////////////////////////
+// 📅 PRESENÇA
+//////////////////////////////////////////////////
+
+async function frequencia(){
+
+  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
+  const { data: disciplinas } = await client.from("disciplinas_master").select("*");
+
+  let html=`
+    <h3>📅 Presença</h3>
+
+    <select id="alunoFreq">
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
+    </select>
+
+    <select id="disciplinaFreq">
+      ${disciplinas.map(d=>`<option>${d.nome}</option>`).join("")}
+    </select>
+
+    <input type="date" id="dataFreq">
+
+    <select id="presenca">
+      <option value="true">Presente</option>
+      <option value="false">Falta</option>
+    </select>
+
+    <button class="btn" onclick="salvarFrequencia()">Salvar</button>
+  `;
+
+  conteudo.innerHTML=html;
+}
+
+async function salvarFrequencia(){
+
+  await client.from("frequencia").insert([{
+    email: alunoFreq.value,
+    disciplina: disciplinaFreq.value,
+    data: dataFreq.value,
+    presente: presenca.value==="true"
+  }]);
+
+  alert("Salvo!");
+}
+
+//////////////////////////////////////////////////
+// 📊 BOLETIM
+//////////////////////////////////////////////////
+
+async function gerarBoletim(){
+
+  const email = alunoSelect.value;
+
+  const { data: aluno } = await client.from("usuarios").select("*").eq("email",email).single();
+  const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
+  const { data: freq } = await client.from("frequencia").select("*").eq("email",email);
+
+  let html=`
+    <div style="font-family:Segoe UI;padding:20px">
+      <h2 style="text-align:center">📊 BOLETIM FAESP</h2>
+      <h3>${aluno.nome}</h3>
+
+      <table style="width:100%">
+        <tr>
+          <th>Disciplina</th>
+          <th>Nota</th>
+          <th>Presença</th>
+        </tr>
+  `;
+
+  notas.forEach(n=>{
+
+    const lista = freq.filter(f=>f.disciplina===n.nome);
+    const total = lista.length;
+    const pres = lista.filter(f=>f.presente).length;
+
+    const perc = total>0 ? Math.round((pres/total)*100) : 0;
+
+    html+=`
+      <tr>
+        <td>${n.nome}</td>
+        <td>${n.nota||"-"}</td>
+        <td>${perc}%</td>
       </tr>
     `;
   });
 
-  html += "</table>";
+  html+="</table></div>";
 
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-async function salvarHistorico(disciplina, curso){
-
-  const professor = document.getElementById("profHist").value;
-  const inicio = document.getElementById("inicioHist").value;
-  const fim = document.getElementById("fimHist").value;
-
-  if(!professor || !inicio){
-    alert("Preencha os campos");
-    return;
-  }
-
-  await client.from("disciplinas_historico").insert([{
-    disciplina,
-    curso,
-    professor,
-    data_inicio: inicio,
-    data_fim: fim || null
-  }]);
-
-  alert("Histórico salvo!");
-
-  abrirHistorico(disciplina, curso);
+  const w = window.open();
+  w.document.write(html);
 }
 
 </script>
