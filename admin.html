@@ -1,211 +1,116 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>FAESP - Coordenação</title>
+  <title>FAESP - Coordenação</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body { margin:0; font-family:'Segoe UI'; display:flex; height:100vh; background:#eef2f7; flex-direction:column;}
+    .main { display:flex; flex:1;}
 
-<style>
-body { margin:0; font-family:'Segoe UI'; background:#eef2f7; display:flex; height:100vh; }
+    .sidebar {
+      width:240px; background:white; padding:20px;
+      display:flex; flex-direction:column; justify-content:space-between;
+      border-right:1px solid #ddd; align-items:center;
+    }
 
-.main { display:flex; width:100%; }
+    .logo { width:120px; margin-bottom:10px;}
 
-.sidebar {
-  width:240px;
-  background:white;
-  padding:20px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  border-right:1px solid #ddd;
-  align-items:center;
-}
+    .menu button {
+      width:100%; padding:12px; margin-bottom:10px;
+      border:none; background:#f1f5f9; border-radius:10px;
+      cursor:pointer; text-align:left;
+    }
 
-.logo { width:120px; margin-bottom:10px; }
+    .menu button:hover { background:#e2e8f0;}
 
-.menu button {
-  width:100%;
-  padding:12px;
-  margin-bottom:10px;
-  border:none;
-  background:#f1f5f9;
-  border-radius:10px;
-  cursor:pointer;
-  text-align:left;
-  transition:0.3s;
-}
+    .logout {
+      background:black; color:white; font-weight:bold;
+      padding:12px; border-radius:10px; border:none;
+      width:100%;
+    }
 
-.menu button:hover {
-  background:#2c5364;
-  color:white;
-  transform:translateX(5px);
-}
+    .content { flex:1; padding:25px;}
 
-.logout {
-  background:black;
-  color:white;
-  font-weight:bold;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  width:100%;
-}
+    .header, .box {
+      background:white; padding:20px; border-radius:12px;
+      margin-bottom:20px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.05);
+    }
 
-.content { flex:1; padding:25px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px;}
 
-.header {
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  margin-bottom:20px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.05);
-}
+    th, td {
+      padding:10px;
+      border-bottom:1px solid #ddd;
+      text-align:center;
+    }
 
-.box {
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.05);
-  animation:fade 0.4s ease;
-}
+    .btn {
+      background:#2c5364; color:white; border:none;
+      padding:6px 10px; border-radius:6px; cursor:pointer;
+    }
 
-@keyframes fade {
-  from {opacity:0; transform:translateY(10px);}
-  to {opacity:1; transform:translateY(0);}
-}
+    input, select {
+      padding:8px; margin-top:5px; width:100%;
+    }
 
-.btn {
-  background:#2c5364;
-  color:white;
-  border:none;
-  padding:8px 12px;
-  border-radius:8px;
-  cursor:pointer;
-}
+    a.nome-link {
+      color:#2c5364;
+      font-weight:bold;
+      text-decoration:none;
+    }
 
-input, select {
-  padding:10px;
-  margin-top:5px;
-  width:100%;
-  border-radius:8px;
-  border:1px solid #ddd;
-}
-
-table {
-  width:100%;
-  border-collapse:collapse;
-  margin-top:15px;
-}
-
-th, td {
-  padding:10px;
-  border-bottom:1px solid #ddd;
-  text-align:center;
-}
-
-.cards {
-  display:flex;
-  gap:20px;
-  margin-bottom:20px;
-}
-
-.card {
-  flex:1;
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  text-align:center;
-  box-shadow:0 5px 15px rgba(0,0,0,0.05);
-}
-</style>
+    a.nome-link:hover { text-decoration:underline;}
+  </style>
 </head>
 
 <body>
 
 <div class="main">
 
-<div class="sidebar">
-  <div style="width:100%; text-align:center;">
-    <img src="logo faesp.png" class="logo">
-    <h3>👑 COORDENAÇÃO</h3>
+  <div class="sidebar">
+    <div style="width:100%; text-align:center;">
+      <img src="logo faesp.png" class="logo">
+      <h3>👑 COORDENAÇÃO</h3>
 
-    <div class="menu">
-      <button onclick="dashboard()">🏠 Dashboard</button>
-      <button onclick="alunos()">📋 Cadastros</button>
-      <button onclick="disciplinasMaster()">📚 Disciplinas</button>
-      <button onclick="notas()">📝 Notas</button>
-      <button onclick="frequencia()">📅 Presença</button>
+      <div class="menu">
+        <button onclick="alunos()">📋 Cadastros</button>
+        <button onclick="disciplinasMaster()">📚 Disciplinas</button>
+        <button onclick="notas()">📝 Notas</button>
+        <button onclick="frequencia()">📅 Presença</button>
+      </div>
     </div>
+
+    <button class="logout" onclick="sair()">🚪 Sair</button>
   </div>
 
-  <button class="logout" onclick="sair()">🚪 Sair</button>
-</div>
+  <div class="content">
+    <div class="header">
+      <h2>FAESP - SETOR 30</h2>
+    </div>
 
-<div class="content">
-  <div class="header">
-    <h2>FAESP - SETOR 30</h2>
+    <div class="box" id="conteudo"></div>
   </div>
-
-  <div class="box" id="conteudo"></div>
-</div>
 
 </div>
 
 <script>
 
 const client = supabase.createClient(
-"https://nzygdvixqmiltelgzzrn.supabase.co",
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "https://nzygdvixqmiltelgzzrn.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
+
+// 🔐 proteção
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+if (!usuario || usuario.tipo !== "Coordenacao") {
+  window.location.href = "index.html";
+}
 
 function sair(){
   localStorage.removeItem("usuario");
-  location.href="index.html";
-}
-
-//////////////////////////////////////////////////
-// 🏠 DASHBOARD
-//////////////////////////////////////////////////
-
-async function dashboard(){
-
-  const { data: usuarios } = await client.from("usuarios").select("*");
-  const { data: hist } = await client.from("disciplinas_historico").select("*");
-
-  const alunos = usuarios.filter(u=>u.tipo==="Aluno").length;
-  const professores = usuarios.filter(u=>u.tipo==="Professor").length;
-  const ativos = usuarios.filter(u=>u.status==="ativo").length;
-
-  const hoje = new Date().toISOString().split("T")[0];
-
-  const atuais = hist.filter(h=> h.data_inicio <= hoje && (!h.data_fim || h.data_fim >= hoje));
-
-  let lista = "";
-
-  atuais.forEach(a=>{
-    lista += `
-      <div style="padding:10px;background:#f1f5f9;margin:5px;border-radius:8px">
-        <strong>${a.curso}</strong> - ${a.disciplina}<br>
-        ${a.data_inicio} até ${a.data_fim || "Atual"}
-      </div>
-    `;
-  });
-
-  conteudo.innerHTML = `
-    <h2>📊 Dashboard</h2>
-
-    <div class="cards">
-      <div class="card">👨‍🎓<br><strong>${alunos}</strong><br>Alunos</div>
-      <div class="card">👨‍🏫<br><strong>${professores}</strong><br>Professores</div>
-      <div class="card">✅<br><strong>${ativos}</strong><br>Ativos</div>
-    </div>
-
-    <h3>📚 Matérias Atuais</h3>
-    ${lista || "Nenhuma ativa"}
-  `;
+  window.location.href="index.html";
 }
 
 //////////////////////////////////////////////////
@@ -213,55 +118,85 @@ async function dashboard(){
 //////////////////////////////////////////////////
 
 async function alunos(){
-
   const { data } = await client.from("usuarios").select("*");
 
-  let html=`
-  <h3>📋 Cadastros</h3>
+  let html = `
+    <h3>📋 Cadastros</h3>
 
-  <input id="nome" placeholder="Nome">
-  <input id="email" placeholder="Email">
+    <input id="nome" placeholder="Nome">
+    <input id="email" placeholder="Email">
 
-  <select id="tipo">
-    <option>Aluno</option>
-    <option>Professor</option>
-    <option>Coordenacao</option>
-  </select>
+    <select id="tipo">
+      <option value="Aluno">Aluno</option>
+      <option value="Professor">Professor</option>
+      <option value="Coordenacao">Coordenação</option>
+    </select>
 
-  <select id="curso">
-    <option value="">Curso</option>
-    <option>Curso Básico</option>
-    <option>Curso Médio</option>
-  </select>
+    <br><br>
+    <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
 
-  <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
-
-  <table>
-  <tr><th>Nome</th><th>Email</th><th>Curso</th><th>Tipo</th></tr>
+    <table>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Curso</th>
+        <th>Status</th>
+        <th>Tipo</th>
+        <th>Ações</th>
+      </tr>
   `;
 
   data.forEach(u=>{
-    html+=`<tr>
-      <td>${u.nome}</td>
-      <td>${u.email}</td>
-      <td>${u.curso||"-"}</td>
-      <td>${u.tipo}</td>
-    </tr>`;
+    html+=`
+      <tr>
+        <td><a class="nome-link" href="detalhe-aluno.html?id=${u.id}">${u.nome}</a></td>
+        <td>${u.email}</td>
+        <td>${u.curso || "Não definido"}</td>
+        <td>${u.status}</td>
+
+        <td>
+          <select onchange="alterarTipo('${u.id}',this.value)">
+            <option ${u.tipo==="Aluno"?"selected":""}>Aluno</option>
+            <option ${u.tipo==="Professor"?"selected":""}>Professor</option>
+            <option ${u.tipo==="Coordenacao"?"selected":""}>Coordenação</option>
+          </select>
+        </td>
+
+        <td>
+          <button class="btn" onclick="aprovar('${u.id}')">✔️</button>
+          <button class="btn" style="background:red;" onclick="excluir('${u.id}')">🗑️</button>
+        </td>
+      </tr>
+    `;
   });
 
   html+="</table>";
-
   conteudo.innerHTML=html;
 }
 
 async function cadastrarUsuario(){
   await client.from("usuarios").insert([{
-    nome:nome.value,
-    email:email.value,
-    tipo:tipo.value,
-    curso:curso.value,
+    nome: nome.value,
+    email: email.value,
+    tipo: tipo.value,
     status:"pendente"
   }]);
+  alunos();
+}
+
+async function alterarTipo(id,tipo){
+  await client.from("usuarios").update({tipo}).eq("id",id);
+  alunos();
+}
+
+async function aprovar(id){
+  await client.from("usuarios").update({status:"ativo"}).eq("id",id);
+  alunos();
+}
+
+async function excluir(id){
+  if(!confirm("Excluir?")) return;
+  await client.from("usuarios").delete().eq("id",id);
   alunos();
 }
 
@@ -271,47 +206,110 @@ async function cadastrarUsuario(){
 
 async function disciplinasMaster(){
 
-  conteudo.innerHTML=`
-    <h3>📚 Disciplinas</h3>
+  let html=`
+    <h3>📚 Disciplinas por Curso</h3>
 
     <select id="cursoMaster" onchange="carregarDisciplinasCurso()">
-      <option>Curso Básico</option>
-      <option>Curso Médio</option>
+      <option value="Curso Básico">Curso Básico</option>
+      <option value="Curso Médio">Curso Médio</option>
     </select>
 
-    <input id="nomeDisc">
-    <button class="btn" onclick="salvarDisc()">Salvar</button>
+    <input id="nomeDisciplina" placeholder="Nome da disciplina">
+
+    <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
 
     <div id="tabela"></div>
   `;
 
+  conteudo.innerHTML=html;
   carregarDisciplinasCurso();
 }
 
 async function carregarDisciplinasCurso(){
 
-  const { data }=await client
+  const { data } = await client
     .from("disciplinas_master")
     .select("*")
-    .eq("curso",cursoMaster.value);
+    .eq("curso", cursoMaster.value);
 
-  let html="<table><tr><th>Disciplina</th></tr>";
+  let html=`<table>
+    <tr><th>Curso</th><th>Disciplina</th><th>Histórico</th><th>Ação</th></tr>`;
 
   data.forEach(d=>{
-    html+=`<tr><td>${d.nome}</td></tr>`;
+    html+=`
+      <tr>
+        <td>${d.curso}</td>
+        <td>${d.nome}</td>
+        <td><button class="btn" onclick="abrirHistorico('${d.nome}','${d.curso}')">📄</button></td>
+        <td><button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">🗑️</button></td>
+      </tr>`;
   });
 
   html+="</table>";
-
   tabela.innerHTML=html;
 }
 
-async function salvarDisc(){
+async function salvarDisciplinaMaster(){
   await client.from("disciplinas_master").insert([{
-    nome:nomeDisc.value,
-    curso:cursoMaster.value
+    curso:cursoMaster.value,
+    nome:nomeDisciplina.value
   }]);
   carregarDisciplinasCurso();
+}
+
+async function excluirDisciplina(id){
+  if(!confirm("Excluir disciplina?")) return;
+  await client.from("disciplinas_master").delete().eq("id",id);
+  carregarDisciplinasCurso();
+}
+
+//////////////////////////////////////////////////
+// 📄 HISTÓRICO
+//////////////////////////////////////////////////
+
+async function abrirHistorico(disciplina, curso){
+
+  const { data } = await client
+    .from("disciplinas_historico")
+    .select("*")
+    .eq("disciplina", disciplina)
+    .eq("curso", curso);
+
+  let html = `
+    <h3>📄 Histórico - ${disciplina}</h3>
+
+    <input id="profHist" placeholder="Professor">
+    <input id="inicioHist" type="date">
+    <input id="fimHist" type="date">
+
+    <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">Salvar</button>
+
+    <table>
+      <tr><th>Professor</th><th>Início</th><th>Fim</th></tr>
+  `;
+
+  data.forEach(h=>{
+    html+=`
+      <tr>
+        <td>${h.professor}</td>
+        <td>${h.data_inicio}</td>
+        <td>${h.data_fim || "-"}</td>
+      </tr>`;
+  });
+
+  html+="</table>";
+  conteudo.innerHTML=html;
+}
+
+async function salvarHistorico(disciplina, curso){
+  await client.from("disciplinas_historico").insert([{
+    disciplina,
+    curso,
+    professor:profHist.value,
+    data_inicio:inicioHist.value,
+    data_fim:fimHist.value || null
+  }]);
+  abrirHistorico(disciplina, curso);
 }
 
 //////////////////////////////////////////////////
@@ -320,17 +318,55 @@ async function salvarDisc(){
 
 async function notas(){
 
-  const { data } = await client.from("usuarios").select("*").eq("tipo","Aluno");
+  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
 
-  conteudo.innerHTML=`
-  <h3>📝 Notas</h3>
+  let html=`
+    <h3>📝 Notas</h3>
 
-  <select id="alunoSelect">
-  ${data.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
-  </select>
+    <select id="alunoSelect" onchange="carregarNotasAluno()">
+      <option value="">Selecione</option>
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
+    </select>
 
-  <button class="btn" onclick="gerarBoletim()">Gerar Boletim</button>
+    <button class="btn" onclick="gerarBoletim()">📊 Boletim</button>
+
+    <div id="tabelaNotas"></div>
   `;
+
+  conteudo.innerHTML=html;
+}
+
+async function carregarNotasAluno(){
+
+  const email = alunoSelect.value;
+
+  const { data: disciplinasMaster } = await client.from("disciplinas_master").select("*");
+  const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
+
+  let html="<table><tr><th>Disciplina</th><th>Nota</th></tr>";
+
+  disciplinasMaster.forEach(d=>{
+    const nota = notas.find(n=>n.nome===d.nome);
+    html+=`
+      <tr>
+        <td>${d.nome}</td>
+        <td><input value="${nota?nota.nota:""}" onchange="salvarNota('${email}','${d.nome}',this.value)"></td>
+      </tr>`;
+  });
+
+  html+="</table>";
+  tabelaNotas.innerHTML=html;
+}
+
+async function salvarNota(email,nome,nota){
+
+  const { data } = await client.from("disciplinas").select("*").eq("email",email).eq("nome",nome);
+
+  if(data.length>0){
+    await client.from("disciplinas").update({nota}).eq("id",data[0].id);
+  }else{
+    await client.from("disciplinas").insert([{email,nome,nota}]);
+  }
 }
 
 //////////////////////////////////////////////////
@@ -340,61 +376,129 @@ async function notas(){
 async function frequencia(){
 
   const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
-  const { data: disc } = await client.from("disciplinas_master").select("*");
+  const { data: disciplinas } = await client.from("disciplinas_master").select("*");
 
-  conteudo.innerHTML=`
-  <h3>📅 Presença</h3>
+  let html=`
+    <h3>📅 Presença</h3>
 
-  <select id="alunoP">
-  ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`)}
-  </select>
+    <select id="alunoFreq">
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
+    </select>
 
-  <select id="discP">
-  ${disc.map(d=>`<option>${d.nome}</option>`)}
-  </select>
+    <select id="disciplinaFreq">
+      ${disciplinas.map(d=>`<option>${d.nome}</option>`).join("")}
+    </select>
 
-  <input type="date" id="dataP">
+    <input type="date" id="dataFreq">
 
-  <button class="btn" onclick="salvarF()">Salvar</button>
+    <select id="presenca">
+      <option value="true">Presente</option>
+      <option value="false">Falta</option>
+    </select>
+
+    <button class="btn" onclick="salvarFrequencia()">Salvar</button>
   `;
+
+  conteudo.innerHTML=html;
 }
 
-async function salvarF(){
+async function salvarFrequencia(){
+
   await client.from("frequencia").insert([{
-    email:alunoP.value,
-    disciplina:discP.value,
-    data:dataP.value,
-    presente:true
+    email: alunoFreq.value,
+    disciplina: disciplinaFreq.value,
+    data: dataFreq.value,
+    presente: presenca.value==="true"
   }]);
+
+  alert("Salvo!");
 }
 
 //////////////////////////////////////////////////
-// 📊 BOLETIM
+// 📊 BOLETIM BONITO
 //////////////////////////////////////////////////
 
 async function gerarBoletim(){
 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
   const email = alunoSelect.value;
 
+  if(!email){
+    alert("Selecione um aluno");
+    return;
+  }
+
+  const { data: aluno } = await client.from("usuarios").select("*").eq("email",email).single();
   const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
+  const { data: freq } = await client.from("frequencia").select("*").eq("email",email);
 
-  doc.text("Boletim FAESP",20,20);
+  let soma = 0;
+  let qtd = 0;
+  let linhas = "";
 
-  notas.forEach((n,i)=>{
-    doc.text(`${n.nome} - ${n.nota}`,20,40+(i*10));
+  notas.forEach(n=>{
+    const lista = freq.filter(f=>f.disciplina===n.nome);
+    const total = lista.length;
+    const pres = lista.filter(f=>f.presente).length;
+    const perc = total>0 ? Math.round((pres/total)*100) : 0;
+
+    const nota = parseFloat(n.nota) || 0;
+
+    if(n.nota){
+      soma += nota;
+      qtd++;
+    }
+
+    linhas += `
+      <tr>
+        <td>${n.nome}</td>
+        <td>${n.nota || "-"}</td>
+        <td>${perc}%</td>
+      </tr>
+    `;
   });
 
-  doc.save("boletim.pdf");
+  const media = qtd > 0 ? (soma / qtd).toFixed(1) : "-";
+  const situacao = media >= 7 ? "APROVADO" : "REPROVADO";
+
+  let html = `
+    <div style="font-family:Segoe UI;padding:30px;max-width:800px;margin:auto;border:1px solid #ddd;border-radius:10px;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <h2>🎓 FAESP - SETOR 30</h2>
+        <p style="color:#555;">Boletim Escolar</p>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <strong>Aluno:</strong> ${aluno.nome}<br>
+        <strong>Email:</strong> ${aluno.email}
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;">
+        <tr style="background:#2c5364;color:white;">
+          <th>Disciplina</th>
+          <th>Nota</th>
+          <th>Presença</th>
+        </tr>
+        ${linhas}
+      </table>
+
+      <div style="margin-top:20px;display:flex;justify-content:space-between;font-size:18px;">
+        <div><strong>Média:</strong> ${media}</div>
+        <div><strong>Situação:</strong> 
+          <span style="color:${situacao==='APROVADO'?'green':'red'}">${situacao}</span>
+        </div>
+      </div>
+
+      <div style="margin-top:40px;text-align:center;color:#777;">
+        ___________________________<br>
+        Coordenação FAESP
+      </div>
+    </div>
+  `;
+
+  const w = window.open("", "_blank", "width=900,height=700");
+  w.document.write(html);
+  w.document.close();
 }
-
-//////////////////////////////////////////////////
-// 🚀 INICIAL
-//////////////////////////////////////////////////
-
-dashboard();
 
 </script>
 
