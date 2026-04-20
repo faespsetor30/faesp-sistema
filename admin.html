@@ -1,60 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+  <meta charset="UTF-8">
   <title>FAESP - Coordenação</title>
 
   <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- PDF -->
+  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
   <style>
-    body { margin:0; font-family:'Segoe UI'; display:flex; height:100vh; background:#eef2f7; flex-direction:column;}
-    .main { display:flex; flex:1;}
+    body { margin:0; font-family:'Segoe UI'; height:100vh; background:#eef2f7; }
+    .main { display:flex; height:100%; }
     .sidebar {
       width:240px; background:white; padding:20px;
       display:flex; flex-direction:column; justify-content:space-between;
       border-right:1px solid #ddd; align-items:center;
     }
-    .logo { width:120px; margin-bottom:10px;}
+    .logo { width:120px; margin-bottom:10px; }
     .menu button {
       width:100%; padding:12px; margin-bottom:10px;
       border:none; background:#f1f5f9; border-radius:10px;
       cursor:pointer; text-align:left;
     }
-    .menu button:hover { background:#e2e8f0;}
+    .menu button:hover { background:#e2e8f0; }
     .logout {
       background:black; color:white; font-weight:bold;
-      padding:12px; border-radius:10px; border:none;
-      width:100%;
+      padding:12px; border-radius:10px; border:none; width:100%;
     }
-    .content { flex:1; padding:25px;}
+    .content { flex:1; padding:25px; }
     .header, .box {
       background:white; padding:20px; border-radius:12px;
       margin-bottom:20px;
       box-shadow:0 5px 15px rgba(0,0,0,0.05);
     }
-    table { width:100%; border-collapse:collapse; margin-top:10px;}
-    th, td {
-      padding:10px;
-      border-bottom:1px solid #ddd;
-      text-align:center;
-    }
-    .btn {
-      background:#2c5364; color:white; border:none;
-      padding:6px 10px; border-radius:6px; cursor:pointer;
-    }
-    input, select {
-      padding:8px; margin-top:5px; width:100%;
-    }
-    a.nome-link {
-      color:#2c5364;
-      font-weight:bold;
-      text-decoration:none;
-    }
-    a.nome-link:hover { text-decoration:underline;}
+    table { width:100%; border-collapse:collapse; margin-top:15px; }
+    th, td { padding:10px; border-bottom:1px solid #ddd; text-align:center; }
+    .btn { background:#2c5364; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
+    input, select { padding:8px; margin-top:5px; width:100%; }
+    a.nome-link { color:#2c5364; font-weight:bold; text-decoration:none; }
   </style>
 </head>
 
@@ -82,7 +68,6 @@
     <div class="header">
       <h2>FAESP - SETOR 30</h2>
     </div>
-
     <div class="box" id="conteudo"></div>
   </div>
 
@@ -106,109 +91,152 @@ function sair(){
 }
 
 //////////////////////////////////////////////////
-// NOTAS
+// 👤 CADASTROS
 //////////////////////////////////////////////////
+async function alunos(){
+  const { data } = await client.from("usuarios").select("*");
 
+  let html = `
+    <h3>📋 Cadastros</h3>
+    <input id="nome" placeholder="Nome">
+    <input id="email" placeholder="Email">
+    <select id="tipo">
+      <option>Aluno</option>
+      <option>Professor</option>
+      <option>Coordenacao</option>
+    </select>
+    <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
+
+    <table>
+      <tr><th>Nome</th><th>Email</th><th>Curso</th><th>Status</th><th>Tipo</th><th>Ações</th></tr>
+  `;
+
+  data.forEach(u=>{
+    html+=`
+      <tr>
+        <td><a class="nome-link">${u.nome}</a></td>
+        <td>${u.email}</td>
+        <td>${u.curso || "-"}</td>
+        <td>${u.status}</td>
+        <td>${u.tipo}</td>
+        <td>
+          <button class="btn" onclick="aprovar('${u.id}')">✔️</button>
+          <button class="btn" style="background:red" onclick="excluir('${u.id}')">🗑️</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  conteudo.innerHTML = html + "</table>";
+}
+
+async function cadastrarUsuario(){
+  if(!nome.value || !email.value) return alert("Preencha tudo");
+  await client.from("usuarios").insert([{ nome:nome.value, email:email.value, tipo:tipo.value, status:"pendente" }]);
+  alunos();
+}
+
+async function aprovar(id){
+  await client.from("usuarios").update({status:"ativo"}).eq("id",id);
+  alunos();
+}
+
+async function excluir(id){
+  if(confirm("Excluir usuário?")){
+    await client.from("usuarios").delete().eq("id",id);
+    alunos();
+  }
+}
+
+//////////////////////////////////////////////////
+// 📚 DISCIPLINAS
+//////////////////////////////////////////////////
+async function disciplinasMaster(){
+  const { data } = await client.from("disciplinas_master").select("*");
+
+  let html = `
+    <h3>📚 Disciplinas</h3>
+    <input id="nomeDisc" placeholder="Disciplina">
+    <input id="cursoDisc" placeholder="Curso">
+    <button class="btn" onclick="salvarDisc()">Salvar</button>
+    <table><tr><th>Curso</th><th>Disciplina</th></tr>
+  `;
+
+  data.forEach(d=>{
+    html+=`<tr><td>${d.curso}</td><td>${d.nome}</td></tr>`;
+  });
+
+  conteudo.innerHTML = html + "</table>";
+}
+
+async function salvarDisc(){
+  await client.from("disciplinas_master").insert([{ nome:nomeDisc.value, curso:cursoDisc.value }]);
+  disciplinasMaster();
+}
+
+//////////////////////////////////////////////////
+// 📝 NOTAS + PDF
+//////////////////////////////////////////////////
 async function notas(){
   const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
 
   conteudo.innerHTML = `
     <h3>📝 Notas</h3>
-    <select id="alunoSelect">
-      <option value="">Selecione</option>
-      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
-    </select>
+    <select id="alunoSelect">${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`)}</select>
     <button class="btn" onclick="gerarBoletim()">📊 Gerar Boletim PDF</button>
   `;
 }
 
 //////////////////////////////////////////////////
-// BOLETIM EM PDF
+// 📅 PRESENÇA
 //////////////////////////////////////////////////
+async function frequencia(){
+  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
+  const { data: disc } = await client.from("disciplinas_master").select("*");
 
+  conteudo.innerHTML = `
+    <h3>📅 Presença</h3>
+    <select id="alunoP">${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`)}</select>
+    <select id="discP">${disc.map(d=>`<option>${d.nome}</option>`)}</select>
+    <input type="date" id="dataP">
+    <select id="presP"><option>true</option><option>false</option></select>
+    <button class="btn" onclick="salvarF()">Salvar</button>
+  `;
+}
+
+async function salvarF(){
+  await client.from("frequencia").insert([{ email:alunoP.value, disciplina:discP.value, data:dataP.value, presente:presP.value==="true" }]);
+  alert("Salvo");
+}
+
+//////////////////////////////////////////////////
+// 📊 BOLETIM PDF
+//////////////////////////////////////////////////
 async function gerarBoletim(){
-
-  const email = alunoSelect.value;
-  if(!email){
-    alert("Selecione um aluno");
-    return;
-  }
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const { data: aluno } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("email", email)
-    .single();
-
-  const { data: notas } = await client
-    .from("disciplinas")
-    .select("*")
-    .eq("email", email);
-
-  const { data: freq } = await client
-    .from("frequencia")
-    .select("*")
-    .eq("email", email);
+  const email = alunoSelect.value;
+  const { data: aluno } = await client.from("usuarios").select("*").eq("email",email).single();
+  const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
+  const { data: freq } = await client.from("frequencia").select("*").eq("email",email);
 
   const logo = new Image();
-  logo.src = "logo-faesp.png";
-  await new Promise(resolve => logo.onload = resolve);
+  logo.src = "logo faesp.png";
+  await new Promise(r=>logo.onload=r);
 
-  doc.addImage(logo, "PNG", 15, 10, 30, 30);
-  doc.setFontSize(16);
-  doc.text("FAESP - SETOR 30", 105, 18, { align: "center" });
-  doc.setFontSize(12);
-  doc.text("Boletim Escolar", 105, 26, { align: "center" });
+  doc.addImage(logo,"PNG",15,10,30,30);
+  doc.text("FAESP - SETOR 30",105,20,{align:"center"});
+  doc.text(`Aluno: ${aluno.nome}`,15,55);
 
-  doc.setFontSize(10);
-  doc.text(`Aluno: ${aluno.nome}`, 15, 50);
-  doc.text(`Email: ${aluno.email}`, 15, 56);
-  doc.text(`Curso: ${aluno.curso || "-"}`, 15, 62);
-
-  let soma = 0;
-  let qtd = 0;
-
-  const linhas = notas.map(n => {
-    const presencas = freq.filter(f => f.disciplina === n.nome);
-    const total = presencas.length;
-    const presentes = presencas.filter(f => f.presente).length;
-    const perc = total ? Math.round((presentes / total) * 100) : 0;
-
-    const nota = parseFloat(n.nota) || 0;
-    if(n.nota){
-      soma += nota;
-      qtd++;
-    }
-
-    return [ n.nome, n.nota || "-", perc + "%" ];
+  const linhas = notas.map(n=>{
+    const p = freq.filter(f=>f.disciplina===n.nome);
+    const perc = p.length?Math.round((p.filter(f=>f.presente).length/p.length)*100):0;
+    return [n.nome,n.nota||"-",perc+"%"];
   });
 
-  doc.autoTable({
-    startY: 70,
-    head: [["Disciplina", "Nota", "Presença"]],
-    body: linhas,
-    styles: { halign:"center", fontSize:10 },
-    headStyles: { fillColor:[44,83,100] }
-  });
-
-  const media = qtd ? (soma/qtd).toFixed(1) : "-";
-  const situacao = media >= 7 ? "APROVADO" : "REPROVADO";
-  const y = doc.lastAutoTable.finalY + 15;
-
-  doc.setFontSize(12);
-  doc.text(`Média Final: ${media}`, 15, y);
-  doc.setTextColor(situacao==="APROVADO"?0:200, situacao==="APROVADO"?150:0, 0);
-  doc.text(`Situação: ${situacao}`, 150, y);
-  doc.setTextColor(0);
-
-  doc.setFontSize(10);
-  doc.text("_________________________________", 105, y+30, {align:"center"});
-  doc.text("Coordenação FAESP", 105, y+36, {align:"center"});
-
-  doc.save(`Boletim_${aluno.nome.replaceAll(" ","_")}.pdf`);
+  doc.autoTable({ startY:65, head:[["Disciplina","Nota","Presença"]], body:linhas });
+  doc.save(`Boletim_${aluno.nome}.pdf`);
 }
 </script>
 
