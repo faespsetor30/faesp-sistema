@@ -45,7 +45,6 @@
 
     .top-bar { margin-bottom:15px; }
 
-    /* 🔥 NOVO VISUAL PREMIUM */
     .status-badge {
       display:inline-block;
       padding:6px 12px;
@@ -187,7 +186,7 @@ async function carregar() {
   carregarFinanceiro();
 }
 
-// 👤 DADOS (igual)
+// 👤 DADOS
 function renderDados() {
   document.getElementById("dados").innerHTML = `
     <div class="card">
@@ -220,7 +219,7 @@ function renderDados() {
   aplicarMascaras();
 }
 
-// 💾 SALVAR (igual)
+// 💾 SALVAR (AJUSTADO 🔥)
 async function salvarEdicao() {
   await client.from("usuarios").update({
     nome: document.getElementById("nome").value,
@@ -234,11 +233,13 @@ async function salvarEdicao() {
   }).eq("id", id);
 
   alert("Atualizado!");
+
+  // 🔄 ESSENCIAL: atualiza os dados na tela
+  await carregar();
 }
 
-// 🔥 STATUS PREMIUM
+// 🔥 STATUS
 function renderAcoes() {
-
   const ativo = aluno.status === "ativo";
 
   document.getElementById("acoes").innerHTML = `
@@ -280,9 +281,9 @@ async function confirmarAlteracao(status) {
   carregar();
 }
 
-// RESTANTE IGUAL (disciplinas + financeiro)
-async function carregarDisciplinas() { /* igual */ }
-async function carregarFinanceiro(){ /* igual */ }
+// RESTANTE
+async function carregarDisciplinas() { }
+async function carregarFinanceiro(){ }
 
 carregar();
 
