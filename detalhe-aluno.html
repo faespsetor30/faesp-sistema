@@ -230,18 +230,6 @@ async function salvar(){
   carregar();
 }
   
-// 📜 HISTÓRICO
-await client.from("usuarios_historico").insert([{
-  usuario_id: id,
-  alteracao: "Dados atualizados",
-  data: new Date()
-}]);
-
-alert("Salvo com sucesso!");
-editando = false;
-carregar();
-}
-
 </script>
 
 </body>
