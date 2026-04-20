@@ -36,7 +36,7 @@
 
 <body>
 
-  <div style="margin-bottom:15px;">
+<div style="margin-bottom:15px;">
   <button onclick="voltar()" style="
     background:#2c5364;
     color:white;
@@ -48,19 +48,20 @@
     ⬅️ Voltar
   </button>
 </div>
-  
+
 <h2>📋 Ficha do Aluno</h2>
 
 <div id="dados"></div>
 
 <script>
 
-  function voltar() {
+function voltar() {
   window.location.href = "admin.html";
 }
+
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "SUA_CHAVE_AQUI"
 );
 
 const id = new URLSearchParams(window.location.search).get("id");
@@ -90,16 +91,12 @@ async function carregar(){
     .eq("id", id)
     .single();
 
-  if(error){
+  if(error || !data){
     console.error("ERRO AO CARREGAR:", error);
-    alert("Erro ao carregar aluno");
+    document.getElementById("dados").innerHTML = "Erro ao carregar aluno";
     return;
   }
-if(error || !data){
-  console.error("ERRO AO CARREGAR:", error);
-  alert("Erro ao carregar aluno");
-  return;
-}
+
   aluno = data;
   render();
 }
@@ -108,13 +105,15 @@ if(error || !data){
 function render(){
 
   if(!aluno){
-  document.getElementById("dados").innerHTML = "Erro ao carregar aluno";
-  return;
-}
+    document.getElementById("dados").innerHTML = "Erro ao carregar aluno";
+    return;
+  }
+
   const travado = !editando;
   const ativo = aluno.status === "ativo";
 
   document.getElementById("dados").innerHTML =
+
   '<div class="card">' +
 
   '<h3>👤 Dados do Aluno</h3>' +
@@ -126,7 +125,7 @@ function render(){
   '<input value="'+ (aluno.email || "") +'" readonly>' +
 
   '<label>Matrícula</label>' +
-  <input id="matricula" value="'+ (aluno.matricula || "") +'" readonly>
+  '<input id="matricula" value="'+ (aluno.matricula || "") +'" readonly>' +
 
   '<label>Data início</label>' +
   '<input id="data_inicio" type="date" value="'+ (aluno.data_inicio || "") +'">' +
@@ -136,12 +135,13 @@ function render(){
     '<option value="Curso Básico" '+ (aluno.curso==="Curso Básico"?"selected":"") +'>Curso Básico</option>' +
     '<option value="Curso Médio" '+ (aluno.curso==="Curso Médio"?"selected":"") +'>Curso Médio</option>' +
   '</select>' +
-    '<label>Tipo</label>' +
-'<select id="tipo" '+ (travado?"disabled":"") +'>' +
-  '<option value="Aluno" '+ (aluno.tipo==="Aluno"?"selected":"") +'>Aluno</option>' +
-  '<option value="Professor" '+ (aluno.tipo==="Professor"?"selected":"") +'>Professor</option>' +
-  '<option value="Coordenacao" '+ (aluno.tipo==="Coordenacao"?"selected":"") +'>Coordenação</option>' +
-'</select>' +
+
+  '<label>Tipo</label>' +
+  '<select id="tipo" '+ (travado?"disabled":"") +'>' +
+    '<option value="Aluno" '+ (aluno.tipo==="Aluno"?"selected":"") +'>Aluno</option>' +
+    '<option value="Professor" '+ (aluno.tipo==="Professor"?"selected":"") +'>Professor</option>' +
+    '<option value="Coordenacao" '+ (aluno.tipo==="Coordenacao"?"selected":"") +'>Coordenação</option>' +
+  '</select>' +
 
   '<label>CPF</label>' +
   '<input id="cpf" value="'+ (aluno.cpf || "") +'" '+ (travado?"readonly":"") +'>' +
@@ -157,7 +157,6 @@ function render(){
 
   '</div>' +
 
-  // 🔥 CARD DE AÇÕES
   '<div class="card">' +
 
   '<h3>⚙️ Ações</h3>' +
@@ -177,11 +176,11 @@ function render(){
   '</div>' +
 
   '<button class="btn btn-edit" onclick="toggleEdit()">✏️ Editar dados</button>' +
-
   '<button class="btn btn-primary" onclick="salvar()">💾 Salvar</button>' +
 
   '</div>';
 }
+
 // 🔓 EDITAR
 function toggleEdit(){
   editando = !editando;
@@ -213,20 +212,16 @@ async function salvar(){
     endereco: getValue("endereco")
   };
 
-  console.log("ENVIANDO:", payload);
-
   const { error } = await client
     .from("usuarios")
     .update(payload)
     .eq("id", id);
 
   if(error){
-    console.error(error);
     alert(error.message);
     return;
   }
 
-  // histórico
   await client.from("usuarios_historico").insert([{
     usuario_id: id,
     alteracao: "Dados atualizados",
@@ -237,7 +232,9 @@ async function salvar(){
   editando = false;
   carregar();
 }
-  
+
+carregar();
+
 </script>
 
 </body>
