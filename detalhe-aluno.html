@@ -65,7 +65,18 @@ async function gerarMatricula(){
 
 // 🚀 CARREGAR
 async function carregar(){
-  const { data } = await client.from("usuarios").select("*").eq("id", id).single();
+  const { data, error } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if(error){
+    console.error("ERRO AO CARREGAR:", error);
+    alert("Erro ao carregar aluno");
+    return;
+  }
+
   aluno = data;
   render();
 }
