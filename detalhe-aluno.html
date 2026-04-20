@@ -86,47 +86,45 @@ function render(){
 
   const travado = !editando;
 
-  document.getElementById("dados").innerHTML = `
-    <div class="card">
+  document.getElementById("dados").innerHTML =
+  '<div class="card">' +
 
-      <button class="btn btn-edit" onclick="toggleEdit()">✏️ Editar dados</button>
+  '<button class="btn btn-edit" onclick="toggleEdit()">✏️ Editar dados</button>' +
 
-      <label>Nome</label>
-      <input id="nome" value="${aluno.nome}" readonly>
+  '<label>Nome</label>' +
+  '<input id="nome" value="'+ (aluno.nome || "") +'" readonly>' +
 
-      <label>Email</label>
-      <input value="${aluno.email}" readonly>
+  '<label>Email</label>' +
+  '<input value="'+ (aluno.email || "") +'" readonly>' +
 
-      <label>Matrícula</label>
-      <input id="matricula" value="${aluno.matricula || ""}" readonly>
+  '<label>Matrícula</label>' +
+  '<input id="matricula" value="'+ (aluno.matricula || "") +'" readonly>' +
 
-      <label>Data início</label>
-      <input id="data_inicio" type="date" value="${aluno.data_inicio || ""}">
+  '<label>Data início</label>' +
+  '<input id="data_inicio" type="date" value="'+ (aluno.data_inicio || "") +'">' +
 
-      <label>Curso</label>
-      <select id="curso">
-        <option value="Curso Básico" ${aluno.curso==="Curso Básico"?"selected":""}>Curso Básico</option>
-        <option value="Curso Médio" ${aluno.curso==="Curso Médio"?"selected":""}>Curso Médio</option>
-      </select>
+  '<label>Curso</label>' +
+  '<select id="curso">' +
+    '<option value="Curso Básico" '+ (aluno.curso==="Curso Básico"?"selected":"") +'>Curso Básico</option>' +
+    '<option value="Curso Médio" '+ (aluno.curso==="Curso Médio"?"selected":"") +'>Curso Médio</option>' +
+  '</select>' +
 
-      <label>CPF</label>
-      <input id="cpf" value="${aluno.cpf || ""}" ${travado?"readonly":""}>
+  '<label>CPF</label>' +
+  '<input id="cpf" value="'+ (aluno.cpf || "") +'" '+ (travado?"readonly":"") +'>' +
 
-      <label>RG</label>
-      <input id="rg" value="${aluno.rg || ""}" ${travado?"readonly":""}>
+  '<label>RG</label>' +
+  '<input id="rg" value="'+ (aluno.rg || "") +'" '+ (travado?"readonly":"") +'>' +
 
-      <label>Celular</label>
-      <input id="celular" value="${aluno.celular || ""}" ${travado?"readonly":""}>
+  '<label>Celular</label>' +
+  '<input id="celular" value="'+ (aluno.celular || "") +'" '+ (travado?"readonly":"") +'>' +
 
-      <label>Endereço</label>
-      <input id="endereco" value="${aluno.endereco || ""}" ${travado?"readonly":""}>
+  '<label>Endereço</label>' +
+  '<input id="endereco" value="'+ (aluno.endereco || "") +'" '+ (travado?"readonly":"") +'>' +
 
-      <button class="btn btn-primary" onclick="salvar()">💾 Salvar</button>
+  '<button class="btn btn-primary" onclick="salvar()">💾 Salvar</button>' +
 
-    </div>
-  `;
+  '</div>';
 }
-
 // 🔓 EDITAR
 function toggleEdit(){
   editando = !editando;
