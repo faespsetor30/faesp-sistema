@@ -95,7 +95,11 @@ async function carregar(){
     alert("Erro ao carregar aluno");
     return;
   }
-
+if(error || !data){
+  console.error("ERRO AO CARREGAR:", error);
+  alert("Erro ao carregar aluno");
+  return;
+}
   aluno = data;
   render();
 }
@@ -103,6 +107,10 @@ async function carregar(){
 // 🎨 RENDER
 function render(){
 
+  if(!aluno){
+  document.getElementById("dados").innerHTML = "Erro ao carregar aluno";
+  return;
+}
   const travado = !editando;
   const ativo = aluno.status === "ativo";
 
@@ -118,7 +126,7 @@ function render(){
   '<input value="'+ (aluno.email || "") +'" readonly>' +
 
   '<label>Matrícula</label>' +
-  '<input value="'+ (aluno.matricula || "") +'" readonly>' +
+  <input id="matricula" value="'+ (aluno.matricula || "") +'" readonly>
 
   '<label>Data início</label>' +
   '<input id="data_inicio" type="date" value="'+ (aluno.data_inicio || "") +'">' +
