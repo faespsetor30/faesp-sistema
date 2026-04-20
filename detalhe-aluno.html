@@ -3,7 +3,6 @@
 <head>
   <title>Ficha do Aluno</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     body { font-family:'Segoe UI'; background:#eef2f7; padding:20px; }
@@ -22,210 +21,118 @@
       cursor:not-allowed;
     }
 
-    label {
-      font-weight:600;
-      display:block;
+    .btn {
+      padding:8px 12px;
       margin-top:10px;
-      color:#2c5364;
-    }
-
-    button {
-      padding:8px 12px; margin-top:10px; cursor:pointer;
-    }
-
-    table {
-      width:100%; border-collapse:collapse; margin-top:10px;
-    }
-
-    th, td {
-      padding:10px; border-bottom:1px solid #ddd; text-align:center;
-    }
-
-    th { background:#f8fafc; }
-
-    .top-bar { margin-bottom:15px; }
-
-    .status-badge {
-      display:inline-block;
-      padding:6px 12px;
-      border-radius:20px;
-      font-size:13px;
-      font-weight:bold;
-    }
-
-    .status-ativo {
-      background:#dcfce7;
-      color:#166534;
-    }
-
-    .status-inativo {
-      background:#fee2e2;
-      color:#991b1b;
-    }
-
-    .toggle {
-      width:50px;
-      height:26px;
-      background:#ccc;
-      border-radius:50px;
-      position:relative;
       cursor:pointer;
-      transition:0.3s;
-    }
-
-    .toggle::after {
-      content:"";
-      width:22px;
-      height:22px;
-      background:white;
-      position:absolute;
-      top:2px;
-      left:2px;
-      border-radius:50%;
-      transition:0.3s;
-    }
-
-    .toggle.ativo {
-      background:#22c55e;
-    }
-
-    .toggle.ativo::after {
-      left:26px;
-    }
-
-    .btn-primary {
-      background:#2c5364;
-      color:white;
       border:none;
       border-radius:8px;
     }
+
+    .btn-primary { background:#2c5364; color:white; }
+    .btn-edit { background:#f59e0b; color:white; }
   </style>
 </head>
 
 <body>
 
-<div class="top-bar">
-  <button onclick="voltar()">⬅️ Voltar</button>
-</div>
-
 <h2>📋 Ficha do Aluno</h2>
 
 <div id="dados"></div>
-<div id="acoes"></div>
-<div id="media"></div>
-<div id="grafico"></div>
-<div id="disciplinas"></div>
-<div id="financeiro"></div>
 
 <script>
 
-const client = supabase.createClient(
-  "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
-);
+const client = supabase.createClient("URL","KEY");
 
-// 🔐 PROTEÇÃO
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-if (!usuario || usuario.tipo !== "Coordenacao") {
-  alert("Acesso restrito");
-  window.location.href = "index.html";
-}
-
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+const id = new URLSearchParams(window.location.search).get("id");
 
 let aluno = null;
+let editando = false;
 
-// 🔙 VOLTAR
-function voltar() {
-  window.location.href = "admin.html";
-}
+// 🔢 MATRÍCULA AUTOMÁTICA
+async function gerarMatricula(){
+  const ano = new Date().getFullYear();
 
-// FORMATOS
-function formatarNome(nome) {
-  return nome?.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-}
+  const { data } = await client
+    .from("usuarios")
+    .select("matricula")
+    .like("matricula", `${ano}%`);
 
-function formatarCPF(valor) {
-  return valor.replace(/\D/g,'')
-    .replace(/(\d{3})(\d)/,'$1.$2')
-    .replace(/(\d{3})(\d)/,'$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
-}
+  const numero = (data.length + 1).toString().padStart(3,"0");
 
-function formatarCelular(valor) {
-  return valor.replace(/\D/g,'')
-    .replace(/(\d{2})(\d)/,'($1) $2')
-    .replace(/(\d{5})(\d)/,'$1-$2');
-}
-
-function aplicarMascaras() {
-  document.getElementById("cpf").addEventListener("input", e => e.target.value = formatarCPF(e.target.value));
-  document.getElementById("celular").addEventListener("input", e => e.target.value = formatarCelular(e.target.value));
-}
-
-// COPIAR
-function copiarDados() {
-  const texto = `
-Nome: ${document.getElementById("nome").value}
-Matrícula: ${document.getElementById("matricula").value}
-Curso: ${document.getElementById("curso").value}
-  `;
-  navigator.clipboard.writeText(texto);
-  alert("Dados copiados!");
+  return `${ano}${numero}`;
 }
 
 // 🚀 CARREGAR
-async function carregar() {
+async function carregar(){
   const { data } = await client.from("usuarios").select("*").eq("id", id).single();
   aluno = data;
-
-  renderDados();
-  renderAcoes();
-  carregarDisciplinas();
-  carregarFinanceiro();
+  render();
 }
 
-// 👤 DADOS
-function renderDados() {
+// 🎨 RENDER
+function render(){
+
+  const travado = !editando;
+
   document.getElementById("dados").innerHTML = `
     <div class="card">
-      <h3>👤 Dados do Aluno</h3>
-      <label>Nome Completo</label>
-      <input id="nome" value="${formatarNome(aluno.nome)}">
+
+      <button class="btn btn-edit" onclick="toggleEdit()">✏️ Editar dados</button>
+
+      <label>Nome</label>
+      <input id="nome" value="${aluno.nome}" readonly>
+
       <label>Email</label>
-      <input id="email" value="${aluno.email}" readonly>
-      <label>Número da Matrícula</label>
-      <input id="matricula" value="${aluno.matricula || ""}">
-      <label>Data de Início</label>
+      <input value="${aluno.email}" readonly>
+
+      <label>Matrícula</label>
+      <input id="matricula" value="${aluno.matricula || ""}" readonly>
+
+      <label>Data início</label>
       <input id="data_inicio" type="date" value="${aluno.data_inicio || ""}">
+
       <label>Curso</label>
-<select id="curso">
-  <option value="">Selecione</option>
-  <option value="Curso Básico" ${aluno.curso==="Curso Básico"?"selected":""}>Curso Básico</option>
-  <option value="Curso Médio" ${aluno.curso==="Curso Médio"?"selected":""}>Curso Médio</option>
-</select>
+      <select id="curso">
+        <option value="Curso Básico" ${aluno.curso==="Curso Básico"?"selected":""}>Curso Básico</option>
+        <option value="Curso Médio" ${aluno.curso==="Curso Médio"?"selected":""}>Curso Médio</option>
+      </select>
+
       <label>CPF</label>
-      <input id="cpf" value="${aluno.cpf || ""}">
+      <input id="cpf" value="${aluno.cpf || ""}" ${travado?"readonly":""}>
+
       <label>RG</label>
-      <input id="rg" value="${aluno.rg || ""}">
+      <input id="rg" value="${aluno.rg || ""}" ${travado?"readonly":""}>
+
       <label>Celular</label>
-      <input id="celular" value="${aluno.celular || ""}">
+      <input id="celular" value="${aluno.celular || ""}" ${travado?"readonly":""}>
+
       <label>Endereço</label>
-      <input id="endereco" value="${aluno.endereco || ""}">
-      <button onclick="salvarEdicao()">💾 Salvar</button>
-      <button onclick="copiarDados()">📋 Copiar</button>
+      <input id="endereco" value="${aluno.endereco || ""}" ${travado?"readonly":""}>
+
+      <button class="btn btn-primary" onclick="salvar()">💾 Salvar</button>
+
     </div>
   `;
-  aplicarMascaras();
 }
 
-// 💾 SALVAR (AJUSTADO 🔥)
-async function salvarEdicao() {
+// 🔓 EDITAR
+function toggleEdit(){
+  editando = !editando;
+  render();
+}
+
+// 💾 SALVAR
+async function salvar(){
+
+  let matricula = document.getElementById("matricula").value;
+
+  if(!matricula){
+    matricula = await gerarMatricula();
+  }
 
   const payload = {
-    nome: document.getElementById("nome").value,
-    matricula: document.getElementById("matricula").value,
+    matricula,
     data_inicio: document.getElementById("data_inicio").value,
     curso: document.getElementById("curso").value,
     cpf: document.getElementById("cpf").value,
@@ -234,69 +141,27 @@ async function salvarEdicao() {
     endereco: document.getElementById("endereco").value
   };
 
-  console.log("ENVIANDO:", payload);
-
-  const { data, error } = await client
+  const { error } = await client
     .from("usuarios")
     .update(payload)
-    .eq("id", id)
-    .select();
-
-  console.log("ERRO COMPLETO:", error);
+    .eq("id", id);
 
   if(error){
     alert(error.message);
     return;
   }
 
-  alert("Salvou!");
-}
-// 🔥 STATUS
-function renderAcoes() {
-  const ativo = aluno.status === "ativo";
+  // 📜 HISTÓRICO
+  await client.from("usuarios_historico").insert([{
+    usuario_id: id,
+    alteracao: "Dados atualizados",
+    data: new Date()
+  }]);
 
-  document.getElementById("acoes").innerHTML = `
-    <div class="card">
-      <h3>⚙️ Status do Aluno</h3>
-
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div class="status-badge ${ativo ? "status-ativo" : "status-inativo"}">
-          ${ativo ? "Aluno Ativo" : "Aluno Inativo"}
-        </div>
-
-        <div class="toggle ${ativo ? "ativo" : ""}" onclick="toggleStatus()"></div>
-      </div>
-
-      <div id="confirmacao" style="margin-top:15px;"></div>
-    </div>
-  `;
-}
-
-function toggleStatus() {
-  const novo = aluno.status === "ativo" ? "recusado" : "ativo";
-  const texto = novo === "ativo" ? "Aluno ativo" : "Aluno inativo";
-
-  document.getElementById("confirmacao").innerHTML = `
-    <p><strong>${texto}</strong></p>
-    <p>Deseja confirmar?</p>
-    <button class="btn-primary" onclick="confirmarAlteracao('${novo}')">Sim</button>
-    <button onclick="cancelarAlteracao()">Cancelar</button>
-  `;
-}
-
-function cancelarAlteracao() {
-  document.getElementById("confirmacao").innerHTML = "";
-}
-
-async function confirmarAlteracao(status) {
-  await client.from("usuarios").update({ status }).eq("id", id);
-  alert("Status atualizado!");
+  alert("Salvo com sucesso!");
+  editando = false;
   carregar();
 }
-
-// RESTANTE
-async function carregarDisciplinas() { }
-async function carregarFinanceiro(){ }
 
 carregar();
 
