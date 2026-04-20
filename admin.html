@@ -75,6 +75,7 @@
       <h3>👑 COORDENAÇÃO</h3>
 
       <div class="menu">
+<button onclick="dashboard()">🏠 Dashboard</button>
         <button onclick="alunos()">📋 Cadastros</button>
         <button onclick="disciplinasMaster()">📚 Disciplinas</button>
         <button onclick="notas()">📝 Notas</button>
@@ -96,7 +97,7 @@
 </div>
 
 <script>
-
+dashboard();
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
@@ -112,7 +113,55 @@ function sair(){
   localStorage.removeItem("usuario");
   window.location.href="index.html";
 }
+//////////////////////////////////////////////////
+// 🏠 DASHBOARD
+//////////////////////////////////////////////////
 
+async function dashboard(){
+
+  const { data: usuarios } = await client.from("usuarios").select("*");
+  const { data: hist } = await client.from("disciplinas_historico").select("*");
+
+  const alunos = usuarios.filter(u=>u.tipo==="Aluno").length;
+  const professores = usuarios.filter(u=>u.tipo==="Professor").length;
+  const ativos = usuarios.filter(u=>u.status==="ativo").length;
+
+  const hoje = new Date().toISOString().split("T")[0];
+
+  const atuais = hist.filter(h=>{
+    return h.data_inicio <= hoje && (!h.data_fim || h.data_fim >= hoje);
+  });
+
+  let lista = "";
+
+  atuais.forEach(a=>{
+    lista += `
+      <div style="padding:10px;background:#f1f5f9;margin:5px;border-radius:8px">
+        📘 <strong>${a.curso}</strong> - ${a.disciplina}<br>
+        📅 ${a.data_inicio} até ${a.data_fim || "Atual"}
+      </div>
+    `;
+  });
+
+  conteudo.innerHTML = `
+    <h2>📊 Dashboard</h2>
+
+    <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px;">
+      <div style="flex:1; min-width:180px; background:white; padding:20px; border-radius:12px; text-align:center;">
+        👨‍🎓<br><strong>${alunos}</strong><br>Alunos
+      </div>
+      <div style="flex:1; min-width:180px; background:white; padding:20px; border-radius:12px; text-align:center;">
+        👨‍🏫<br><strong>${professores}</strong><br>Professores
+      </div>
+      <div style="flex:1; min-width:180px; background:white; padding:20px; border-radius:12px; text-align:center;">
+        ✅<br><strong>${ativos}</strong><br>Ativos
+      </div>
+    </div>
+
+    <h3>📚 Matérias em andamento</h3>
+    ${lista || "Nenhuma ativa"}
+  `;
+}
 //////////////////////////////////////////////////
 // 👤 CADASTROS
 //////////////////////////////////////////////////
