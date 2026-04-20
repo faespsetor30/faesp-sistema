@@ -99,7 +99,7 @@ function sair(){
 }
 
 //////////////////////////////////////////////////
-// 👤 CADASTROS (AJUSTADO ✅)
+// 👤 CADASTROS (CORRIGIDO)
 //////////////////////////////////////////////////
 async function alunos(){
   const { data } = await client.from("usuarios").select("*");
@@ -111,9 +111,9 @@ async function alunos(){
     <input id="email" placeholder="Email">
 
     <select id="tipo">
-      <option>Aluno</option>
-      <option>Professor</option>
-      <option>Coordenacao</option>
+      <option value="Aluno">Aluno</option>
+      <option value="Professor">Professor</option>
+      <option value="Coordenacao">Coordenação</option>
     </select>
 
     <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
@@ -133,7 +133,13 @@ async function alunos(){
     html += `
       <tr>
         <td>
-          <a class="nome-link" href="detalhe-aluno.html?id=${u.id   <td>${u.status}</td>
+          <a class="nome-link" href="detalhe-aluno.html?id=${u.id}">
+            ${u.nome}
+          </a>
+        </td>
+        <td>${u.email}</td>
+        <td>${u.curso || "-"}</td>
+        <td>${u.status}</td>
         <td>${u.tipo}</td>
         <td>
           <button class="btn" onclick="aprovar('${u.id}')">✔️</button>
@@ -173,8 +179,9 @@ async function excluir(id){
 }
 
 //////////////////////////////////////////////////
-// 📚 DISCIPLINAS
+// 📚 DISCIPLINAS (mantido)
 //////////////////////////////////////////////////
+
 async function disciplinasMaster(){
   const { data } = await client.from("disciplinas_master").select("*");
 
@@ -205,8 +212,9 @@ async function salvarDisc(){
 }
 
 //////////////////////////////////////////////////
-// 📝 NOTAS + PDF
+// 📝 NOTAS + PDF (mantido)
 //////////////////////////////////////////////////
+
 async function notas(){
   const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
 
@@ -222,8 +230,9 @@ async function notas(){
 }
 
 //////////////////////////////////////////////////
-// 📅 PRESENÇA
+// 📅 PRESENÇA (mantido)
 //////////////////////////////////////////////////
+
 async function frequencia(){
   const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
   const { data: disc } = await client.from("disciplinas_master").select("*");
@@ -256,8 +265,9 @@ async function salvarF(){
 }
 
 //////////////////////////////////////////////////
-// 📊 BOLETIM PDF
+// 📊 BOLETIM PDF (mantido)
 //////////////////////////////////////////////////
+
 async function gerarBoletim(){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
