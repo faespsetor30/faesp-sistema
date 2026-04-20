@@ -222,20 +222,25 @@ function renderDados() {
 
 // 💾 SALVAR (AJUSTADO 🔥)
 async function salvarEdicao() {
-  await client.from("usuarios").update({
-    nome: document.getElementById("nome").value,
-    matricula: document.getElementById("matricula").value,
-    data_inicio: document.getElementById("data_inicio").value,
-    curso: document.getElementById("curso").value,
-    cpf: document.getElementById("cpf").value,
-    rg: document.getElementById("rg").value,
-    celular: document.getElementById("celular").value,
-    endereco: document.getElementById("endereco").value
-  }).eq("id", id);
+
+  const dados = {
+    nome: document.getElementById("nome").value || aluno.nome,
+    matricula: document.getElementById("matricula").value || aluno.matricula,
+    data_inicio: document.getElementById("data_inicio").value || aluno.data_inicio,
+    curso: document.getElementById("curso").value || aluno.curso,
+    cpf: document.getElementById("cpf").value || aluno.cpf,
+    rg: document.getElementById("rg").value || aluno.rg,
+    celular: document.getElementById("celular").value || aluno.celular,
+    endereco: document.getElementById("endereco").value || aluno.endereco
+  };
+
+  await client
+    .from("usuarios")
+    .update(dados)
+    .eq("id", id);
 
   alert("Atualizado!");
 
-  // 🔄 ESSENCIAL: atualiza os dados na tela
   await carregar();
 }
 
