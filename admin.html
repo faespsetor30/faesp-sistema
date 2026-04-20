@@ -415,51 +415,89 @@ async function salvarFrequencia(){
 }
 
 //////////////////////////////////////////////////
-// 📊 BOLETIM
+// 📊 BOLETIM BONITO
 //////////////////////////////////////////////////
 
 async function gerarBoletim(){
 
   const email = alunoSelect.value;
 
+  if(!email){
+    alert("Selecione um aluno");
+    return;
+  }
+
   const { data: aluno } = await client.from("usuarios").select("*").eq("email",email).single();
   const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
   const { data: freq } = await client.from("frequencia").select("*").eq("email",email);
 
-  let html=`
-    <div style="font-family:Segoe UI;padding:20px">
-      <h2 style="text-align:center">📊 BOLETIM FAESP</h2>
-      <h3>${aluno.nome}</h3>
-
-      <table style="width:100%">
-        <tr>
-          <th>Disciplina</th>
-          <th>Nota</th>
-          <th>Presença</th>
-        </tr>
-  `;
+  let soma = 0;
+  let qtd = 0;
+  let linhas = "";
 
   notas.forEach(n=>{
-
     const lista = freq.filter(f=>f.disciplina===n.nome);
     const total = lista.length;
     const pres = lista.filter(f=>f.presente).length;
-
     const perc = total>0 ? Math.round((pres/total)*100) : 0;
 
-    html+=`
+    const nota = parseFloat(n.nota) || 0;
+
+    if(n.nota){
+      soma += nota;
+      qtd++;
+    }
+
+    linhas += `
       <tr>
         <td>${n.nome}</td>
-        <td>${n.nota||"-"}</td>
+        <td>${n.nota || "-"}</td>
         <td>${perc}%</td>
       </tr>
     `;
   });
 
-  html+="</table></div>";
+  const media = qtd > 0 ? (soma / qtd).toFixed(1) : "-";
+  const situacao = media >= 7 ? "APROVADO" : "REPROVADO";
 
-  const w = window.open();
+  let html = `
+    <div style="font-family:Segoe UI;padding:30px;max-width:800px;margin:auto;border:1px solid #ddd;border-radius:10px;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <h2>🎓 FAESP - SETOR 30</h2>
+        <p style="color:#555;">Boletim Escolar</p>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <strong>Aluno:</strong> ${aluno.nome}<br>
+        <strong>Email:</strong> ${aluno.email}
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;">
+        <tr style="background:#2c5364;color:white;">
+          <th>Disciplina</th>
+          <th>Nota</th>
+          <th>Presença</th>
+        </tr>
+        ${linhas}
+      </table>
+
+      <div style="margin-top:20px;display:flex;justify-content:space-between;font-size:18px;">
+        <div><strong>Média:</strong> ${media}</div>
+        <div><strong>Situação:</strong> 
+          <span style="color:${situacao==='APROVADO'?'green':'red'}">${situacao}</span>
+        </div>
+      </div>
+
+      <div style="margin-top:40px;text-align:center;color:#777;">
+        ___________________________<br>
+        Coordenação FAESP
+      </div>
+    </div>
+  `;
+
+  const w = window.open("", "_blank", "width=900,height=700");
   w.document.write(html);
+  w.document.close();
 }
 
 </script>
