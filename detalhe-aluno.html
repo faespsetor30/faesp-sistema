@@ -223,13 +223,16 @@ function renderDados() {
 // 💾 SALVAR (AJUSTADO 🔥)
 async function salvarEdicao() {
 
-  const cursoSelecionado = document.getElementById("curso").value;
+  const select = document.getElementById("curso");
+  const cursoSelecionado = select.options[select.selectedIndex].value;
+
+  console.log("CURSO SELECIONADO:", cursoSelecionado);
 
   await client.from("usuarios").update({
     nome: document.getElementById("nome").value,
     matricula: document.getElementById("matricula").value,
     data_inicio: document.getElementById("data_inicio").value,
-    curso: cursoSelecionado === "" ? aluno.curso : cursoSelecionado,
+    curso: cursoSelecionado,
     cpf: document.getElementById("cpf").value,
     rg: document.getElementById("rg").value,
     celular: document.getElementById("celular").value,
@@ -237,10 +240,8 @@ async function salvarEdicao() {
   }).eq("id", id);
 
   alert("Atualizado!");
-
   await carregar();
 }
-
 // 🔥 STATUS
 function renderAcoes() {
   const ativo = aluno.status === "ativo";
