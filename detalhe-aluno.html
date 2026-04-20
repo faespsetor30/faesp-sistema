@@ -223,21 +223,31 @@ function renderDados() {
 // 💾 SALVAR (AJUSTADO 🔥)
 async function salvarEdicao() {
 
-  const select = document.getElementById("curso");
-  const cursoSelecionado = select.options[select.selectedIndex].value;
+  const curso = document.getElementById("curso").value;
 
-  console.log("CURSO SELECIONADO:", cursoSelecionado);
+  const { data, error } = await client
+    .from("usuarios")
+    .update({
+      nome: document.getElementById("nome").value,
+      matricula: document.getElementById("matricula").value,
+      data_inicio: document.getElementById("data_inicio").value,
+      curso: curso,
+      cpf: document.getElementById("cpf").value,
+      rg: document.getElementById("rg").value,
+      celular: document.getElementById("celular").value,
+      endereco: document.getElementById("endereco").value
+    })
+    .eq("id", id)
+    .select(); // 🔥 ISSO AQUI É O SEGREDO
 
-  await client.from("usuarios").update({
-    nome: document.getElementById("nome").value,
-    matricula: document.getElementById("matricula").value,
-    data_inicio: document.getElementById("data_inicio").value,
-    curso: cursoSelecionado,
-    cpf: document.getElementById("cpf").value,
-    rg: document.getElementById("rg").value,
-    celular: document.getElementById("celular").value,
-    endereco: document.getElementById("endereco").value
-  }).eq("id", id);
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+  console.log("CURSO ENVIADO:", curso);
+
+  if(error){
+    alert("Erro ao salvar!");
+    return;
+  }
 
   alert("Atualizado!");
   await carregar();
