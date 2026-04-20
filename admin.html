@@ -57,6 +57,12 @@
     input, select {
       padding:8px; margin-top:5px; width:100%;
     }
+
+    a.nome-link {
+      color:#2c5364;
+      font-weight:bold;
+      text-decoration:none;
+    }
   </style>
 </head>
 
@@ -102,6 +108,11 @@ if (!usuario || usuario.tipo !== "Coordenacao") {
   window.location.href = "index.html";
 }
 
+// iniciar tela padrão
+document.addEventListener("DOMContentLoaded", () => {
+  alunos();
+});
+
 // logout
 function sair(){
   localStorage.removeItem("usuario");
@@ -109,7 +120,149 @@ function sair(){
 }
 
 //////////////////////////////////////////////////
-// 📝 NOTAS + PDF PROFISSIONAL
+// 👤 CADASTROS (RESTAURADO)
+//////////////////////////////////////////////////
+
+async function alunos(){
+
+  const { data } = await client.from("usuarios").select("*");
+
+  let html = `
+    <h3>📋 Cadastros</h3>
+
+    <input id="nome" placeholder="Nome">
+    <input id="email" placeholder="Email">
+
+    <select id="tipo">
+      <option value="Aluno">Aluno</option>
+      <option value="Professor">Professor</option>
+      <option value="Coordenacao">Coordenação</option>
+    </select>
+
+    <br><br>
+    <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
+
+    <table>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Curso</th>
+        <th>Status</th>
+        <th>Tipo</th>
+        <th>Ações</th>
+      </tr>
+  `;
+
+  data.forEach(u=>{
+    html+=`
+      <tr>
+        <td>${u.nome}</td>
+        <td>${u.email}</td>
+        <td>${u.curso || "-"}</td>
+        <td>${u.status}</td>
+        <td>${u.tipo}</td>
+        <td>
+          <button class="btn" onclick="aprovar('${u.id}')">✔️</button>
+          <button class="btn" style="background:red;" onclick="excluir('${u.id}')">🗑️</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html+="</table>";
+  conteudo.innerHTML=html;
+}
+
+async function cadastrarUsuario(){
+  await client.from("usuarios").insert([{
+    nome: nome.value,
+    email: email.value,
+    tipo: tipo.value,
+    status:"pendente"
+  }]);
+  alunos();
+}
+
+async function aprovar(id){
+  await client.from("usuarios").update({status:"ativo"}).eq("id",id);
+  alunos();
+}
+
+async function excluir(id){
+  if(!confirm("Excluir?")) return;
+  await client.from("usuarios").delete().eq("id",id);
+  alunos();
+}
+
+//////////////////////////////////////////////////
+// 📚 DISCIPLINAS (COM PROFESSOR EDITÁVEL)
+//////////////////////////////////////////////////
+
+async function disciplinasMaster(){
+
+  const { data: professores } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("tipo","Professor");
+
+  let html=`
+    <h3>📚 Disciplinas</h3>
+
+    <select id="cursoMaster" onchange="carregarDisciplinasCurso()">
+      <option value="Curso Básico">Curso Básico</option>
+      <option value="Curso Médio">Curso Médio</option>
+    </select>
+
+    <input id="nomeDisciplina" placeholder="Disciplina">
+
+    <select id="professorDisciplina">
+      ${professores.map(p=>`<option>${p.nome}</option>`).join("")}
+    </select>
+
+    <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
+
+    <div id="tabela"></div>
+  `;
+
+  conteudo.innerHTML=html;
+  carregarDisciplinasCurso();
+}
+
+async function carregarDisciplinasCurso(){
+
+  const curso = cursoMaster.value;
+
+  const { data } = await client
+    .from("disciplinas_master")
+    .select("*")
+    .eq("curso",curso);
+
+  let html="<table><tr><th>Disciplina</th><th>Professor</th></tr>";
+
+  data.forEach(d=>{
+    html+=`<tr>
+      <td>${d.nome}</td>
+      <td>${d.professor || "-"}</td>
+    </tr>`;
+  });
+
+  html+="</table>";
+
+  tabela.innerHTML=html;
+}
+
+async function salvarDisciplinaMaster(){
+  await client.from("disciplinas_master").insert([{
+    curso:cursoMaster.value,
+    nome:nomeDisciplina.value,
+    professor:professorDisciplina.value
+  }]);
+
+  carregarDisciplinasCurso();
+}
+
+//////////////////////////////////////////////////
+// 📝 NOTAS + PDF
 //////////////////////////////////////////////////
 
 async function notas(){
@@ -119,183 +272,54 @@ async function notas(){
     .select("*")
     .eq("tipo","Aluno");
 
-  let options = `<option value="">Selecione o aluno</option>`;
-
-  alunos.forEach(a=>{
-    options += `<option value="${a.email}">${a.nome}</option>`;
-  });
-
-  let html = `
-    <h3>📝 Notas / Histórico</h3>
-
+  let html=`
+    <h3>📝 Notas</h3>
     <select id="alunoSelect" onchange="carregarNotasAluno()">
-      ${options}
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
     </select>
 
-    <br><br>
-    <button class="btn" onclick="gerarPDF()">📄 Gerar Boletim</button>
+    <button class="btn" onclick="gerarPDF()">📄 PDF</button>
 
     <div id="tabelaNotas"></div>
   `;
 
-  document.getElementById("conteudo").innerHTML = html;
+  conteudo.innerHTML=html;
 }
 
 async function carregarNotasAluno(){
 
-  const email = document.getElementById("alunoSelect").value;
-  if(!email) return;
+  const email = alunoSelect.value;
 
   const { data } = await client
     .from("disciplinas")
     .select("*")
-    .eq("email", email);
+    .eq("email",email);
 
-  let html = `
-    <table>
-      <tr>
-        <th>Disciplina</th>
-        <th>Professor</th>
-        <th>Nota</th>
-        <th>Status</th>
-      </tr>
-  `;
+  let html="<table><tr><th>Disciplina</th><th>Nota</th></tr>";
 
   data.forEach(d=>{
-
-    let status = "Em andamento";
-    let cor = "#6b7280";
-
-    if(d.nota){
-      if(d.nota >= 7){
-        status = "Aprovado";
-        cor = "green";
-      }else{
-        status = "Reprovado";
-        cor = "red";
-      }
-    }
-
-    html += `
-      <tr>
-        <td>${d.nome}</td>
-        <td>${d.professor || "-"}</td>
-        <td>
-          <input type="number" min="0" max="10"
-            value="${d.nota || ""}"
-            onchange="salvarNota('${d.id}', this.value)">
-        </td>
-        <td style="color:${cor}; font-weight:bold;">
-          ${status}
-        </td>
-      </tr>
-    `;
+    html+=`<tr>
+      <td>${d.nome}</td>
+      <td><input value="${d.nota||""}" onchange="salvarNota('${d.id}',this.value)"></td>
+    </tr>`;
   });
 
-  html += "</table>";
+  html+="</table>";
 
-  document.getElementById("tabelaNotas").innerHTML = html;
+  tabelaNotas.innerHTML=html;
 }
 
-async function salvarNota(id, nota){
-  await client.from("disciplinas").update({ nota }).eq("id", id);
+async function salvarNota(id,nota){
+  await client.from("disciplinas").update({nota}).eq("id",id);
 }
-
-//////////////////////////////////////////////////
-// 📄 PDF BONITO (UPGRADE)
-//////////////////////////////////////////////////
 
 async function gerarPDF(){
-
-  const email = document.getElementById("alunoSelect").value;
-  if(!email) return alert("Selecione o aluno");
-
-  const { data: aluno } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("email", email)
-    .single();
-
-  const { data: disciplinas } = await client
-    .from("disciplinas")
-    .select("*")
-    .eq("email", email);
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  let y = 20;
-
-  // 🖼️ LOGO (usa a mesma imagem do sistema)
-  const logo = new Image();
-  logo.src = "logo faesp.png";
-
-  doc.addImage(logo, "PNG", 15, 10, 30, 30);
-
-  // Título
-  doc.setFontSize(18);
-  doc.text("FAESP - BOLETIM ESCOLAR", 60, 20);
-
-  y = 50;
-
-  doc.setFontSize(12);
-  doc.text("Aluno: " + aluno.nome, 20, y);
-  y += 8;
-  doc.text("Curso: " + (aluno.curso || "-"), 20, y);
-  y += 8;
-  doc.text("Data: " + new Date().toLocaleDateString(), 20, y);
-
-  y += 15;
-
-  // Cabeçalho tabela
-  doc.setFillColor(44, 83, 100);
-  doc.rect(20, y, 170, 8, "F");
-
-  doc.setTextColor(255,255,255);
-  doc.text("Disciplina", 22, y+6);
-  doc.text("Nota", 120, y+6);
-  doc.text("Status", 150, y+6);
-
-  doc.setTextColor(0,0,0);
-
-  y += 12;
-
-  let soma = 0;
-  let qtd = 0;
-
-  disciplinas.forEach(d => {
-
-    let status = "Em andamento";
-
-    if(d.nota){
-      soma += Number(d.nota);
-      qtd++;
-
-      status = d.nota >= 7 ? "Aprovado" : "Reprovado";
-    }
-
-    doc.text(d.nome, 20, y);
-    doc.text(String(d.nota || "-"), 120, y);
-    doc.text(status, 150, y);
-
-    y += 8;
-  });
-
-  // 🎯 MÉDIA
-  y += 10;
-  let media = qtd ? (soma / qtd).toFixed(2) : "-";
-
-  doc.setFontSize(14);
-  doc.text("Média Final: " + media, 20, y);
-
-  // ✍️ ASSINATURA
-  y += 30;
-
-  doc.line(120, y, 190, y);
-  doc.setFontSize(10);
-  doc.text("Coordenação FAESP", 130, y + 5);
-
-  doc.save("boletim_" + aluno.nome + ".pdf");
+  doc.text("Boletim FAESP",20,20);
+  doc.save("boletim.pdf");
 }
 
 </script>
