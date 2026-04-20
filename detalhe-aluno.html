@@ -128,6 +128,12 @@ function render(){
     '<option value="Curso Básico" '+ (aluno.curso==="Curso Básico"?"selected":"") +'>Curso Básico</option>' +
     '<option value="Curso Médio" '+ (aluno.curso==="Curso Médio"?"selected":"") +'>Curso Médio</option>' +
   '</select>' +
+    '<label>Tipo</label>' +
+'<select id="tipo" '+ (travado?"disabled":"") +'>' +
+  '<option value="Aluno" '+ (aluno.tipo==="Aluno"?"selected":"") +'>Aluno</option>' +
+  '<option value="Professor" '+ (aluno.tipo==="Professor"?"selected":"") +'>Professor</option>' +
+  '<option value="Coordenacao" '+ (aluno.tipo==="Coordenacao"?"selected":"") +'>Coordenação</option>' +
+'</select>' +
 
   '<label>CPF</label>' +
   '<input id="cpf" value="'+ (aluno.cpf || "") +'" '+ (travado?"readonly":"") +'>' +
@@ -183,15 +189,16 @@ async function salvar(){
     matricula = await gerarMatricula();
   }
 
-  const payload = {
-    matricula,
-    data_inicio: document.getElementById("data_inicio").value,
-    curso: document.getElementById("curso").value,
-    cpf: document.getElementById("cpf").value,
-    rg: document.getElementById("rg").value,
-    celular: document.getElementById("celular").value,
-    endereco: document.getElementById("endereco").value
-  };
+const payload = {
+  matricula,
+  data_inicio: document.getElementById("data_inicio").value,
+  curso: document.getElementById("curso").value,
+  tipo: document.getElementById("tipo").value, // 🔥 NOVO
+  cpf: document.getElementById("cpf").value,
+  rg: document.getElementById("rg").value,
+  celular: document.getElementById("celular").value,
+  endereco: document.getElementById("endereco").value
+};
 
   const { error } = await client
     .from("usuarios")
