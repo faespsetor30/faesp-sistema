@@ -4,9 +4,6 @@
   <title>FAESP - Coordenação</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
   <style>
     body { margin:0; font-family:'Segoe UI'; display:flex; height:100vh; background:#eef2f7; flex-direction:column;}
     .main { display:flex; flex:1;}
@@ -64,9 +61,7 @@
       text-decoration:none;
     }
 
-    a.nome-link:hover {
-      text-decoration:underline;
-    }
+    a.nome-link:hover { text-decoration:underline;}
   </style>
 </head>
 
@@ -82,7 +77,6 @@
       <div class="menu">
         <button onclick="alunos()">📋 Cadastros</button>
         <button onclick="disciplinasMaster()">📚 Disciplinas</button>
-        <button onclick="notas()">📝 Notas</button>
       </div>
     </div>
 
@@ -112,11 +106,6 @@ if (!usuario || usuario.tipo !== "Coordenacao") {
   window.location.href = "index.html";
 }
 
-// iniciar tela padrão
-document.addEventListener("DOMContentLoaded", () => {
-  alunos();
-});
-
 // logout
 function sair(){
   localStorage.removeItem("usuario");
@@ -124,7 +113,7 @@ function sair(){
 }
 
 //////////////////////////////////////////////////
-// 👤 CADASTROS (COM LINK RESTAURADO)
+// 👤 CADASTROS
 //////////////////////////////////////////////////
 
 async function alunos(){
@@ -160,15 +149,19 @@ async function alunos(){
   data.forEach(u=>{
     html+=`
       <tr>
-        <td>
-          <a class="nome-link" href="detalhe-aluno.html?id=${u.id}">
-            ${u.nome}
-          </a>
-        </td>
+        <td><a class="nome-link" href="detalhe-aluno.html?id=${u.id}">${u.nome}</a></td>
         <td>${u.email}</td>
-        <td>${u.curso || "-"}</td>
+        <td>${u.curso || "Não definido"}</td>
         <td>${u.status}</td>
-        <td>${u.tipo}</td>
+
+        <td>
+          <select onchange="alterarTipo('${u.id}',this.value)">
+            <option ${u.tipo==="Aluno"?"selected":""}>Aluno</option>
+            <option ${u.tipo==="Professor"?"selected":""}>Professor</option>
+            <option ${u.tipo==="Coordenacao"?"selected":""}>Coordenação</option>
+          </select>
+        </td>
+
         <td>
           <button class="btn" onclick="aprovar('${u.id}')">✔️</button>
           <button class="btn" style="background:red;" onclick="excluir('${u.id}')">🗑️</button>
@@ -178,20 +171,24 @@ async function alunos(){
   });
 
   html+="</table>";
-  conteudo.innerHTML=html;
+  document.getElementById("conteudo").innerHTML=html;
 }
 
-//////////////////////////////////////////////////
-// 🔽 RESTO DO CÓDIGO CONTINUA IGUAL (NÃO ALTERADO)
-//////////////////////////////////////////////////
-
 async function cadastrarUsuario(){
-  await client.from("usuarios").insert([{
-    nome: nome.value,
-    email: email.value,
-    tipo: tipo.value,
-    status:"pendente"
-  }]);
+  const nome = document.getElementById("nome").value;
+  const email = document.getElementById("email").value;
+  const tipo = document.getElementById("tipo").value;
+
+  if(!nome || !email) return alert("Preencha os campos");
+
+  await client.from("usuarios").insert([{ nome,email,tipo,status:"pendente"}]);
+
+  alert("Cadastrado!");
+  alunos();
+}
+
+async function alterarTipo(id,tipo){
+  await client.from("usuarios").update({tipo}).eq("id",id);
   alunos();
 }
 
@@ -206,117 +203,162 @@ async function excluir(id){
   alunos();
 }
 
+//////////////////////////////////////////////////
+// 📚 DISCIPLINAS (AJUSTADO CORRETAMENTE)
+//////////////////////////////////////////////////
+
 async function disciplinasMaster(){
-  const { data: professores } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("tipo","Professor");
 
   let html=`
-    <h3>📚 Disciplinas</h3>
+    <h3>📚 Disciplinas por Curso</h3>
 
     <select id="cursoMaster" onchange="carregarDisciplinasCurso()">
       <option value="Curso Básico">Curso Básico</option>
       <option value="Curso Médio">Curso Médio</option>
     </select>
 
-    <input id="nomeDisciplina" placeholder="Disciplina">
-
-    <select id="professorDisciplina">
-      ${professores.map(p=>`<option>${p.nome}</option>`).join("")}
-    </select>
+    <input id="nomeDisciplina" placeholder="Nome da disciplina">
 
     <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
 
     <div id="tabela"></div>
   `;
 
-  conteudo.innerHTML=html;
+  document.getElementById("conteudo").innerHTML=html;
+
   carregarDisciplinasCurso();
 }
 
 async function carregarDisciplinasCurso(){
-  const curso = cursoMaster.value;
 
-  const { data } = await client
+  const curso = document.getElementById("cursoMaster").value;
+
+  const { data: disciplinas } = await client
     .from("disciplinas_master")
     .select("*")
-    .eq("curso",curso);
+    .eq("curso", curso);
 
-  let html="<table><tr><th>Disciplina</th><th>Professor</th></tr>";
+  let html=`
+    <table>
+      <tr>
+        <th>Curso</th>
+        <th>Disciplina</th>
+        <th>Histórico</th>
+        <th>Ação</th>
+      </tr>
+  `;
 
-  data.forEach(d=>{
-    html+=`<tr>
-      <td>${d.nome}</td>
-      <td>${d.professor || "-"}</td>
-    </tr>`;
+  disciplinas.forEach(d=>{
+    html+=`
+      <tr>
+        <td>${d.curso}</td>
+        <td>${d.nome}</td>
+
+        <td>
+          <button class="btn" onclick="abrirHistorico('${d.nome}','${d.curso}')">📄</button>
+        </td>
+
+        <td>
+          <button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">🗑️</button>
+        </td>
+      </tr>
+    `;
   });
 
   html+="</table>";
-  tabela.innerHTML=html;
+
+  document.getElementById("tabela").innerHTML=html;
 }
 
 async function salvarDisciplinaMaster(){
-  await client.from("disciplinas_master").insert([{
-    curso:cursoMaster.value,
-    nome:nomeDisciplina.value,
-    professor:professorDisciplina.value
-  }]);
+  const curso = document.getElementById("cursoMaster").value;
+  const nome = document.getElementById("nomeDisciplina").value.trim();
 
+  if(!nome) return alert("Digite o nome da disciplina");
+
+  await client.from("disciplinas_master").insert([{curso,nome}]);
+
+  alert("Disciplina salva!");
+  document.getElementById("nomeDisciplina").value="";
   carregarDisciplinasCurso();
 }
 
-async function notas(){
-  const { data: alunos } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("tipo","Aluno");
-
-  let html=`
-    <h3>📝 Notas</h3>
-    <select id="alunoSelect" onchange="carregarNotasAluno()">
-      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
-    </select>
-
-    <button class="btn" onclick="gerarPDF()">📄 PDF</button>
-
-    <div id="tabelaNotas"></div>
-  `;
-
-  conteudo.innerHTML=html;
+async function excluirDisciplina(id){
+  if(!confirm("Excluir disciplina?")) return;
+  await client.from("disciplinas_master").delete().eq("id",id);
+  carregarDisciplinasCurso();
 }
 
-async function carregarNotasAluno(){
-  const email = alunoSelect.value;
+//////////////////////////////////////////////////
+// 📄 HISTÓRICO (MANTIDO)
+//////////////////////////////////////////////////
+
+async function abrirHistorico(disciplina, curso){
 
   const { data } = await client
-    .from("disciplinas")
+    .from("disciplinas_historico")
     .select("*")
-    .eq("email",email);
+    .eq("disciplina", disciplina)
+    .eq("curso", curso);
 
-  let html="<table><tr><th>Disciplina</th><th>Nota</th></tr>";
+  let html = `
+    <h3>📄 Histórico - ${disciplina}</h3>
 
-  data.forEach(d=>{
-    html+=`<tr>
-      <td>${d.nome}</td>
-      <td><input value="${d.nota||""}" onchange="salvarNota('${d.id}',this.value)"></td>
-    </tr>`;
+    <input id="profHist" placeholder="Professor">
+    <input id="inicioHist" type="date">
+    <input id="fimHist" type="date">
+
+    <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">
+      Salvar período
+    </button>
+
+    <br><br>
+
+    <table>
+      <tr>
+        <th>Professor</th>
+        <th>Início</th>
+        <th>Fim</th>
+      </tr>
+  `;
+
+  data.forEach(h=>{
+    html+=`
+      <tr>
+        <td>${h.professor}</td>
+        <td>${h.data_inicio}</td>
+        <td>${h.data_fim || "-"}</td>
+      </tr>
+    `;
   });
 
-  html+="</table>";
-  tabelaNotas.innerHTML=html;
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
 }
 
-async function salvarNota(id,nota){
-  await client.from("disciplinas").update({nota}).eq("id",id);
-}
+async function salvarHistorico(disciplina, curso){
 
-async function gerarPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  const professor = document.getElementById("profHist").value;
+  const inicio = document.getElementById("inicioHist").value;
+  const fim = document.getElementById("fimHist").value;
 
-  doc.text("Boletim FAESP",20,20);
-  doc.save("boletim.pdf");
+  if(!professor || !inicio){
+    alert("Preencha os campos");
+    return;
+  }
+
+  await client.from("disciplinas_historico").insert([{
+    disciplina,
+    curso,
+    professor,
+    data_inicio: inicio,
+    data_fim: fim || null
+  }]);
+
+  alert("Histórico salvo!");
+
+  abrirHistorico(disciplina, curso);
 }
 
 </script>
