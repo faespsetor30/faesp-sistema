@@ -88,20 +88,21 @@ async function carregar(){
 function render(){
 
   const travado = !editando;
+  const ativo = aluno.status === "ativo";
 
   document.getElementById("dados").innerHTML =
   '<div class="card">' +
 
-  '<button class="btn btn-edit" onclick="toggleEdit()">✏️ Editar dados</button>' +
+  '<h3>👤 Dados do Aluno</h3>' +
 
   '<label>Nome</label>' +
-  '<input id="nome" value="'+ (aluno.nome || "") +'" readonly>' +
+  '<input value="'+ (aluno.nome || "") +'" readonly>' +
 
   '<label>Email</label>' +
   '<input value="'+ (aluno.email || "") +'" readonly>' +
 
   '<label>Matrícula</label>' +
-  '<input id="matricula" value="'+ (aluno.matricula || "") +'" readonly>' +
+  '<input value="'+ (aluno.matricula || "") +'" readonly>' +
 
   '<label>Data início</label>' +
   '<input id="data_inicio" type="date" value="'+ (aluno.data_inicio || "") +'">' +
@@ -123,6 +124,29 @@ function render(){
 
   '<label>Endereço</label>' +
   '<input id="endereco" value="'+ (aluno.endereco || "") +'" '+ (travado?"readonly":"") +'>' +
+
+  '</div>' +
+
+  // 🔥 CARD DE AÇÕES
+  '<div class="card">' +
+
+  '<h3>⚙️ Ações</h3>' +
+
+  '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">' +
+
+    '<div style="font-weight:bold;">Status: ' +
+      (ativo
+        ? '<span style="color:green;">● Ativo</span>'
+        : '<span style="color:red;">● Inativo</span>') +
+    '</div>' +
+
+    '<button class="btn" style="background:'+(ativo?'#ef4444':'#22c55e')+'; color:white;" onclick="toggleStatus()">' +
+      (ativo ? 'Desativar' : 'Ativar') +
+    '</button>' +
+
+  '</div>' +
+
+  '<button class="btn btn-edit" onclick="toggleEdit()">✏️ Editar dados</button>' +
 
   '<button class="btn btn-primary" onclick="salvar()">💾 Salvar</button>' +
 
@@ -163,6 +187,30 @@ async function salvar(){
     return;
   }
 
+  async function toggleStatus(){
+
+  const novoStatus = aluno.status === "ativo" ? "recusado" : "ativo";
+
+  const { error } = await client
+    .from("usuarios")
+    .update({ status: novoStatus })
+    .eq("id", id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  await client.from("usuarios_historico").insert([{
+    usuario_id: id,
+    alteracao: "Status alterado para " + novoStatus,
+    data: new Date()
+  }]);
+
+  alert("Status atualizado!");
+  carregar();
+}
+  
   // 📜 HISTÓRICO
   await client.from("usuarios_historico").insert([{
     usuario_id: id,
