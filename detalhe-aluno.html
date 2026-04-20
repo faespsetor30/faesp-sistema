@@ -200,10 +200,11 @@ function renderDados() {
       <label>Data de Início</label>
       <input id="data_inicio" type="date" value="${aluno.data_inicio || ""}">
       <label>Curso</label>
-      <select id="curso">
-        <option ${aluno.curso==="Curso Básico"?"selected":""}>Curso Básico</option>
-        <option ${aluno.curso==="Curso Médio"?"selected":""}>Curso Médio</option>
-      </select>
+<select id="curso">
+  <option value="">Selecione</option>
+  <option value="Curso Básico" ${aluno.curso==="Curso Básico"?"selected":""}>Curso Básico</option>
+  <option value="Curso Médio" ${aluno.curso==="Curso Médio"?"selected":""}>Curso Médio</option>
+</select>
       <label>CPF</label>
       <input id="cpf" value="${aluno.cpf || ""}">
       <label>RG</label>
