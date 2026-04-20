@@ -48,10 +48,6 @@
     ⬅️ Voltar
   </button>
 </div>
-
-  function voltar() {
-  window.location.href = "admin.html";
-}
   
 <h2>📋 Ficha do Aluno</h2>
 
@@ -59,6 +55,9 @@
 
 <script>
 
+  function voltar() {
+  window.location.href = "admin.html";
+}
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
