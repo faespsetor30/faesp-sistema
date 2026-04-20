@@ -183,22 +183,29 @@ function toggleEdit(){
 // 💾 SALVAR
 async function salvar(){
 
-  let matricula = document.getElementById("matricula").value;
+  function getValue(id){
+    const el = document.getElementById(id);
+    return el ? el.value : null;
+  }
+
+  let matricula = getValue("matricula");
 
   if(!matricula){
     matricula = await gerarMatricula();
   }
 
-const payload = {
-  matricula,
-  data_inicio: document.getElementById("data_inicio").value,
-  curso: document.getElementById("curso").value,
-  tipo: document.getElementById("tipo").value, // 🔥 NOVO
-  cpf: document.getElementById("cpf").value,
-  rg: document.getElementById("rg").value,
-  celular: document.getElementById("celular").value,
-  endereco: document.getElementById("endereco").value
-};
+  const payload = {
+    matricula,
+    data_inicio: getValue("data_inicio"),
+    curso: getValue("curso"),
+    tipo: getValue("tipo"),
+    cpf: getValue("cpf"),
+    rg: getValue("rg"),
+    celular: getValue("celular"),
+    endereco: getValue("endereco")
+  };
+
+  console.log("ENVIANDO:", payload);
 
   const { error } = await client
     .from("usuarios")
@@ -206,31 +213,20 @@ const payload = {
     .eq("id", id);
 
   if(error){
+    console.error(error);
     alert(error.message);
     return;
   }
 
-  async function toggleStatus(){
-
-  const novoStatus = aluno.status === "ativo" ? "recusado" : "ativo";
-
-  const { error } = await client
-    .from("usuarios")
-    .update({ status: novoStatus })
-    .eq("id", id);
-
-  if(error){
-    alert(error.message);
-    return;
-  }
-
+  // histórico
   await client.from("usuarios_historico").insert([{
     usuario_id: id,
-    alteracao: "Status alterado para " + novoStatus,
+    alteracao: "Dados atualizados",
     data: new Date()
   }]);
 
-  alert("Status atualizado!");
+  alert("Salvo com sucesso!");
+  editando = false;
   carregar();
 }
   
