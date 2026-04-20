@@ -40,6 +40,14 @@ body { margin:0; font-family:'Segoe UI'; background:#eef2f7; }
 table { width:100%; margin-top:15px; border-collapse:collapse; }
 th,td { padding:10px; border-bottom:1px solid #ddd; text-align:center; }
 
+.card {
+  flex:1; min-width:180px;
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+  text-align:center;
+}
 </style>
 </head>
 
@@ -52,6 +60,7 @@ th,td { padding:10px; border-bottom:1px solid #ddd; text-align:center; }
     <h3>👑 COORDENAÇÃO</h3>
 
     <div class="menu">
+      <button onclick="dashboard()">🏠 Dashboard</button>
       <button onclick="alunos()">📋 Cadastros</button>
       <button onclick="disciplinasMaster()">📚 Disciplinas</button>
       <button onclick="notas()">📝 Notas</button>
@@ -70,11 +79,64 @@ th,td { padding:10px; border-bottom:1px solid #ddd; text-align:center; }
 
 <script>
 
-const client = supabase.createClient(eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8);
+const client = supabase.createClient(
+"https://nzygdvixqmiltelgzzrn.supabase.co",
+"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+);
 
 function sair(){
   localStorage.removeItem("usuario");
   location.href="index.html";
+}
+
+//////////////////////////////////////////////////
+// 🏠 DASHBOARD (NOVO 🔥)
+//////////////////////////////////////////////////
+
+async function dashboard(){
+
+  const { data: usuarios } = await client.from("usuarios").select("*");
+  const { data: historico } = await client.from("disciplinas_historico").select("*");
+
+  const alunos = usuarios.filter(u=>u.tipo==="Aluno").length;
+  const professores = usuarios.filter(u=>u.tipo==="Professor").length;
+  const ativos = usuarios.filter(u=>u.status==="ativo").length;
+
+  const hoje = new Date().toISOString().split("T")[0];
+
+  const atuais = historico.filter(h=>{
+    return h.data_inicio <= hoje && (!h.data_fim || h.data_fim >= hoje);
+  });
+
+  let materiasHTML = "";
+
+  if(atuais.length === 0){
+    materiasHTML = "<p>Nenhuma disciplina ativa no momento</p>";
+  }else{
+    atuais.forEach(a=>{
+      materiasHTML += `
+        <div style="margin-bottom:10px; padding:10px; border-radius:8px; background:#f8fafc;">
+          <strong>${a.curso}</strong>: ${a.disciplina}<br>
+          📅 ${a.data_inicio} até ${a.data_fim || "Em andamento"}
+        </div>
+      `;
+    });
+  }
+
+  conteudo.innerHTML = `
+    <h2>📊 Dashboard</h2>
+
+    <div style="display:flex; gap:20px; margin:20px 0; flex-wrap:wrap;">
+      <div class="card">👨‍🎓<br><strong>${alunos}</strong><br>Alunos</div>
+      <div class="card">👨‍🏫<br><strong>${professores}</strong><br>Professores</div>
+      <div class="card">✅<br><strong>${ativos}</strong><br>Ativos</div>
+    </div>
+
+    <div class="box">
+      <h3>📚 Disciplinas Atuais</h3>
+      ${materiasHTML}
+    </div>
+  `;
 }
 
 //////////////////////////////////////////////////
@@ -285,6 +347,12 @@ async function carregarTimeline(curso){
 
   conteudo.innerHTML+=html;
 }
+
+//////////////////////////////////////////////////
+// 🚀 INICIAL
+//////////////////////////////////////////////////
+
+dashboard();
 
 </script>
 
