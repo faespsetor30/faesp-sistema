@@ -38,9 +38,17 @@
     }
     table { width:100%; border-collapse:collapse; margin-top:15px; }
     th, td { padding:10px; border-bottom:1px solid #ddd; text-align:center; }
-    .btn { background:#2c5364; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
+    .btn {
+      background:#2c5364; color:white; border:none;
+      padding:6px 10px; border-radius:6px; cursor:pointer;
+    }
     input, select { padding:8px; margin-top:5px; width:100%; }
-    a.nome-link { color:#2c5364; font-weight:bold; text-decoration:none; }
+    a.nome-link {
+      color:#2c5364;
+      font-weight:bold;
+      text-decoration:none;
+    }
+    a.nome-link:hover { text-decoration:underline; }
   </style>
 </head>
 
@@ -91,33 +99,41 @@ function sair(){
 }
 
 //////////////////////////////////////////////////
-// 👤 CADASTROS
+// 👤 CADASTROS (AJUSTADO ✅)
 //////////////////////////////////////////////////
 async function alunos(){
   const { data } = await client.from("usuarios").select("*");
 
   let html = `
     <h3>📋 Cadastros</h3>
+
     <input id="nome" placeholder="Nome">
     <input id="email" placeholder="Email">
+
     <select id="tipo">
       <option>Aluno</option>
       <option>Professor</option>
       <option>Coordenacao</option>
     </select>
+
     <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
 
     <table>
-      <tr><th>Nome</th><th>Email</th><th>Curso</th><th>Status</th><th>Tipo</th><th>Ações</th></tr>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Curso</th>
+        <th>Status</th>
+        <th>Tipo</th>
+        <th>Ações</th>
+      </tr>
   `;
 
   data.forEach(u=>{
-    html+=`
+    html += `
       <tr>
-        <td><a class="nome-link">${u.nome}</a></td>
-        <td>${u.email}</td>
-        <td>${u.curso || "-"}</td>
-        <td>${u.status}</td>
+        <td>
+          <a class="nome-link" href="detalhe-aluno.html?id=${u.id   <td>${u.status}</td>
         <td>${u.tipo}</td>
         <td>
           <button class="btn" onclick="aprovar('${u.id}')">✔️</button>
@@ -131,13 +147,21 @@ async function alunos(){
 }
 
 async function cadastrarUsuario(){
-  if(!nome.value || !email.value) return alert("Preencha tudo");
-  await client.from("usuarios").insert([{ nome:nome.value, email:email.value, tipo:tipo.value, status:"pendente" }]);
+  if(!nome.value || !email.value){
+    alert("Preencha nome e email");
+    return;
+  }
+  await client.from("usuarios").insert([{
+    nome: nome.value,
+    email: email.value,
+    tipo: tipo.value,
+    status: "pendente"
+  }]);
   alunos();
 }
 
 async function aprovar(id){
-  await client.from("usuarios").update({status:"ativo"}).eq("id",id);
+  await client.from("usuarios").update({ status:"ativo" }).eq("id",id);
   alunos();
 }
 
@@ -156,21 +180,27 @@ async function disciplinasMaster(){
 
   let html = `
     <h3>📚 Disciplinas</h3>
+
     <input id="nomeDisc" placeholder="Disciplina">
     <input id="cursoDisc" placeholder="Curso">
     <button class="btn" onclick="salvarDisc()">Salvar</button>
-    <table><tr><th>Curso</th><th>Disciplina</th></tr>
+
+    <table>
+      <tr><th>Curso</th><th>Disciplina</th></tr>
   `;
 
   data.forEach(d=>{
-    html+=`<tr><td>${d.curso}</td><td>${d.nome}</td></tr>`;
+    html += `<tr><td>${d.curso}</td><td>${d.nome}</td></tr>`;
   });
 
   conteudo.innerHTML = html + "</table>";
 }
 
 async function salvarDisc(){
-  await client.from("disciplinas_master").insert([{ nome:nomeDisc.value, curso:cursoDisc.value }]);
+  await client.from("disciplinas_master").insert([{
+    nome: nomeDisc.value,
+    curso: cursoDisc.value
+  }]);
   disciplinasMaster();
 }
 
@@ -182,7 +212,11 @@ async function notas(){
 
   conteudo.innerHTML = `
     <h3>📝 Notas</h3>
-    <select id="alunoSelect">${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`)}</select>
+
+    <select id="alunoSelect">
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
+    </select>
+
     <button class="btn" onclick="gerarBoletim()">📊 Gerar Boletim PDF</button>
   `;
 }
@@ -196,17 +230,29 @@ async function frequencia(){
 
   conteudo.innerHTML = `
     <h3>📅 Presença</h3>
-    <select id="alunoP">${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`)}</select>
-    <select id="discP">${disc.map(d=>`<option>${d.nome}</option>`)}</select>
+
+    <select id="alunoP">${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}</select>
+    <select id="discP">${disc.map(d=>`<option>${d.nome}</option>`).join("")}</select>
+
     <input type="date" id="dataP">
-    <select id="presP"><option>true</option><option>false</option></select>
+
+    <select id="presP">
+      <option value="true">Presente</option>
+      <option value="false">Falta</option>
+    </select>
+
     <button class="btn" onclick="salvarF()">Salvar</button>
   `;
 }
 
 async function salvarF(){
-  await client.from("frequencia").insert([{ email:alunoP.value, disciplina:discP.value, data:dataP.value, presente:presP.value==="true" }]);
-  alert("Salvo");
+  await client.from("frequencia").insert([{
+    email: alunoP.value,
+    disciplina: discP.value,
+    data: dataP.value,
+    presente: presP.value==="true"
+  }]);
+  alert("Presença salva");
 }
 
 //////////////////////////////////////////////////
@@ -217,6 +263,7 @@ async function gerarBoletim(){
   const doc = new jsPDF();
 
   const email = alunoSelect.value;
+
   const { data: aluno } = await client.from("usuarios").select("*").eq("email",email).single();
   const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
   const { data: freq } = await client.from("frequencia").select("*").eq("email",email);
@@ -231,15 +278,19 @@ async function gerarBoletim(){
 
   const linhas = notas.map(n=>{
     const p = freq.filter(f=>f.disciplina===n.nome);
-    const perc = p.length?Math.round((p.filter(f=>f.presente).length/p.length)*100):0;
+    const perc = p.length ? Math.round((p.filter(f=>f.presente).length/p.length)*100) : 0;
     return [n.nome,n.nota||"-",perc+"%"];
   });
 
-  doc.autoTable({ startY:65, head:[["Disciplina","Nota","Presença"]], body:linhas });
-  doc.save(`Boletim_${aluno.nome}.pdf`);
+  doc.autoTable({
+    startY:65,
+    head:[["Disciplina","Nota","Presença"]],
+    body:linhas
+  });
+
+  doc.save(`Boletim_${aluno.nome.replaceAll(" ","_")}.pdf`);
 }
 </script>
 
 </body>
 </html>
-``
