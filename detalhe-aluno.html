@@ -223,34 +223,33 @@ function renderDados() {
 // 💾 SALVAR (AJUSTADO 🔥)
 async function salvarEdicao() {
 
-  const curso = document.getElementById("curso").value;
+  const payload = {
+    nome: document.getElementById("nome").value,
+    matricula: document.getElementById("matricula").value,
+    data_inicio: document.getElementById("data_inicio").value,
+    curso: document.getElementById("curso").value,
+    cpf: document.getElementById("cpf").value,
+    rg: document.getElementById("rg").value,
+    celular: document.getElementById("celular").value,
+    endereco: document.getElementById("endereco").value
+  };
+
+  console.log("ENVIANDO:", payload);
 
   const { data, error } = await client
     .from("usuarios")
-    .update({
-      nome: document.getElementById("nome").value,
-      matricula: document.getElementById("matricula").value,
-      data_inicio: document.getElementById("data_inicio").value,
-      curso: curso,
-      cpf: document.getElementById("cpf").value,
-      rg: document.getElementById("rg").value,
-      celular: document.getElementById("celular").value,
-      endereco: document.getElementById("endereco").value
-    })
+    .update(payload)
     .eq("id", id)
-    .select(); // 🔥 ISSO AQUI É O SEGREDO
+    .select();
 
-  console.log("DATA:", data);
-  console.log("ERROR:", error);
-  console.log("CURSO ENVIADO:", curso);
+  console.log("ERRO COMPLETO:", error);
 
   if(error){
-    alert("Erro ao salvar!");
+    alert(error.message);
     return;
   }
 
-  alert("Atualizado!");
-  await carregar();
+  alert("Salvou!");
 }
 // 🔥 STATUS
 function renderAcoes() {
