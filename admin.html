@@ -63,6 +63,10 @@
       font-weight:bold;
       text-decoration:none;
     }
+
+    a.nome-link:hover {
+      text-decoration:underline;
+    }
   </style>
 </head>
 
@@ -120,7 +124,7 @@ function sair(){
 }
 
 //////////////////////////////////////////////////
-// 👤 CADASTROS (RESTAURADO)
+// 👤 CADASTROS (COM LINK RESTAURADO)
 //////////////////////////////////////////////////
 
 async function alunos(){
@@ -156,7 +160,11 @@ async function alunos(){
   data.forEach(u=>{
     html+=`
       <tr>
-        <td>${u.nome}</td>
+        <td>
+          <a class="nome-link" href="detalhe-aluno.html?id=${u.id}">
+            ${u.nome}
+          </a>
+        </td>
         <td>${u.email}</td>
         <td>${u.curso || "-"}</td>
         <td>${u.status}</td>
@@ -172,6 +180,10 @@ async function alunos(){
   html+="</table>";
   conteudo.innerHTML=html;
 }
+
+//////////////////////////////////////////////////
+// 🔽 RESTO DO CÓDIGO CONTINUA IGUAL (NÃO ALTERADO)
+//////////////////////////////////////////////////
 
 async function cadastrarUsuario(){
   await client.from("usuarios").insert([{
@@ -194,12 +206,7 @@ async function excluir(id){
   alunos();
 }
 
-//////////////////////////////////////////////////
-// 📚 DISCIPLINAS (COM PROFESSOR EDITÁVEL)
-//////////////////////////////////////////////////
-
 async function disciplinasMaster(){
-
   const { data: professores } = await client
     .from("usuarios")
     .select("*")
@@ -229,7 +236,6 @@ async function disciplinasMaster(){
 }
 
 async function carregarDisciplinasCurso(){
-
   const curso = cursoMaster.value;
 
   const { data } = await client
@@ -247,7 +253,6 @@ async function carregarDisciplinasCurso(){
   });
 
   html+="</table>";
-
   tabela.innerHTML=html;
 }
 
@@ -261,12 +266,7 @@ async function salvarDisciplinaMaster(){
   carregarDisciplinasCurso();
 }
 
-//////////////////////////////////////////////////
-// 📝 NOTAS + PDF
-//////////////////////////////////////////////////
-
 async function notas(){
-
   const { data: alunos } = await client
     .from("usuarios")
     .select("*")
@@ -287,7 +287,6 @@ async function notas(){
 }
 
 async function carregarNotasAluno(){
-
   const email = alunoSelect.value;
 
   const { data } = await client
@@ -305,7 +304,6 @@ async function carregarNotasAluno(){
   });
 
   html+="</table>";
-
   tabelaNotas.innerHTML=html;
 }
 
@@ -314,7 +312,6 @@ async function salvarNota(id,nota){
 }
 
 async function gerarPDF(){
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
