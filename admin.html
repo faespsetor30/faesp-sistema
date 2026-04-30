@@ -75,12 +75,13 @@
       <h3>👑 COORDENAÇÃO</h3>
 
       <div class="menu">
-<button onclick="dashboard()">🏠 Dashboard</button>
+        <button onclick="dashboard()">🏠 Dashboard</button>
         <button onclick="alunos()">📋 Cadastros</button>
         <button onclick="disciplinasMaster()">📚 Disciplinas</button>
         <button onclick="notas()">📝 Notas</button>
         <button onclick="frequencia()">📅 Presença</button>
-      <button onclick="avisos()">📢 Avisos</button></div>
+        <button onclick="avisos()">📢 Avisos</button>
+      </div>
     </div>
 
     <button class="logout" onclick="sair()">🚪 Sair</button>
@@ -97,7 +98,7 @@
 </div>
 
 <script>
-dashboard();
+
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
@@ -113,6 +114,7 @@ function sair(){
   localStorage.removeItem("usuario");
   window.location.href="index.html";
 }
+
 //////////////////////////////////////////////////
 // 🏠 DASHBOARD
 //////////////////////////////////////////////////
@@ -162,414 +164,9 @@ async function dashboard(){
     ${lista || "Nenhuma ativa"}
   `;
 }
-//////////////////////////////////////////////////
-// 👤 CADASTROS
-//////////////////////////////////////////////////
-
-async function alunos(){
-  const { data } = await client.from("usuarios").select("*");
-
-  let html = `
-    <h3>📋 Cadastros</h3>
-
-    <input id="nome" placeholder="Nome">
-    <input id="email" placeholder="Email">
-
-    <select id="tipo">
-      <option value="Aluno">Aluno</option>
-      <option value="Professor">Professor</option>
-      <option value="Coordenacao">Coordenação</option>
-    </select>
-
-    <br><br>
-    <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
-
-    <table>
-      <tr>
-        <th>Nome</th>
-        <th>Email</th>
-        <th>Curso</th>
-        <th>Status</th>
-        <th>Tipo</th>
-        <th>Ações</th>
-      </tr>
-  `;
-
-  data.forEach(u=>{
-    html+=`
-      <tr>
-        <td><a class="nome-link" href="detalhe-aluno.html?id=${u.id}">${u.nome}</a></td>
-        <td>${u.email}</td>
-        <td>${u.curso || "Não definido"}</td>
-        <td>${u.status}</td>
-
-        <td>
-          <select onchange="alterarTipo('${u.id}',this.value)">
-            <option ${u.tipo==="Aluno"?"selected":""}>Aluno</option>
-            <option ${u.tipo==="Professor"?"selected":""}>Professor</option>
-            <option ${u.tipo==="Coordenacao"?"selected":""}>Coordenação</option>
-          </select>
-        </td>
-
-        <td>
-          <button class="btn" onclick="aprovar('${u.id}')">✔️</button>
-          <button class="btn" style="background:red;" onclick="excluir('${u.id}')">🗑️</button>
-        </td>
-      </tr>
-    `;
-  });
-
-  html+="</table>";
-  conteudo.innerHTML=html;
-}
-
-async function cadastrarUsuario(){
-  await client.from("usuarios").insert([{
-    nome: nome.value,
-    email: email.value,
-    tipo: tipo.value,
-    status:"pendente"
-  }]);
-  alunos();
-}
-
-async function alterarTipo(id,tipo){
-  await client.from("usuarios").update({tipo}).eq("id",id);
-  alunos();
-}
-
-async function aprovar(id){
-  await client.from("usuarios").update({status:"ativo"}).eq("id",id);
-  alunos();
-}
-
-async function excluir(id){
-  if(!confirm("Excluir?")) return;
-  await client.from("usuarios").delete().eq("id",id);
-  alunos();
-}
 
 //////////////////////////////////////////////////
-// 📚 DISCIPLINAS
-//////////////////////////////////////////////////
-
-async function disciplinasMaster(){
-
-  let html=`
-    <h3>📚 Disciplinas por Curso</h3>
-
-    <select id="cursoMaster" onchange="carregarDisciplinasCurso()">
-      <option value="Curso Básico">Curso Básico</option>
-      <option value="Curso Médio">Curso Médio</option>
-    </select>
-
-    <input id="nomeDisciplina" placeholder="Nome da disciplina">
-
-    <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
-
-    <div id="tabela"></div>
-  `;
-
-  conteudo.innerHTML=html;
-  carregarDisciplinasCurso();
-}
-
-async function carregarDisciplinasCurso(){
-
-  const { data } = await client
-    .from("disciplinas_master")
-    .select("*")
-    .eq("curso", cursoMaster.value);
-
-  let html=`<table>
-    <tr><th>Curso</th><th>Disciplina</th><th>Histórico</th><th>Ação</th></tr>`;
-
-  data.forEach(d=>{
-    html+=`
-      <tr>
-        <td>${d.curso}</td>
-        <td>${d.nome}</td>
-        <td><button class="btn" onclick="abrirHistorico('${d.nome}','${d.curso}')">📄</button></td>
-        <td><button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">🗑️</button></td>
-      </tr>`;
-  });
-
-  html+="</table>";
-  tabela.innerHTML=html;
-}
-
-async function salvarDisciplinaMaster(){
-  await client.from("disciplinas_master").insert([{
-    curso:cursoMaster.value,
-    nome:nomeDisciplina.value
-  }]);
-  carregarDisciplinasCurso();
-}
-
-async function excluirDisciplina(id){
-  if(!confirm("Excluir disciplina?")) return;
-  await client.from("disciplinas_master").delete().eq("id",id);
-  carregarDisciplinasCurso();
-}
-
-//////////////////////////////////////////////////
-// 📄 HISTÓRICO
-//////////////////////////////////////////////////
-
-async function abrirHistorico(disciplina, curso){
-
-  const { data } = await client
-    .from("disciplinas_historico")
-    .select("*")
-    .eq("disciplina", disciplina)
-    .eq("curso", curso);
-
-  let html = `
-    <h3>📄 Histórico - ${disciplina}</h3>
-
-    <input id="profHist" placeholder="Professor">
-    <input id="inicioHist" type="date">
-    <input id="fimHist" type="date">
-
-    <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">Salvar</button>
-
-    <table>
-      <tr><th>Professor</th><th>Início</th><th>Fim</th></tr>
-  `;
-
-  data.forEach(h=>{
-    html+=`
-      <tr>
-        <td>${h.professor}</td>
-        <td>${h.data_inicio}</td>
-        <td>${h.data_fim || "-"}</td>
-      </tr>`;
-  });
-
-  html+="</table>";
-  conteudo.innerHTML=html;
-}
-
-async function salvarHistorico(disciplina, curso){
-  await client.from("disciplinas_historico").insert([{
-    disciplina,
-    curso,
-    professor:profHist.value,
-    data_inicio:inicioHist.value,
-    data_fim:fimHist.value || null
-  }]);
-  abrirHistorico(disciplina, curso);
-}
-
-//////////////////////////////////////////////////
-// 📝 NOTAS
-//////////////////////////////////////////////////
-
-async function notas(){
-
-  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
-
-  let html=`
-    <h3>📝 Notas</h3>
-
-    <select id="alunoSelect" onchange="carregarNotasAluno()">
-      <option value="">Selecione</option>
-      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
-    </select>
-
-    <button class="btn" onclick="gerarBoletim()">📊 Boletim</button>
-
-    <div id="tabelaNotas"></div>
-  `;
-
-  conteudo.innerHTML=html;
-}
-
-async function carregarNotasAluno(){
-
-  const email = alunoSelect.value;
-
-  const { data: disciplinasMaster } = await client.from("disciplinas_master").select("*");
-  const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
-
-  let html="<table><tr><th>Disciplina</th><th>Nota</th></tr>";
-
-  disciplinasMaster.forEach(d=>{
-    const nota = notas.find(n=>n.nome===d.nome);
-    html+=`
-      <tr>
-        <td>${d.nome}</td>
-        <td><input value="${nota?nota.nota:""}" onchange="salvarNota('${email}','${d.nome}',this.value)"></td>
-      </tr>`;
-  });
-
-  html+="</table>";
-  tabelaNotas.innerHTML=html;
-}
-
-async function salvarNota(email,nome,nota){
-
-  const { data } = await client.from("disciplinas").select("*").eq("email",email).eq("nome",nome);
-
-  if(data.length>0){
-    await client.from("disciplinas").update({nota}).eq("id",data[0].id);
-  }else{
-    await client.from("disciplinas").insert([{email,nome,nota}]);
-  }
-}
-
-//////////////////////////////////////////////////
-// 📅 PRESENÇA
-//////////////////////////////////////////////////
-
-async function frequencia(){
-
-  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
-  const { data: disciplinas } = await client.from("disciplinas_master").select("*");
-
-  let html=`
-    <h3>📅 Presença</h3>
-
-    <select id="alunoFreq">
-      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
-    </select>
-
-    <select id="disciplinaFreq">
-      ${disciplinas.map(d=>`<option>${d.nome}</option>`).join("")}
-    </select>
-
-    <input type="date" id="dataFreq">
-
-    <select id="presenca">
-      <option value="true">Presente</option>
-      <option value="false">Falta</option>
-    </select>
-
-    <button class="btn" onclick="salvarFrequencia()">Salvar</button>
-  `;
-
-  conteudo.innerHTML=html;
-}
-
-async function salvarFrequencia(){
-
-  await client.from("frequencia").insert([{
-    email: alunoFreq.value,
-    disciplina: disciplinaFreq.value,
-    data: dataFreq.value,
-    presente: presenca.value==="true"
-  }]);
-
-  alert("Salvo!");
-}
-
-//////////////////////////////////////////////////
-// 📊 BOLETIM BONITO
-//////////////////////////////////////////////////
-
-async function gerarBoletim(){
-
-  const email = alunoSelect.value;
-
-  if(!email){
-    alert("Selecione um aluno");
-    return;
-  }
-
-  const { data: aluno } = await client.from("usuarios").select("*").eq("email",email).single();
-  const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
-  const { data: freq } = await client.from("frequencia").select("*").eq("email",email);
-
-  let soma = 0;
-  let qtd = 0;
-  let linhas = "";
-
-  notas.forEach(n=>{
-    const lista = freq.filter(f=>f.disciplina===n.nome);
-    const total = lista.length;
-    const pres = lista.filter(f=>f.presente).length;
-    const perc = total>0 ? Math.round((pres/total)*100) : 0;
-
-    const nota = parseFloat(n.nota) || 0;
-
-    if(n.nota){
-      soma += nota;
-      qtd++;
-    }
-
-    linhas += `
-      <tr>
-        <td>${n.nome}</td>
-        <td>${n.nota || "-"}</td>
-        <td>${perc}%</td>
-      </tr>
-    `;
-  });
-
-  const media = qtd > 0 ? (soma / qtd).toFixed(1) : "-";
-  const situacao = media >= 7 ? "APROVADO" : "REPROVADO";
-
-  let html = `
-    <div style="font-family:Segoe UI;padding:30px;max-width:800px;margin:auto;border:1px solid #ddd;border-radius:10px;">
-      <div style="text-align:center;margin-bottom:20px;">
-        <h2>🎓 FAESP - SETOR 30</h2>
-        <p style="color:#555;">Boletim Escolar</p>
-      </div>
-
-      <div style="margin-bottom:20px;">
-        <strong>Aluno:</strong> ${aluno.nome}<br>
-        <strong>Email:</strong> ${aluno.email}
-      </div>
-
-      <table style="width:100%;border-collapse:collapse;">
-        <tr style="background:#2c5364;color:white;">
-          <th>Disciplina</th>
-          <th>Nota</th>
-          <th>Presença</th>
-        </tr>
-        ${linhas}
-      </table>
-
-      <div style="margin-top:20px;display:flex;justify-content:space-between;font-size:18px;">
-        <div><strong>Média:</strong> ${media}</div>
-        <div><strong>Situação:</strong> 
-          <span style="color:${situacao==='APROVADO'?'green':'red'}">${situacao}</span>
-        </div>
-      </div>
-
-      <div style="margin-top:40px;text-align:center;color:#777;">
-        ___________________________<br>
-        Coordenação FAESP
-      </div>
-    </div>
-  `;
-
-  const w = window.open("", "_blank", "width=900,height=700");
-  w.document.write(html);
-  w.document.close();
-}
-
-  <!-- (SEU CÓDIGO TODO PERMANECE IGUAL ATÉ AQUI...) -->
-<script>
-dashboard();
-const client = supabase.createClient(
-  "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "SEU_TOKEN"
-);
-
-// 🔐 proteção
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-if (!usuario || usuario.tipo !== "Coordenacao") {
-  window.location.href = "index.html";
-}
-
-function sair(){
-  localStorage.removeItem("usuario");
-  window.location.href="index.html";
-}
-
-//////////////////////////////////////////////////
-// 📢 AVISOS (NOVO MÓDULO)
+// 📢 AVISOS
 //////////////////////////////////////////////////
 
 async function avisos(){
@@ -619,24 +216,23 @@ async function avisos(){
 }
 
 async function salvarAviso(){
-
   await client.from("avisos").insert([{
     titulo: tituloAviso.value,
     mensagem: mensagemAviso.value,
     data: dataAviso.value
   }]);
-
   avisos();
 }
 
 async function excluirAviso(id){
-
   if(!confirm("Excluir aviso?")) return;
-
   await client.from("avisos").delete().eq("id", id);
-
   avisos();
 }
+
+// iniciar
+dashboard();
+
 </script>
 
 </body>
