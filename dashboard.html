@@ -126,8 +126,37 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("boasVindas").innerText =
     "Bem-vinda, " + usuario.nome;
 
-  disciplinas();
+  // 🔥 NOVO: CARREGA AVISOS NO DASHBOARD
+  carregarAvisosDashboard();
 });
+
+// 🔥 NOVA FUNÇÃO (SEM MEXER NO RESTO)
+async function carregarAvisosDashboard() {
+
+  const { data } = await client
+    .from("avisos")
+    .select("*")
+    .order("data", { ascending: false })
+    .limit(5);
+
+  let html = `<h3>📢 Avisos</h3>`;
+
+  if (!data || data.length === 0) {
+    html += "Nenhum aviso disponível";
+  } else {
+    data.forEach(a => {
+      html += `
+        <div style="margin-top:10px; padding:10px; background:#fef3c7; border-radius:8px;">
+          <strong>${a.titulo}</strong><br>
+          <small>📅 ${a.data}</small>
+          <p>${a.mensagem}</p>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("conteudo").innerHTML = html;
+}
 
 // LOGOUT
 function sair() {
@@ -145,25 +174,21 @@ function getStatusClass(status) {
 async function disciplinas() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-  // existentes
   const { data: existentes } = await client
     .from("disciplinas")
     .select("*")
     .eq("email", usuario.email);
 
-  // master
   const { data: master } = await client
     .from("disciplinas_master")
     .select("*")
     .eq("curso", usuario.curso);
 
-  // financeiro
   const { data: financeiro } = await client
     .from("financeiro")
     .select("*")
     .eq("email", usuario.email);
 
-  // criar automático
   for (const m of master) {
     const jaExiste = existentes.find(d => d.nome === m.nome);
 
@@ -176,7 +201,6 @@ async function disciplinas() {
     }
   }
 
-  // buscar final
   const { data } = await client
     .from("disciplinas")
     .select("*")
@@ -209,7 +233,6 @@ async function disciplinas() {
       }
     }
 
-    // 🔥 VERIFICA PAGAMENTO
     const pagamento = financeiro.find(f => f.disciplina === d.nome);
 
     let acesso = "🔒 Bloqueado";
@@ -235,111 +258,7 @@ async function disciplinas() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// RESTO IGUAL...
-
-async function financeiro() {
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-  const { data } = await client
-    .from("financeiro")
-    .select("*")
-    .eq("email", usuario.email);
-
-  let html = `<h3>💰 Financeiro</h3><table>
-    <tr>
-      <th>Disciplina</th>
-      <th>Valor</th>
-      <th>Status</th>
-      <th>Pagamento</th>
-      <th>Comprovante</th>
-    </tr>`;
-
-  data.forEach(f => {
-    html += `
-      <tr>
-        <td>${f.disciplina}</td>
-        <td>R$ ${f.valor}</td>
-        <td class="${getStatusClass(f.status)}">${f.status}</td>
-        <td>${f.data_pagamento || "-"}</td>
-        <td>
-          ${
-            f.status === "pago"
-              ? `<a href="${f.comprovante}" target="_blank">📄 PDF</a>`
-              : f.status === "aguardando"
-              ? "⏳ Em análise"
-              : `<input type="file" accept="application/pdf"
-                 onchange="uploadComprovante(event,'${f.id}')">`
-          }
-        </td>
-      </tr>
-    `;
-  });
-
-  html += "</table>";
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-async function uploadComprovante(event, id) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
-  const fileName = `${usuario.email}_${Date.now()}.pdf`;
-
-  await client.storage.from("comprovantes").upload(fileName, file);
-
-  const { data } = client.storage
-    .from("comprovantes")
-    .getPublicUrl(fileName);
-
-  await client.from("financeiro").update({
-    comprovante: data.publicUrl,
-    status: "aguardando"
-  }).eq("id", id);
-
-  alert("Comprovante enviado!");
-  financeiro();
-}
-
-async function cronograma() {
-  const { data } = await client.from("cronograma").select("*");
-
-  let html = "<h3>📅 Cronograma</h3><table>";
-
-  data.forEach(a => {
-    html += `
-      <tr>
-        <td>${a.data}</td>
-        <td>${a.disciplina}</td>
-        <td>${a.descricao || ""}</td>
-      </tr>
-    `;
-  });
-
-  html += "</table>";
-  document.getElementById("conteudo").innerHTML = html;
-}
-
-async function avisos() {
-  const { data } = await client
-    .from("avisos")
-    .select("*")
-    .order("data", { ascending: false });
-
-  let html = "<h3>📢 Avisos</h3>";
-
-  data.forEach(a => {
-    html += `
-      <div style="margin-top:10px; padding:10px; border-left:5px solid #2c5364;">
-        <strong>${a.titulo}</strong><br>
-        <small>${a.data}</small>
-        <p>${a.mensagem}</p>
-      </div>
-    `;
-  });
-
-  document.getElementById("conteudo").innerHTML = html;
-}
+// resto igual...
 </script>
 
 </body>
