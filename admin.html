@@ -549,6 +549,94 @@ async function gerarBoletim(){
   w.document.close();
 }
 
+  <!-- (SEU CÓDIGO TODO PERMANECE IGUAL ATÉ AQUI...) -->
+<script>
+dashboard();
+const client = supabase.createClient(
+  "https://nzygdvixqmiltelgzzrn.supabase.co",
+  "SEU_TOKEN"
+);
+
+// 🔐 proteção
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+if (!usuario || usuario.tipo !== "Coordenacao") {
+  window.location.href = "index.html";
+}
+
+function sair(){
+  localStorage.removeItem("usuario");
+  window.location.href="index.html";
+}
+
+//////////////////////////////////////////////////
+// 📢 AVISOS (NOVO MÓDULO)
+//////////////////////////////////////////////////
+
+async function avisos(){
+
+  const { data } = await client
+    .from("avisos")
+    .select("*")
+    .order("data", { ascending: false });
+
+  let html = `
+    <h3>📢 Avisos</h3>
+
+    <input id="tituloAviso" placeholder="Título">
+    <textarea id="mensagemAviso" placeholder="Mensagem" style="width:100%;padding:8px;margin-top:5px;"></textarea>
+    <input type="date" id="dataAviso">
+
+    <br><br>
+    <button class="btn" onclick="salvarAviso()">Publicar</button>
+
+    <hr><br>
+
+    <table>
+      <tr>
+        <th>Título</th>
+        <th>Mensagem</th>
+        <th>Data</th>
+        <th>Ação</th>
+      </tr>
+  `;
+
+  data.forEach(a=>{
+    html += `
+      <tr>
+        <td>${a.titulo}</td>
+        <td>${a.mensagem}</td>
+        <td>${a.data}</td>
+        <td>
+          <button class="btn" style="background:red;" onclick="excluirAviso('${a.id}')">🗑️</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  conteudo.innerHTML = html;
+}
+
+async function salvarAviso(){
+
+  await client.from("avisos").insert([{
+    titulo: tituloAviso.value,
+    mensagem: mensagemAviso.value,
+    data: dataAviso.value
+  }]);
+
+  avisos();
+}
+
+async function excluirAviso(id){
+
+  if(!confirm("Excluir aviso?")) return;
+
+  await client.from("avisos").delete().eq("id", id);
+
+  avisos();
+}
 </script>
 
 </body>
