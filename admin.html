@@ -721,29 +721,28 @@ async function selecionarAluno(id){
   alunoSelecionado = data;
 
   document.getElementById("areaPagamento").style.display = "block";
-}async function finalizarPagamento(){
-const valor = document.getElementById("valor").value;
-
-if (!valor || isNaN(valor)) {
-  alert("Digite um valor válido");
-  return;
 }
+async function finalizarPagamento(){
+
+  const valor = document.getElementById("valor").value;
+  const forma = document.getElementById("forma").value;
+
+  if (!valor || isNaN(valor)) {
+    alert("Digite um valor válido");
+    return;
+  }
+
   if(!alunoSelecionado){
     alert("Selecione um aluno");
     return;
   }
 
-  const valor = document.getElementById("valor").value;
-  const forma = document.getElementById("forma").value;
-
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
- doc.save(`recibo_${alunoSelecionado.nome}.pdf`);
-console.log("CLIQUEI NO BOTÃO");
+
   const data = new Date().toLocaleDateString("pt-BR");
 
   doc.text("RECIBO DE PAGAMENTO", 70, 20);
-
   doc.text("Recebedor: FAESP - Setor 30", 20, 40);
 
   doc.text(`Nome: ${alunoSelecionado.nome}`, 20, 60);
@@ -761,13 +760,18 @@ console.log("CLIQUEI NO BOTÃO");
   doc.line(20, 180, 100, 180);
   doc.text("Matheus Campos", 20, 190);
 
+  // 👉 TESTE PDF
+  doc.save(`recibo_${alunoSelecionado.nome}.pdf`);
+
+  console.log("CLIQUEI NO BOTÃO");
+
   // 🔥 CONVERTE PDF
   const pdfBlob = doc.output("blob");
 
   const nomeArquivo = `recibo_${alunoSelecionado.id}_${Date.now()}.pdf`;
 
   // 🔥 UPLOAD
-  const { data: uploadData, error } = await client.storage
+  const { error } = await client.storage
     .from("comprovantes")
     .upload(nomeArquivo, pdfBlob);
 
@@ -777,37 +781,34 @@ console.log("CLIQUEI NO BOTÃO");
     return;
   }
 
-  // 🔥 PEGA URL
-const { data: urlData } = client.storage
-  .from("comprovantes")
-  .getPublicUrl(nomeArquivo);
+  // 🔥 URL
+  const { data: urlData } = client.storage
+    .from("comprovantes")
+    .getPublicUrl(nomeArquivo);
 
-const pdfUrl = urlData.publicUrl + `?t=${Date.now()}`;
+  const pdfUrl = urlData.publicUrl + `?t=${Date.now()}`;
 
-  // 🔥 👉 AQUI ENTRA O SEU CÓDIGO
-const { data: insertData, error: insertError } = await client
-  .from("pagamentos")
-  .insert([{
-    aluno_id: alunoSelecionado.id,
-    nome_aluno: alunoSelecionado.nome,
-    cpf: alunoSelecionado.cpf,
-    curso: alunoSelecionado.curso,
-    materia: materiaSelecionada,
-    valor: parseFloat(valor),
-    forma_pagamento: forma,
-    recibo_url: pdfUrl
-  }]);
+  // 🔥 SALVA NO BANCO
+  const { error: insertError } = await client
+    .from("pagamentos")
+    .insert([{
+      aluno_id: alunoSelecionado.id,
+      nome_aluno: alunoSelecionado.nome,
+      cpf: alunoSelecionado.cpf,
+      curso: alunoSelecionado.curso,
+      materia: materiaSelecionada,
+      valor: parseFloat(valor),
+      forma_pagamento: forma,
+      recibo_url: pdfUrl
+    }]);
 
-if (insertError) {
-  console.log("ERRO INSERT:", insertError);
-  alert("Erro ao salvar pagamento");
-  return;
-}
+  if (insertError) {
+    console.log("ERRO INSERT:", insertError);
+    alert("Erro ao salvar pagamento");
+    return;
+  }
 
-console.log("SALVO:", insertData);
-alert("Pagamento salvo com sucesso!");
-
-  alert("Pagamento salvo com PDF!");
+  alert("Pagamento salvo com sucesso!");
 }
 
 //////////////////////////////////////////////////
