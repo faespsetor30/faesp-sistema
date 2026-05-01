@@ -83,6 +83,56 @@ async function gerarMatricula(){
   return `${ano}${numero}`;
 }
 
+// 💰 PAGAMENTOS
+async function carregarPagamentos(){
+
+  const { data, error } = await client
+    .from("pagamentos")
+    .select("*")
+    .eq("aluno_id", id);
+
+  if(error){
+    console.log("Erro pagamentos:", error);
+    return "<p>Erro ao carregar pagamentos</p>";
+  }
+
+  if(!data || data.length === 0){
+    return "<p>Nenhum pagamento encontrado</p>";
+  }
+
+  let html = `
+    <div class="card">
+      <h3>💰 Pagamentos</h3>
+
+      <table style="width:100%; border-collapse:collapse;">
+        <tr>
+          <th>Matéria</th>
+          <th>Valor</th>
+          <th>Forma</th>
+          <th>Recibo</th>
+        </tr>
+  `;
+
+  data.forEach(p=>{
+    html += `
+      <tr>
+        <td>${p.materia}</td>
+        <td>R$ ${p.valor}</td>
+        <td>${p.forma_pagamento}</td>
+        <td>
+          <a href="${p.recibo_url}" target="_blank" class="btn btn-primary">
+            📄 Ver Recibo
+          </a>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</table></div>";
+
+  return html;
+}
+
 // 🚀 CARREGAR
 async function carregar(){
   const { data, error } = await client
@@ -98,11 +148,11 @@ async function carregar(){
   }
 
   aluno = data;
-  render();
+  await render();
 }
 
-// 🎨 RENDER
-function render(){
+// 🎨 RENDER (CORRIGIDO)
+async function render(){
 
   if(!aluno){
     document.getElementById("dados").innerHTML = "Erro ao carregar aluno";
@@ -111,6 +161,8 @@ function render(){
 
   const travado = !editando;
   const ativo = aluno.status === "ativo";
+
+  const pagamentosHTML = await carregarPagamentos();
 
   document.getElementById("dados").innerHTML =
 
@@ -156,6 +208,8 @@ function render(){
   '<input id="endereco" value="'+ (aluno.endereco || "") +'" '+ (travado?"readonly":"") +'>' +
 
   '</div>' +
+
+  pagamentosHTML +
 
   '<div class="card">' +
 
