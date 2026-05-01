@@ -712,18 +712,17 @@ async function selecionarMateria(nome, curso){
 
 async function selecionarAluno(id){
 
-  const { data } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("id", id)
-    .single();
+const { data } = await client
+  .from("usuarios")
+  .select("*")
+  .eq("tipo", "Aluno")
+  .eq("curso", curso)
+  .eq("status", "ativo");
 
   alunoSelecionado = data;
 
   document.getElementById("areaPagamento").style.display = "block";
 }
-}
-
 async function finalizarPagamento(){
 
   if(!alunoSelecionado){
