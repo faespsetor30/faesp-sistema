@@ -7,7 +7,7 @@
   <style>
     body {
       margin:0;
-      font-family:'Segoe UI';async function selecionarAluno(id){
+      font-family:'Segoe UI';
       display:flex;
       flex-direction:column;
       height:100vh;
@@ -722,9 +722,12 @@ async function selecionarAluno(id){
 
   document.getElementById("areaPagamento").style.display = "block";
 }async function finalizarPagamento(){
+const valor = document.getElementById("valor").value;
+
 if (!valor || isNaN(valor)) {
   alert("Digite um valor válido");
   return;
+}
 }
   if(!alunoSelecionado){
     alert("Selecione um aluno");
@@ -736,8 +739,7 @@ if (!valor || isNaN(valor)) {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  doc.text("TESTE PDF", 20, 20);
-doc.save("teste.pdf");
+ doc.save(`recibo_${alunoSelecionado.nome}.pdf`);
 console.log("CLIQUEI NO BOTÃO");
   const data = new Date().toLocaleDateString("pt-BR");
 
