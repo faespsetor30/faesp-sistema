@@ -738,7 +738,7 @@ if (!valor || isNaN(valor)) {
   const doc = new jsPDF();
   doc.text("TESTE PDF", 20, 20);
 doc.save("teste.pdf");
-
+console.log("CLIQUEI NO BOTÃO");
   const data = new Date().toLocaleDateString("pt-BR");
 
   doc.text("RECIBO DE PAGAMENTO", 70, 20);
