@@ -6,7 +6,11 @@
 
   <style>
     body { margin:0; font-family:'Segoe UI'; display:flex; height:100vh; background:#eef2f7; flex-direction:column;}
-    .main { display:flex; flex:1;}
+    .main {
+  display: flex;
+  flex: 1;
+  width: 100%;
+}
 
     .sidebar {
       width:240px; background:white; padding:20px;
@@ -30,7 +34,11 @@
       width:100%;
     }
 
-    .content { flex:1; padding:25px;}
+   .content {
+  flex: 1;
+  padding: 25px;
+  width: 100%;
+}
 
     .header, .box {
       background:white; padding:20px; border-radius:12px;
@@ -65,7 +73,13 @@
   </style>
 </head>
 
-<body>
+body {
+  margin: 0;
+  font-family: 'Segoe UI';
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
 
 <div class="main">
 
