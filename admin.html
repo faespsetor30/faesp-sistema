@@ -696,11 +696,11 @@ async function selecionarMateria(nome, curso){
   areaAlunos.style.display = "block";
 
   const { data } = await client
-   .from("usuarios")
+  .from("usuarios")
+.select("*")
 .eq("tipo", "Aluno")
-    .select("*")
-    .eq("curso", curso)
-    .eq("status", "ativo");
+.eq("curso", curso)
+.eq("status", "ativo")
 
   areaAlunos.innerHTML = `
     <h3>Selecionar Aluno</h3>
