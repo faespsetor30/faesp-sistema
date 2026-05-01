@@ -10,7 +10,8 @@
       font-family: 'Segoe UI', sans-serif;
       display: flex;
       height: 100vh;
-      background: #eef2f7;
+      background: #0f172a;
+      color: white;
       flex-direction: column;
     }
 
@@ -18,12 +19,12 @@
 
     .sidebar {
       width: 240px;
-      background: white;
+      background: #020617;
       padding: 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      border-right: 1px solid #ddd;
+      border-right: 1px solid #1e293b;
       align-items: center;
     }
 
@@ -36,16 +37,17 @@
       padding: 12px;
       margin-bottom: 10px;
       border: none;
-      background: #f1f5f9;
+      background: #1e293b;
+      color: white;
       border-radius: 10px;
       cursor: pointer;
       text-align: left;
     }
 
-    .menu button:hover { background: #e2e8f0; }
+    .menu button:hover { background: #334155; }
 
     .logout {
-      background: black;
+      background: #dc2626;
       color: white;
       font-weight: bold;
       padding: 12px;
@@ -58,28 +60,60 @@
     .content { flex: 1; padding: 25px; }
 
     .header {
-      background: white;
+      background: linear-gradient(90deg,#1e293b,#334155);
       padding: 20px;
       border-radius: 12px;
       margin-bottom: 20px;
     }
 
     .box {
-      background: white;
+      background: #020617;
       padding: 20px;
       border-radius: 12px;
     }
 
-    table { width:100%; border-collapse: collapse; margin-top:10px; }
-
-    th, td {
-      padding:10px;
-      border-bottom:1px solid #ddd;
-      text-align:center;
+    /* 🎬 CARDS */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+      gap: 15px;
+      margin-top: 15px;
     }
 
-    .pago { color: green; font-weight: bold; }
-    .pendente { color: red; font-weight: bold; }
+    .card {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 14px;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+      background: #334155;
+    }
+
+    .progress {
+      height: 8px;
+      background: #334155;
+      border-radius: 5px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      background: #22c55e;
+    }
+
+    .aviso {
+      margin-top: 10px;
+      padding: 15px;
+      background: #1e293b;
+      border-radius: 10px;
+    }
+
+    .pago { color: #22c55e; font-weight: bold; }
+    .pendente { color: #ef4444; font-weight: bold; }
   </style>
 </head>
 
@@ -107,7 +141,7 @@
   <div class="content">
     <div class="header">
       <h2 id="boasVindas">Bem-vinda</h2>
-      <p>Painel do aluno</p>
+      <p>Painel do aluno ✨</p>
     </div>
 
     <div class="box" id="conteudo">
@@ -140,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("boasVindas").innerText =
-    "Bem-vinda, " + usuario.nome;
+    "Bem-vinda, " + usuario.nome + " ✨";
 
   dashboard();
 });
@@ -164,7 +198,7 @@ async function dashboard() {
 
   (data || []).forEach(a => {
     html += `
-      <div style="margin-top:10px; padding:10px; background:#fef3c7; border-radius:8px;">
+      <div class="aviso">
         <strong>${a.titulo}</strong><br>
         <small>${a.data}</small>
         <p>${a.mensagem}</p>
@@ -175,7 +209,7 @@ async function dashboard() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// DISCIPLINAS
+// DISCIPLINAS 🎬
 async function disciplinas() {
 
   const usuario = JSON.parse(localStorage.getItem("usuario"));
@@ -185,29 +219,30 @@ async function disciplinas() {
     .select("*")
     .eq("email", usuario.email);
 
-  let html = `<h3>📊 Disciplinas</h3>`;
-
-  html += `<table>
-    <tr>
-      <th>Disciplina</th>
-      <th>Nota</th>
-    </tr>`;
+  let html = `<h3>📊 Disciplinas</h3><div class="cards">`;
 
   (data || []).forEach(d => {
+
+    let progresso = (d.nota || 0) * 10;
+
     html += `
-      <tr>
-        <td>${d.nome}</td>
-        <td>${d.nota || "-"}</td>
-      </tr>
+      <div class="card">
+        <h4>${d.nome}</h4>
+        <p>Nota: ${d.nota || "-"}</p>
+
+        <div class="progress">
+          <div class="bar" style="width:${progresso}%"></div>
+        </div>
+      </div>
     `;
   });
 
-  html += "</table>";
+  html += "</div>";
 
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// FINANCEIRO
+// FINANCEIRO 🎬
 async function financeiro(){
 
   const usuario = JSON.parse(localStorage.getItem("usuario"));
@@ -217,24 +252,20 @@ async function financeiro(){
     .select("*")
     .eq("email", usuario.email);
 
-  let html = `<h3>💰 Financeiro</h3>`;
-
-  html += `<table>
-    <tr>
-      <th>Disciplina</th>
-      <th>Status</th>
-    </tr>`;
+  let html = `<h3>💰 Financeiro</h3><div class="cards">`;
 
   (data || []).forEach(f=>{
     html += `
-      <tr>
-        <td>${f.disciplina}</td>
-        <td class="${f.status === 'pago' ? 'pago' : 'pendente'}">${f.status}</td>
-      </tr>
+      <div class="card">
+        <h4>${f.disciplina}</h4>
+        <p class="${f.status === 'pago' ? 'pago' : 'pendente'}">
+          ${f.status}
+        </p>
+      </div>
     `;
   });
 
-  html += "</table>";
+  html += "</div>";
 
   document.getElementById("conteudo").innerHTML = html;
 }
@@ -247,7 +278,7 @@ function cronograma(){
   `;
 }
 
-// AVISOS COMPLETO
+// AVISOS
 async function avisos(){
 
   const { data } = await client
@@ -259,7 +290,7 @@ async function avisos(){
 
   (data || []).forEach(a => {
     html += `
-      <div style="margin-top:10px; padding:15px; background:#fef3c7; border-radius:10px;">
+      <div class="aviso">
         <strong>${a.titulo}</strong><br>
         <small>${a.data}</small>
         <p>${a.mensagem}</p>
