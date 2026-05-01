@@ -124,7 +124,8 @@ input,select{
 </div>
 <script>
 
-const client = supabase.createClient(
+const { createClient } = supabase;
+const client = createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
@@ -194,9 +195,9 @@ async function alunos(){
 
 async function cadastrar(){
   await client.from("usuarios").insert([{
-    nome: nome.value,
-    email: email.value,
-    tipo: tipo.value
+  nome: document.getElementById("nome").value,
+email: document.getElementById("email").value,
+tipo: document.getElementById("tipo").value
   }]);
 
   alunos();
@@ -240,7 +241,7 @@ async function carregarDisc(){
 
 async function salvarDisciplina(){
   await client.from("disciplinas_master").insert([{
-    nome: disciplina.value
+    nome: document.getElementById("disciplina").value
   }]);
 
   carregarDisc();
@@ -292,7 +293,7 @@ function gerarPDF(){
   const doc = new jsPDF();
 
   doc.text("FAESP",20,20);
-  doc.text("Valor: " + valor.value,20,40);
+  doc.text("Valor: " + document.getElementById("valor").value,20,40);
 
   doc.save("recibo.pdf");
 }
