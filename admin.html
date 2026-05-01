@@ -721,14 +721,13 @@ async function selecionarAluno(id){
   alunoSelecionado = data;
 
   document.getElementById("areaPagamento").style.display = "block";
-}
-async function finalizarPagamento(){
+}async function finalizarPagamento(){
 
   if(!alunoSelecionado){
-  alert("Selecione um aluno");
-  return;
-}
-  
+    alert("Selecione um aluno");
+    return;
+  }
+
   const valor = document.getElementById("valor").value;
   const forma = document.getElementById("forma").value;
 
@@ -756,26 +755,30 @@ async function finalizarPagamento(){
   doc.line(20, 180, 100, 180);
   doc.text("Matheus Campos", 20, 190);
 
-const pdfBlob = doc.output("blob");
+  // 🔥 CONVERTE PDF
+  const pdfBlob = doc.output("blob");
 
-const nomeArquivo = `recibo_${alunoSelecionado.id}_${Date.now()}.pdf`;
+  const nomeArquivo = `recibo_${alunoSelecionado.id}_${Date.now()}.pdf`;
 
-const { data: uploadData, error } = await client.storage
-  .from("comprovantes")
-  .upload(nomeArquivo, pdfBlob);
+  // 🔥 UPLOAD
+  const { data: uploadData, error } = await client.storage
+    .from("comprovantes")
+    .upload(nomeArquivo, pdfBlob);
 
-if (error) {
-  alert("Erro ao subir PDF");
-  console.log(error);
-  return;
-}
+  if (error) {
+    alert("Erro ao subir PDF");
+    console.log(error);
+    return;
+  }
 
-const { data: urlData } = client.storage
-  .from("comprovantes")
-  .getPublicUrl(nomeArquivo);
+  // 🔥 PEGA URL
+  const { data: urlData } = client.storage
+    .from("comprovantes")
+    .getPublicUrl(nomeArquivo);
 
-const pdfUrl = urlData.publicUrl;
+  const pdfUrl = urlData.publicUrl;
 
+  // 🔥 👉 AQUI ENTRA O SEU CÓDIGO
   await client.from("pagamentos").insert([{
     aluno_id: alunoSelecionado.id,
     nome_aluno: alunoSelecionado.nome,
@@ -783,10 +786,11 @@ const pdfUrl = urlData.publicUrl;
     curso: alunoSelecionado.curso,
     materia: materiaSelecionada,
     valor: Number(valor),
-    forma_pagamento: forma
+    forma_pagamento: forma,
+    pdf_url: pdfUrl
   }]);
 
-  alert("Pagamento salvo!");
+  alert("Pagamento salvo com PDF!");
 }
 
 //////////////////////////////////////////////////
