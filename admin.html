@@ -779,7 +779,9 @@ const { data: urlData } = client.storage
 const pdfUrl = urlData.publicUrl + `?t=${Date.now()}`;
 
   // 🔥 👉 AQUI ENTRA O SEU CÓDIGO
-  await client.from("pagamentos").insert([{
+const { data: insertData, error: insertError } = await client
+  .from("pagamentos")
+  .insert([{
     aluno_id: alunoSelecionado.id,
     nome_aluno: alunoSelecionado.nome,
     cpf: alunoSelecionado.cpf,
@@ -787,8 +789,17 @@ const pdfUrl = urlData.publicUrl + `?t=${Date.now()}`;
     materia: materiaSelecionada,
     valor: Number(valor),
     forma_pagamento: forma,
-   recibo_url: pdfUrl
+    recibo_url: pdfUrl
   }]);
+
+if (insertError) {
+  console.log("ERRO INSERT:", insertError);
+  alert("Erro ao salvar pagamento");
+  return;
+}
+
+console.log("SALVO:", insertData);
+alert("Pagamento salvo com sucesso!");
 
   alert("Pagamento salvo com PDF!");
 }
