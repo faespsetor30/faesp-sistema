@@ -15,6 +15,11 @@
       flex-direction: column;
     }
 
+    .pendente-amarelo {
+      color: #facc15;
+      font-weight: bold;
+    }
+
     .main { display: flex; flex: 1; }
 
     .sidebar {
@@ -292,11 +297,25 @@ async function financeiro(){
   let html = `<h3>💰 Financeiro</h3><div class="cards">`;
 
   (data || []).forEach(f=>{
+
+    let corClasse = "";
+    let textoStatus = f.status;
+
+    if(f.status === "pago"){
+      corClasse = "pago";
+    } else if(f.status === "pendente"){
+      corClasse = "pendente-amarelo";
+    } else if(f.status === "atrasado"){
+      corClasse = "pendente";
+    }
+
     html += `
-      <div class="card">
+      <div class="card" onclick="abrirPagamento('${f.status}', \`${f.pdf_url || ""}\`)"
+           style="cursor:pointer;">
         <h4>${f.disciplina}</h4>
-        <p class="${f.status === 'pago' ? 'pago' : 'pendente'}">
-          ${f.status}
+
+        <p class="${corClasse}">
+          ${textoStatus}
         </p>
       </div>
     `;
@@ -336,6 +355,17 @@ async function avisos(){
   });
 
   trocarConteudo(html);
+}
+
+function abrirPagamento(status, pdf){
+
+  if(status === "pago" && pdf){
+    window.open(pdf, "_blank");
+  } else if(status === "pago" && !pdf){
+    alert("PDF ainda não disponível.");
+  } else {
+    alert("Pagamento ainda não liberado 🚫");
+  }
 }
 
 </script>
