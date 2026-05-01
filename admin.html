@@ -689,16 +689,24 @@ async function selecionarMateria(nome, curso){
   materiaSelecionada = nome;
   cursoSelecionado = curso;
 
-const areaAlunos = document.getElementById("areaAlunos");
+  const areaAlunos = document.getElementById("areaAlunos");
+  areaAlunos.style.display = "block";
 
-areaAlunos.style.display = "block";
+  // 👉 PRIMEIRO busca os dados
+  const { data } = await client
+    .from("alunos")
+    .select("*")
+    .eq("curso", curso)
+    .eq("status", "ativo");
 
-areaAlunos.innerHTML = `
-  <h3>Selecionar Aluno</h3>
-  ${data.map(a =>
-    `<div onclick='selecionarAluno(${JSON.stringify(a)})' class="btn">${a.nome}</div>`
-  ).join("")}
-`;
+  // 👉 DEPOIS usa o data
+  areaAlunos.innerHTML = `
+    <h3>Selecionar Aluno</h3>
+    ${data.map(a =>
+      `<div onclick='selecionarAluno(${JSON.stringify(a)})' class="btn">${a.nome}</div>`
+    ).join("")}
+  `;
+}
 
   const { data } = await client
     .from("alunos")
@@ -716,11 +724,16 @@ areaAlunos.innerHTML = `
 
 function selecionarAluno(aluno){
   alunoSelecionado = aluno;
-  areaPagamento.style.display = "block";
+  document.getElementById("areaPagamento").style.display = "block";
 }
 
 async function finalizarPagamento(){
 
+  if(!alunoSelecionado){
+  alert("Selecione um aluno");
+  return;
+}
+  
   const valor = document.getElementById("valor").value;
   const forma = document.getElementById("forma").value;
 
