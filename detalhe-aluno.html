@@ -120,9 +120,9 @@ async function carregarPagamentos(){
         <td>R$ ${p.valor}</td>
         <td>${p.forma_pagamento}</td>
         <td>
-          <a href="${p.recibo_url}" target="_blank" class="btn btn-primary">
-            📄 Ver Recibo
-          </a>
+<a href="${p.recibo_url}" target="_blank" download class="btn btn-primary">
+  📄 Ver Recibo
+</a>
         </td>
       </tr>
     `;
