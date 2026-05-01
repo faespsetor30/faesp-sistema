@@ -786,7 +786,7 @@ async function finalizarPagamento(){
     .from("comprovantes")
     .getPublicUrl(nomeArquivo);
 
-  const pdfUrl = urlData.publicUrl + `?t=${Date.now()}`;
+  const pdfUrl = urlData.publicUrl;
 
   // 🔥 SALVA NO BANCO
   const { error: insertError } = await client
