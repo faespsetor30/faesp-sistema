@@ -692,22 +692,6 @@ async function selecionarMateria(nome, curso){
   const areaAlunos = document.getElementById("areaAlunos");
   areaAlunos.style.display = "block";
 
-  // 👉 PRIMEIRO busca os dados
-  const { data } = await client
-    .from("alunos")
-    .select("*")
-    .eq("curso", curso)
-    .eq("status", "ativo");
-
-  // 👉 DEPOIS usa o data
-  areaAlunos.innerHTML = `
-    <h3>Selecionar Aluno</h3>
-    ${data.map(a =>
-      `<div onclick='selecionarAluno(${JSON.stringify(a)})' class="btn">${a.nome}</div>`
-    ).join("")}
-  `;
-}
-
   const { data } = await client
     .from("alunos")
     .select("*")
