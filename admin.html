@@ -705,14 +705,23 @@ async function selecionarMateria(nome, curso){
   areaAlunos.innerHTML = `
     <h3>Selecionar Aluno</h3>
     ${data.map(a =>
-      `<div onclick='selecionarAluno(${JSON.stringify(a)})' class="btn">${a.nome}</div>`
+      `<div onclick="selecionarAluno('${a.id}')" class="btn">${a.nome}</div>`
     ).join("")}
   `;
 }
 
-function selecionarAluno(aluno){
-  alunoSelecionado = aluno;
+async function selecionarAluno(id){
+
+  const { data } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  alunoSelecionado = data;
+
   document.getElementById("areaPagamento").style.display = "block";
+}
 }
 
 async function finalizarPagamento(){
