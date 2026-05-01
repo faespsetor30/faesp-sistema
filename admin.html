@@ -722,7 +722,10 @@ async function selecionarAluno(id){
 
   document.getElementById("areaPagamento").style.display = "block";
 }async function finalizarPagamento(){
-
+if (!valor || isNaN(valor)) {
+  alert("Digite um valor válido");
+  return;
+}
   if(!alunoSelecionado){
     alert("Selecione um aluno");
     return;
@@ -787,7 +790,7 @@ const { data: insertData, error: insertError } = await client
     cpf: alunoSelecionado.cpf,
     curso: alunoSelecionado.curso,
     materia: materiaSelecionada,
-    valor: Number(valor),
+    valor: parseFloat(valor),
     forma_pagamento: forma,
     recibo_url: pdfUrl
   }]);
