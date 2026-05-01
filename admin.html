@@ -756,7 +756,25 @@ async function finalizarPagamento(){
   doc.line(20, 180, 100, 180);
   doc.text("Matheus Campos", 20, 190);
 
-  doc.save(`recibo_${alunoSelecionado.nome}.pdf`);
+const pdfBlob = doc.output("blob");
+
+const nomeArquivo = `recibo_${alunoSelecionado.id}_${Date.now()}.pdf`;
+
+const { data: uploadData, error } = await client.storage
+  .from("comprovantes")
+  .upload(nomeArquivo, pdfBlob);
+
+if (error) {
+  alert("Erro ao subir PDF");
+  console.log(error);
+  return;
+}
+
+const { data: urlData } = client.storage
+  .from("comprovantes")
+  .getPublicUrl(nomeArquivo);
+
+const pdfUrl = urlData.publicUrl;
 
   await client.from("pagamentos").insert([{
     aluno_id: alunoSelecionado.id,
