@@ -104,7 +104,7 @@ const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
-
+const conteudo = document.getElementById("conteudo");
 // 🔐 proteção
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 if (!usuario || usuario.tipo !== "Coordenacao") {
@@ -686,7 +686,7 @@ async function financeiro(){
 
   html += "</table>";
 
-  conteudo.innerHTML = html;
+  document.getElementById("conteudo").innerHTML = html;
 }
 
 //////////////////////////////////////////////////
