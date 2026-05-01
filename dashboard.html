@@ -1,108 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>FAESP - Aluno</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; background: #eef2f7; flex-direction: column; }
-    .main { display: flex; flex: 1; }
-
-    .sidebar {
-      width: 240px; background: white; padding: 20px;
-      display: flex; flex-direction: column; justify-content: space-between;
-      border-right: 1px solid #ddd; align-items: center;
-    }
-
-    .logo { width: 120px; margin-bottom: 10px; }
-
-    .menu { width: 100%; }
-
-    .menu button {
-      width: 100%; padding: 12px; margin-bottom: 10px;
-      border: none; background: #f1f5f9; border-radius: 10px;
-      cursor: pointer; text-align: left; font-weight: 500;
-    }
-
-    .menu button:hover { background: #e2e8f0; }
-
-    .logout {
-      background: black; color: white; font-weight: bold;
-      padding: 12px; border-radius: 10px; border: none;
-      width: 100%; cursor: pointer;
-    }
-
-    .content { flex: 1; padding: 25px; }
-
-    .header {
-      background: white; padding: 20px; border-radius: 12px;
-      margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    .box {
-      background: white; padding: 20px; border-radius: 12px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    .footer {
-      background: #1e293b; color: white;
-      text-align: center; padding: 10px; font-size: 13px;
-    }
-
-    table { width:100%; border-collapse: collapse; margin-top:10px; }
-
-    th, td {
-      padding:10px;
-      border-bottom:1px solid #ddd;
-      text-align:center;
-    }
-
-    th { background:#f8fafc; }
-
-    .pago { color: green; font-weight: bold; }
-    .pendente { color: red; font-weight: bold; }
-
-    input { margin-top:5px; }
-  </style>
-</head>
-
-<body>
-
-<div class="main">
-
-  <div class="sidebar">
-    <div style="width:100%; text-align:center;">
-      <img src="logo faesp.png" class="logo">
-      <h3>🎓 ALUNO</h3>
-
-      <div class="menu">
-        <button onclick="disciplinas()">📊 Disciplinas</button>
-        <button onclick="financeiro()">💰 Financeiro</button>
-        <button onclick="cronograma()">📅 Cronograma</button>
-        <button onclick="avisos()">📢 Avisos</button>
-      </div>
-    </div>
-
-    <button class="logout" onclick="sair()">🚪 Sair</button>
-  </div>
-
-  <div class="content">
-    <div class="header">
-      <h2 id="boasVindas">Bem-vinda</h2>
-      <p>Painel do aluno</p>
-    </div>
-
-    <div class="box" id="conteudo">
-      Carregando...
-    </div>
-  </div>
-
-</div>
-
-<div class="footer">
-  AD. Belém - Rua Rio Tiete, 126 - Campo Limpo Paulista - SP
-</div>
-
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
@@ -126,11 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("boasVindas").innerText =
     "Bem-vinda, " + usuario.nome;
 
-  // 🔥 NOVO: CARREGA AVISOS NO DASHBOARD
   carregarAvisosDashboard();
 });
 
-// 🔥 NOVA FUNÇÃO (SEM MEXER NO RESTO)
+// DASHBOARD SIMPLES (mantido)
 async function carregarAvisosDashboard() {
 
   const { data } = await client
@@ -170,7 +64,7 @@ function getStatusClass(status) {
   return "pendente";
 }
 
-// 🚀 DISCIPLINAS COM BLOQUEIO POR PAGAMENTO
+// DISCIPLINAS
 async function disciplinas() {
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
@@ -189,8 +83,12 @@ async function disciplinas() {
     .select("*")
     .eq("email", usuario.email);
 
-  for (const m of master) {
-    const jaExiste = existentes.find(d => d.nome === m.nome);
+  // 🔒 PROTEÇÃO (evita erro se vier null)
+  const listaExistentes = existentes || [];
+  const listaMaster = master || [];
+
+  for (const m of listaMaster) {
+    const jaExiste = listaExistentes.find(d => d.nome === m.nome);
 
     if (!jaExiste) {
       await client.from("disciplinas").insert([{
@@ -233,7 +131,8 @@ async function disciplinas() {
       }
     }
 
-    const pagamento = financeiro.find(f => f.disciplina === d.nome);
+    // 🔒 PROTEÇÃO AQUI (IMPORTANTE)
+    const pagamento = (financeiro || []).find(f => f.disciplina === d.nome);
 
     let acesso = "🔒 Bloqueado";
     let corAcesso = "red";
@@ -258,8 +157,69 @@ async function disciplinas() {
   document.getElementById("conteudo").innerHTML = html;
 }
 
-// resto igual...
-</script>
+// FINANCEIRO (adicionei porque faltava)
+async function financeiro(){
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-</body>
-</html>
+  const { data } = await client
+    .from("financeiro")
+    .select("*")
+    .eq("email", usuario.email);
+
+  let html = `<h3>💰 Financeiro</h3>`;
+
+  html += `<table>
+    <tr>
+      <th>Disciplina</th>
+      <th>Status</th>
+    </tr>`;
+
+  (data || []).forEach(f=>{
+    html += `
+      <tr>
+        <td>${f.disciplina}</td>
+        <td class="${getStatusClass(f.status)}">${f.status}</td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+// CRONOGRAMA (placeholder seguro)
+function cronograma(){
+  document.getElementById("conteudo").innerHTML = `
+    <h3>📅 Cronograma</h3>
+    <p>Em desenvolvimento...</p>
+  `;
+}
+
+// AVISOS (tela completa)
+async function avisos(){
+
+  const { data } = await client
+    .from("avisos")
+    .select("*")
+    .order("data", { ascending: false });
+
+  let html = `<h3>📢 Avisos</h3>`;
+
+  if (!data || data.length === 0) {
+    html += "Nenhum aviso disponível";
+  } else {
+    data.forEach(a => {
+      html += `
+        <div style="margin-top:10px; padding:15px; background:#fef3c7; border-radius:10px;">
+          <strong>${a.titulo}</strong><br>
+          <small>📅 ${a.data}</small>
+          <p>${a.mensagem}</p>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("conteudo").innerHTML = html;
+}
+</script>
