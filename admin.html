@@ -205,17 +205,18 @@ async function dashboard(){
 async function alunos(){
   const { data } = await client.from("usuarios").select("*");
 
-  let html = `
-    <h3>📋 Cadastros</h3>
+let html = `
+  <h3>📋 Cadastros</h3>
 
-    <input id="nome" placeholder="Nome">
-    <input id="email" placeholder="Email">
+  <input id="nome" placeholder="Nome">
+  <input id="email" placeholder="Email">
 
-    <select id="tipo">
-      <option value="Aluno">Aluno</option>
-      <option value="Professor">Professor</option>
-      <option value="Coordenacao">Coordenação</option>
-    </select>
+  <input id="cpf" placeholder="CPF">
+
+  <select id="curso">
+    <option value="Curso Básico">Curso Básico</option>
+    <option value="Curso Médio">Curso Médio</option>
+  </select>
 
     <br><br>
     <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
@@ -695,7 +696,8 @@ async function selecionarMateria(nome, curso){
   areaAlunos.style.display = "block";
 
   const { data } = await client
-    .from("alunos")
+   .from("usuarios")
+.eq("tipo", "Aluno")
     .select("*")
     .eq("curso", curso)
     .eq("status", "ativo");
