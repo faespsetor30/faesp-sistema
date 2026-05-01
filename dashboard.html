@@ -84,7 +84,7 @@
       background: #1e293b;
       padding: 15px;
       border-radius: 14px;
-      transition: 0.3s;
+      transition: all 0.35s ease;
     }
 
     .card:hover {
@@ -103,6 +103,7 @@
     .bar {
       height: 100%;
       background: #22c55e;
+      transition: width 0.6s ease;
     }
 
     .aviso {
@@ -114,6 +115,24 @@
 
     .pago { color: #22c55e; font-weight: bold; }
     .pendente { color: #ef4444; font-weight: bold; }
+
+    /* ✨ ANIMAÇÃO SUAVE */
+    #conteudo {
+      opacity: 1;
+      transform: translateY(0);
+      transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #conteudo.fade-out {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    #conteudo.fade-in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
   </style>
 </head>
 
@@ -157,6 +176,24 @@ const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
+
+// 🔥 FUNÇÃO DE TRANSIÇÃO (ADICIONADA)
+function trocarConteudo(html){
+  const el = document.getElementById("conteudo");
+
+  el.classList.add("fade-out");
+
+  setTimeout(() => {
+    el.innerHTML = html;
+    el.classList.remove("fade-out");
+    el.classList.add("fade-in");
+
+    setTimeout(()=>{
+      el.classList.remove("fade-in");
+    }, 300);
+
+  }, 150);
+}
 
 // LOAD
 document.addEventListener("DOMContentLoaded", () => {
@@ -206,7 +243,7 @@ async function dashboard() {
     `;
   });
 
-  document.getElementById("conteudo").innerHTML = html;
+  trocarConteudo(html);
 }
 
 // DISCIPLINAS 🎬
@@ -239,7 +276,7 @@ async function disciplinas() {
 
   html += "</div>";
 
-  document.getElementById("conteudo").innerHTML = html;
+  trocarConteudo(html);
 }
 
 // FINANCEIRO 🎬
@@ -267,15 +304,15 @@ async function financeiro(){
 
   html += "</div>";
 
-  document.getElementById("conteudo").innerHTML = html;
+  trocarConteudo(html);
 }
 
 // CRONOGRAMA
 function cronograma(){
-  document.getElementById("conteudo").innerHTML = `
+  trocarConteudo(`
     <h3>📅 Cronograma</h3>
     <p>Em desenvolvimento...</p>
-  `;
+  `);
 }
 
 // AVISOS
@@ -298,7 +335,7 @@ async function avisos(){
     `;
   });
 
-  document.getElementById("conteudo").innerHTML = html;
+  trocarConteudo(html);
 }
 
 </script>
