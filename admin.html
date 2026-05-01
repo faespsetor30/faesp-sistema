@@ -3,7 +3,7 @@
 <head>
   <title>FAESP - Coordenação</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       margin:0;
@@ -622,73 +622,134 @@ async function excluirAviso(id){
 }
 
 //////////////////////////////////////////////////
-// 💰 FINANCEIRO
+// 💰 NOVO FINANCEIRO
 //////////////////////////////////////////////////
+
+let materiaSelecionada = "";
+let cursoSelecionado = "";
+let alunoSelecionado = null;
 
 async function financeiro(){
 
-  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
-  const { data } = await client.from("financeiro").select("*");
+  conteudo.innerHTML = `
+    <h2>💰 Financeiro</h2>
 
-  let html = `
-    <h3>💰 Financeiro</h3>
+    <div style="display:flex; gap:20px">
 
-    <select id="alunoFin">
-      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
-    </select>
+      <div style="flex:1; background:#fff; padding:20px; border-radius:12px">
+        <h3>🎓 Curso Básico</h3>
+        <div id="materiasBasico"></div>
+      </div>
 
-    <input id="disciplinaFin" placeholder="Disciplina">
-    <input id="valorFin" type="number" placeholder="Valor">
+      <div style="flex:1; background:#fff; padding:20px; border-radius:12px">
+        <h3>🎓 Curso Médio</h3>
+        <div id="materiasMedio"></div>
+      </div>
 
-    <select id="statusFin">
-      <option value="pago">Pago</option>
-      <option value="pendente">Pendente</option>
-      <option value="atrasado">Atrasado</option>
-    </select>
+    </div>
 
-    <input id="dataFin" type="date">
-    <input id="pdfFin" placeholder="Link PDF">
+    <div id="areaAlunos" style="margin-top:20px; display:none"></div>
 
-    <button class="btn" onclick="salvarFinanceiro()">Salvar</button>
+    <div id="areaPagamento" style="margin-top:20px; display:none">
+      <input id="valor" placeholder="Valor">
+      <select id="forma">
+        <option>Pix</option>
+        <option>Cartão</option>
+        <option>Boleto</option>
+      </select>
 
-    <table>
-      <tr>
-        <th>Aluno</th><th>Disciplina</th><th>Valor</th><th>Status</th><th>Data</th><th>Ação</th>
-      </tr>
+      <br><br>
+      <button class="btn" onclick="finalizarPagamento()">Gerar Recibo</button>
+    </div>
   `;
 
-  (data || []).forEach(f=>{
-    html+=`
-      <tr>
-        <td>${alunos.find(a=>a.email===f.email)?.nome || f.email}</td>
-        <td>${f.disciplina}</td>
-        <td>${f.valor}</td>
-        <td>${f.status}</td>
-        <td>${f.data_pagamento || "-"}</td>
-        <td><button class="btn" style="background:red;" onclick="excluirFinanceiro('${f.id}')">🗑️</button></td>
-      </tr>`;
-  });
-
-  html+="</table>";
-  conteudo.innerHTML=html;
+  carregarMaterias();
 }
 
-async function salvarFinanceiro(){
-  await client.from("financeiro").insert([{
-    email: alunoFin.value,
-    disciplina: disciplinaFin.value,
-    valor: Number(valorFin.value),
-    status: statusFin.value,
-    data_pagamento: dataFin.value,
-    pdf_url: pdfFin.value
+async function carregarMaterias(){
+
+  const { data } = await client.from("disciplinas_master").select("*");
+
+  const basico = data.filter(d => d.curso === "Curso Básico");
+  const medio = data.filter(d => d.curso === "Curso Médio");
+
+  materiasBasico.innerHTML = basico.map(d =>
+    `<div onclick="selecionarMateria('${d.nome}','Curso Básico')" class="btn">${d.nome}</div>`
+  ).join("");
+
+  materiasMedio.innerHTML = medio.map(d =>
+    `<div onclick="selecionarMateria('${d.nome}','Curso Médio')" class="btn">${d.nome}</div>`
+  ).join("");
+}
+
+async function selecionarMateria(nome, curso){
+
+  materiaSelecionada = nome;
+  cursoSelecionado = curso;
+
+  areaAlunos.style.display = "block";
+
+  const { data } = await client
+    .from("alunos")
+    .select("*")
+    .eq("curso", curso)
+    .eq("status", "ativo");
+
+  areaAlunos.innerHTML = `
+    <h3>Selecionar Aluno</h3>
+    ${data.map(a =>
+      `<div onclick='selecionarAluno(${JSON.stringify(a)})' class="btn">${a.nome}</div>`
+    ).join("")}
+  `;
+}
+
+function selecionarAluno(aluno){
+  alunoSelecionado = aluno;
+  areaPagamento.style.display = "block";
+}
+
+async function finalizarPagamento(){
+
+  const valor = document.getElementById("valor").value;
+  const forma = document.getElementById("forma").value;
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const data = new Date().toLocaleDateString("pt-BR");
+
+  doc.text("RECIBO DE PAGAMENTO", 70, 20);
+
+  doc.text("Recebedor: FAESP - Setor 30", 20, 40);
+
+  doc.text(`Nome: ${alunoSelecionado.nome}`, 20, 60);
+  doc.text(`CPF: ${alunoSelecionado.cpf}`, 20, 70);
+  doc.text(`Curso: ${alunoSelecionado.curso}`, 20, 80);
+
+  doc.text(`Matéria: ${materiaSelecionada}`, 20, 100);
+
+  doc.text(`Valor: R$ ${valor}`, 20, 120);
+  doc.text(`Forma: ${forma}`, 20, 130);
+  doc.text(`Data: ${data}`, 20, 140);
+
+  doc.text("São Paulo", 20, 160);
+
+  doc.line(20, 180, 100, 180);
+  doc.text("Matheus Campos", 20, 190);
+
+  doc.save(`recibo_${alunoSelecionado.nome}.pdf`);
+
+  await client.from("pagamentos").insert([{
+    aluno_id: alunoSelecionado.id,
+    nome_aluno: alunoSelecionado.nome,
+    cpf: alunoSelecionado.cpf,
+    curso: alunoSelecionado.curso,
+    materia: materiaSelecionada,
+    valor: Number(valor),
+    forma_pagamento: forma
   }]);
-  financeiro();
-}
 
-async function excluirFinanceiro(id){
-  if(!confirm("Excluir?")) return;
-  await client.from("financeiro").delete().eq("id",id);
-  financeiro();
+  alert("Pagamento salvo!");
 }
 
 //////////////////////////////////////////////////
