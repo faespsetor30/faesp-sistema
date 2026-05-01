@@ -301,13 +301,15 @@ async function financeiro(){
     let corClasse = "";
     let textoStatus = f.status;
 
-    if(f.status === "pago"){
-      corClasse = "pago";
-    } else if(f.status === "pendente"){
-      corClasse = "pendente-amarelo";
-    } else if(f.status === "atrasado"){
-      corClasse = "pendente";
-    }
+   const status = (f.status || "").toLowerCase();
+
+if(status === "pago"){
+  corClasse = "pago";
+} else if(status === "pendente"){
+  corClasse = "pendente-amarelo";
+} else if(status === "atrasado"){
+  corClasse = "pendente";
+}
 
     html += `
       <div class="card" onclick="abrirPagamento('${f.status}', \`${f.pdf_url || ""}\`)"
