@@ -3,7 +3,7 @@
 <head>
   <title>FAESP - Coordenação</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       margin:0;
@@ -331,7 +331,7 @@ async function carregarDisciplinasCurso(){
   });
 
   html+="</table>";
-  tabela.innerHTML=html;
+ async function carregarDisciplinasCurso(){
 }
 
 async function salvarDisciplinaMaster(){
@@ -673,17 +673,45 @@ async function financeiro(){
   conteudo.innerHTML=html;
 }
 
+//////////////////////////////////////////////////
+// SALVAR + GERAR PDF
+//////////////////////////////////////////////////
+
 async function salvarFinanceiro(){
+
+  const alunoSelect = document.getElementById("alunoFin");
+  const disciplina = document.getElementById("disciplinaFin").value;
+  const valor = document.getElementById("valorFin").value;
+  const status = document.getElementById("statusFin").value;
+  const data = document.getElementById("dataFin").value;
+
+  const alunoSelecionado = alunoSelect.options[alunoSelect.selectedIndex].text;
+  const email = alunoSelect.value;
+
   await client.from("financeiro").insert([{
-    email: alunoFin.value,
-    disciplina: disciplinaFin.value,
-    valor: Number(valorFin.value),
-    status: statusFin.value,
-    data_pagamento: dataFin.value,
-    pdf_url: pdfFin.value
+    email: email,
+    disciplina: disciplina,
+    valor: Number(valor),
+    status: status,
+    data_pagamento: data,
+    pdf_url: ""
   }]);
+
+  gerarPDFPagamento({
+    aluno: alunoSelecionado,
+    email: email,
+    disciplina: disciplina,
+    valor: valor,
+    status: status,
+    data: data
+  });
+
   financeiro();
 }
+
+//////////////////////////////////////////////////
+// EXCLUIR
+//////////////////////////////////////////////////
 
 async function excluirFinanceiro(id){
   if(!confirm("Excluir?")) return;
@@ -691,6 +719,34 @@ async function excluirFinanceiro(id){
   financeiro();
 }
 
+//////////////////////////////////////////////////
+// PDF
+//////////////////////////////////////////////////
+
+async function gerarPDFPagamento(dados){
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(16);
+  doc.text("FAESP - SETOR 30", 20, 20);
+
+  doc.setFontSize(12);
+  doc.setFont("helvetica","normal");
+
+  doc.text(`Aluno: ${dados.aluno}`, 20, 40);
+  doc.text(`Email: ${dados.email}`, 20, 50);
+  doc.text(`Disciplina: ${dados.disciplina}`, 20, 60);
+  doc.text(`Valor: R$ ${dados.valor}`, 20, 70);
+  doc.text(`Status: ${dados.status}`, 20, 80);
+  doc.text(`Data: ${dados.data}`, 20, 90);
+
+  doc.text("_________________________________", 20, 120);
+  doc.text("Coordenação FAESP", 20, 130);
+
+  doc.save(`recibo-${dados.aluno}.pdf`);
+}
 //////////////////////////////////////////////////
 // 🚀 INICIALIZAÇÃO
 //////////////////////////////////////////////////
