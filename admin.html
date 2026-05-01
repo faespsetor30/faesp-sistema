@@ -74,14 +74,15 @@
       <img src="logo faesp.png" class="logo">
       <h3>👑 COORDENAÇÃO</h3>
 
-      <div class="menu">
-<button onclick="dashboard()">🏠 Dashboard</button>
-        <button onclick="alunos()">📋 Cadastros</button>
-        <button onclick="disciplinasMaster()">📚 Disciplinas</button>
-        <button onclick="notas()">📝 Notas</button>
-        <button onclick="frequencia()">📅 Presença</button>
-      <button onclick="avisos()">📢 Avisos</button></div>
-    </div>
+<div class="menu">
+  <button onclick="dashboard()">🏠 Dashboard</button>
+  <button onclick="alunos()">📋 Cadastros</button>
+  <button onclick="disciplinasMaster()">📚 Disciplinas</button>
+  <button onclick="notas()">📝 Notas</button>
+  <button onclick="frequencia()">📅 Presença</button>
+  <button onclick="avisos()">📢 Avisos</button>
+  <button onclick="financeiro()">💰 Financeiro</button>
+</div>
 
     <button class="logout" onclick="sair()">🚪 Sair</button>
   </div>
@@ -595,7 +596,7 @@ async function avisos(){
 
   html += "</table>";
 
-  conteudo.innerHTML = html;
+  document.getElementById("conteudo").innerHTML = html;
 }
 
 async function salvarAviso(){
@@ -615,7 +616,109 @@ async function excluirAviso(id){
 
   avisos();
 }
-dashboard();
+//////////////////////////////////////////////////
+// 💰 FINANCEIRO ADMIN
+//////////////////////////////////////////////////
+
+async function financeiro(){
+
+  const { data: alunos } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("tipo","Aluno");
+
+  const { data } = await client
+    .from("financeiro")
+    .select("*");
+
+  let html = `
+    <h3>💰 Financeiro</h3>
+
+    <select id="alunoFin">
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
+    </select>
+
+    <input id="disciplinaFin" placeholder="Disciplina">
+
+    <input id="valorFin" type="number" placeholder="Valor">
+
+    <select id="statusFin">
+      <option value="pago">Pago</option>
+      <option value="pendente">Pendente</option>
+      <option value="atrasado">Atrasado</option>
+    </select>
+
+    <input id="dataFin" type="date">
+
+    <input id="pdfFin" placeholder="Link do PDF">
+
+    <br><br>
+    <button class="btn" onclick="salvarFinanceiro()">Salvar</button>
+
+    <table>
+      <tr>
+        <th>Email</th>
+        <th>Disciplina</th>
+        <th>Valor</th>
+        <th>Status</th>
+        <th>Data</th>
+        <th>PDF</th>
+        <th>Ação</th>
+      </tr>
+  `;
+
+  (data || []).forEach(f=>{
+    html += `
+      <tr>
+        <td>${alunos.find(a=>a.email===f.email)?.nome || f.email}</td>
+        <td>${f.disciplina}</td>
+        <td>${f.valor || "-"}</td>
+        <td>${f.status}</td>
+        <td>${f.data_pagamento || "-"}</td>
+        <td>${f.pdf_url ? "📄" : "-"}</td>
+        <td>
+          <button class="btn" style="background:red;" onclick="excluirFinanceiro('${f.id}')">🗑️</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  conteudo.innerHTML = html;
+}
+
+//////////////////////////////////////////////////
+// SALVAR FINANCEIRO
+//////////////////////////////////////////////////
+
+async function salvarFinanceiro(){
+
+  await client.from("financeiro").insert([{
+    email: alunoFin.value,
+    disciplina: disciplinaFin.value,
+    valor: Number(valorFin.value),
+    status: statusFin.value,
+    data_pagamento: dataFin.value,
+    pdf_url: pdfFin.value
+  }]);
+
+  financeiro();
+}
+
+//////////////////////////////////////////////////
+// EXCLUIR FINANCEIRO
+//////////////////////////////////////////////////
+
+async function excluirFinanceiro(id){
+
+  if(!confirm("Excluir lançamento?")) return;
+
+  await client.from("financeiro").delete().eq("id", id);
+
+  financeiro();
+}
+  dashboard();
 </script>
 </body>
 </html>
