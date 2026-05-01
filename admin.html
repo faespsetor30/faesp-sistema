@@ -1,310 +1,698 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>FAESP - Coordenação</title>
+  <title>FAESP - Coordenação</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      margin:0;
+      font-family:'Segoe UI';
+      display:flex;
+      flex-direction:column;
+      height:100vh;
+      background:#eef2f7;
+    }
 
-<style>
+    .main {
+      display:flex;
+      flex:1;
+      width:100%;
+    }
 
-body{
-  margin:0;
-  font-family:'Segoe UI';
-  background:#f5f5f7;
-  display:flex;
-  height:100vh;
-}
+    .sidebar {
+      width:240px;
+      background:white;
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      border-right:1px solid #ddd;
+      align-items:center;
+    }
 
-/* SIDEBAR */
-.sidebar{
-  width:240px;
-  background:#ffffff;
-  padding:20px;
-  border-right:1px solid #eee;
-}
+    .logo { width:120px; margin-bottom:10px;}
 
-.logo{
-  margin-bottom:20px;
-  text-align:center;
-}
+    .menu button {
+      width:100%;
+      padding:12px;
+      margin-bottom:10px;
+      border:none;
+      background:#f1f5f9;
+      border-radius:10px;
+      cursor:pointer;
+      text-align:left;
+    }
 
-.logo img{
-  width:140px;
-}
+    .menu button:hover { background:#e2e8f0;}
 
-.menu button{
-  width:100%;
-  padding:12px;
-  margin-bottom:10px;
-  border:none;
-  background:#f1f1f1;
-  border-radius:8px;
-  cursor:pointer;
-  text-align:left;
-}
+    .logout {
+      background:black;
+      color:white;
+      font-weight:bold;
+      padding:12px;
+      border-radius:10px;
+      border:none;
+      width:100%;
+    }
 
-.menu button:hover{
-  background:#e5e5e5;
-}
+    .content {
+      flex:1;
+      padding:25px;
+      width:100%;
+    }
 
-/* CONTENT */
-.content{
-  flex:1;
-  padding:30px;
-}
+    .header, .box {
+      background:white;
+      padding:20px;
+      border-radius:12px;
+      margin-bottom:20px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.05);
+    }
 
-.header{
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:20px;
-}
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+    }
 
-/* CARD STYLE (Netflix-like) */
-.card{
-  background:white;
-  border-radius:12px;
-  padding:20px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.05);
-  margin-bottom:20px;
-}
+    th, td {
+      padding:10px;
+      border-bottom:1px solid #ddd;
+      text-align:center;
+    }
 
-/* TABLE */
-table{
-  width:100%;
-  border-collapse:collapse;
-}
+    .btn {
+      background:#2c5364;
+      color:white;
+      border:none;
+      padding:6px 10px;
+      border-radius:6px;
+      cursor:pointer;
+    }
 
-th,td{
-  padding:10px;
-  border-bottom:1px solid #eee;
-  text-align:left;
-}
+    input, select {
+      padding:8px;
+      margin-top:5px;
+      width:100%;
+    }
 
-/* INPUT */
-input,select{
-  width:100%;
-  padding:8px;
-  margin:5px 0;
-}
+    a.nome-link {
+      color:#2c5364;
+      font-weight:bold;
+      text-decoration:none;
+    }
 
-/* BUTTON */
-.btn{
-  background:#2c5364;
-  color:white;
-  border:none;
-  padding:8px 12px;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-</style>
+    a.nome-link:hover { text-decoration:underline;}
+  </style>
 </head>
 
 <body>
 
-<div class="sidebar">
+<div class="main">
 
-<div class="logo">
-  <img src="logo faesp.png">
+  <div class="sidebar">
+    <div style="width:100%; text-align:center;">
+      <img src="logo faesp.png" class="logo">
+      <h3>👑 COORDENAÇÃO</h3>
+
+      <div class="menu">
+        <button onclick="dashboard()">🏠 Dashboard</button>
+        <button onclick="alunos()">📋 Cadastros</button>
+        <button onclick="disciplinasMaster()">📚 Disciplinas</button>
+        <button onclick="notas()">📝 Notas</button>
+        <button onclick="frequencia()">📅 Presença</button>
+        <button onclick="avisos()">📢 Avisos</button>
+        <button onclick="financeiro()">💰 Financeiro</button>
+      </div>
+    </div>
+
+    <button class="logout" onclick="sair()">🚪 Sair</button>
+  </div>
+
+  <div class="content">
+    <div class="header">
+      <h2>FAESP - SETOR 30</h2>
+    </div>
+
+    <div class="box" id="conteudo"></div>
+  </div>
+
 </div>
 
-<div class="menu">
-<button onclick="dashboard()">🏠 Dashboard</button>
-<button onclick="alunos()">👤 Cadastros</button>
-<button onclick="disciplinasMaster()">📚 Disciplinas</button>
-<button onclick="notas()">📝 Notas</button>
-<button onclick="frequencia()">📅 Presença</button>
-<button onclick="avisos()">📢 Avisos</button>
-<button onclick="financeiro()">💰 Financeiro</button>
-</div>
-
-</div>
-
-<div class="content">
-
-<div class="header">Coordenação</div>
-<div id="conteudo"></div>
-
-</div>
 <script>
 
-const { createClient } = supabase;
-const client = createClient(
+const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
 const conteudo = document.getElementById("conteudo");
 
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+if (!usuario || usuario.tipo !== "Coordenacao") {
+  window.location.href = "index.html";
+}
+
+function sair(){
+  localStorage.removeItem("usuario");
+  window.location.href="index.html";
+}
+
 //////////////////////////////////////////////////
 // DASHBOARD
 //////////////////////////////////////////////////
 
 async function dashboard(){
-
   const { data: usuarios } = await client.from("usuarios").select("*");
+  const { data: hist } = await client.from("disciplinas_historico").select("*");
 
-  const alunos = (usuarios||[]).filter(u=>u.tipo==="Aluno").length;
-  const professores = (usuarios||[]).filter(u=>u.tipo==="Professor").length;
+  const alunos = usuarios.filter(u=>u.tipo==="Aluno").length;
+  const professores = usuarios.filter(u=>u.tipo==="Professor").length;
+  const ativos = usuarios.filter(u=>u.status==="ativo").length;
 
-  conteudo.innerHTML = `
-  <div class="card">
-    <h3>📊 Dashboard</h3>
-    <p>Alunos: ${alunos}</p>
-    <p>Professores: ${professores}</p>
-  </div>
-  `;
-}
+  const hoje = new Date().toISOString().split("T")[0];
 
-//////////////////////////////////////////////////
-// CADASTROS
-//////////////////////////////////////////////////
+  const atuais = hist.filter(h=>{
+    return h.data_inicio <= hoje && (!h.data_fim || h.data_fim >= hoje);
+  });
 
-async function alunos(){
+  let lista = "";
 
-  const { data } = await client.from("usuarios").select("*");
-
-  let html = `
-  <div class="card">
-  <h3>Cadastros</h3>
-
-  <input id="nome" placeholder="Nome">
-  <input id="email" placeholder="Email">
-
-  <select id="tipo">
-    <option value="Aluno">Aluno</option>
-    <option value="Professor">Professor</option>
-  </select>
-
-  <button class="btn" onclick="cadastrar()">Salvar</button>
-
-  <table>
-  <tr><th>Nome</th><th>Email</th><th>Tipo</th></tr>
-  `;
-
-  (data||[]).forEach(u=>{
-    html+=`
-    <tr>
-    <td>${u.nome}</td>
-    <td>${u.email}</td>
-    <td>${u.tipo}</td>
-    </tr>
+  atuais.forEach(a=>{
+    lista += `
+      <div style="padding:10px;background:#f1f5f9;margin:5px;border-radius:8px">
+        📘 <strong>${a.curso}</strong> - ${a.disciplina}<br>
+        📅 ${a.data_inicio} até ${a.data_fim || "Atual"}
+      </div>
     `;
   });
 
-  html+="</table></div>";
+  conteudo.innerHTML = `
+    <h2>📊 Dashboard</h2>
+    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+      <div>👨‍🎓 ${alunos}</div>
+      <div>👨‍🏫 ${professores}</div>
+      <div>✅ ${ativos}</div>
+    </div>
+    ${lista}
+  `;
+}
+  //////////////////////////////////////////////////
+// 👤 CADASTROS
+//////////////////////////////////////////////////
 
-  conteudo.innerHTML = html;
+async function alunos(){
+  const { data } = await client.from("usuarios").select("*");
+
+  let html = `
+    <h3>📋 Cadastros</h3>
+
+    <input id="nome" placeholder="Nome">
+    <input id="email" placeholder="Email">
+
+    <select id="tipo">
+      <option value="Aluno">Aluno</option>
+      <option value="Professor">Professor</option>
+      <option value="Coordenacao">Coordenação</option>
+    </select>
+
+    <br><br>
+    <button class="btn" onclick="cadastrarUsuario()">Cadastrar</button>
+
+    <table>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Curso</th>
+        <th>Status</th>
+        <th>Tipo</th>
+        <th>Ações</th>
+      </tr>
+  `;
+
+  data.forEach(u=>{
+    html+=`
+      <tr>
+        <td><a class="nome-link" href="detalhe-aluno.html?id=${u.id}">${u.nome}</a></td>
+        <td>${u.email}</td>
+        <td>${u.curso || "Não definido"}</td>
+        <td>${u.status}</td>
+
+        <td>
+          <select onchange="alterarTipo('${u.id}',this.value)">
+            <option ${u.tipo==="Aluno"?"selected":""}>Aluno</option>
+            <option ${u.tipo==="Professor"?"selected":""}>Professor</option>
+            <option ${u.tipo==="Coordenacao"?"selected":""}>Coordenação</option>
+          </select>
+        </td>
+
+        <td>
+          <button class="btn" onclick="aprovar('${u.id}')">✔️</button>
+          <button class="btn" style="background:red;" onclick="excluir('${u.id}')">🗑️</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html+="</table>";
+  conteudo.innerHTML=html;
 }
 
-async function cadastrar(){
+async function cadastrarUsuario(){
   await client.from("usuarios").insert([{
-  nome: document.getElementById("nome").value,
-email: document.getElementById("email").value,
-tipo: document.getElementById("tipo").value
+    nome: nome.value,
+    email: email.value,
+    tipo: tipo.value,
+    status:"pendente"
   }]);
+  alunos();
+}
 
+async function alterarTipo(id,tipo){
+  await client.from("usuarios").update({tipo}).eq("id",id);
+  alunos();
+}
+
+async function aprovar(id){
+  await client.from("usuarios").update({status:"ativo"}).eq("id",id);
+  alunos();
+}
+
+async function excluir(id){
+  if(!confirm("Excluir?")) return;
+  await client.from("usuarios").delete().eq("id",id);
   alunos();
 }
 
 //////////////////////////////////////////////////
-// DISCIPLINAS
+// 📚 DISCIPLINAS MASTER
 //////////////////////////////////////////////////
 
 async function disciplinasMaster(){
 
-  conteudo.innerHTML = `
-  <div class="card">
-  <h3>Disciplinas</h3>
+  let html=`
+    <h3>📚 Disciplinas por Curso</h3>
 
-  <input id="disciplina" placeholder="Nome">
+    <select id="cursoMaster" onchange="carregarDisciplinasCurso()">
+      <option value="Curso Básico">Curso Básico</option>
+      <option value="Curso Médio">Curso Médio</option>
+    </select>
 
-  <button class="btn" onclick="salvarDisciplina()">Salvar</button>
+    <input id="nomeDisciplina" placeholder="Nome da disciplina">
 
-  <div id="lista"></div>
-  </div>
+    <button class="btn" onclick="salvarDisciplinaMaster()">Cadastrar</button>
+
+    <div id="tabela"></div>
   `;
 
-  carregarDisc();
+  conteudo.innerHTML=html;
+  carregarDisciplinasCurso();
 }
 
-async function carregarDisc(){
+async function carregarDisciplinasCurso(){
 
-  const { data } = await client.from("disciplinas_master").select("*");
+  const { data } = await client
+    .from("disciplinas_master")
+    .select("*")
+    .eq("curso", cursoMaster.value);
 
-  let html = "<ul>";
+  let html=`<table>
+    <tr><th>Curso</th><th>Disciplina</th><th>Histórico</th><th>Ação</th></tr>`;
 
-  (data||[]).forEach(d=>{
-    html+=`<li>${d.nome}</li>`;
+  data.forEach(d=>{
+    html+=`
+      <tr>
+        <td>${d.curso}</td>
+        <td>${d.nome}</td>
+        <td><button class="btn" onclick="abrirHistorico('${d.nome}','${d.curso}')">📄</button></td>
+        <td><button class="btn" style="background:red;" onclick="excluirDisciplina('${d.id}')">🗑️</button></td>
+      </tr>`;
   });
 
-  html+="</ul>";
-
-  document.getElementById("lista").innerHTML = html;
+  html+="</table>";
+  tabela.innerHTML=html;
 }
 
-async function salvarDisciplina(){
+async function salvarDisciplinaMaster(){
   await client.from("disciplinas_master").insert([{
-    nome: document.getElementById("disciplina").value
+    curso:cursoMaster.value,
+    nome:nomeDisciplina.value
   }]);
+  carregarDisciplinasCurso();
+}
 
-  carregarDisc();
+async function excluirDisciplina(id){
+  if(!confirm("Excluir disciplina?")) return;
+  await client.from("disciplinas_master").delete().eq("id",id);
+  carregarDisciplinasCurso();
+}
+
+//////////////////////////////////////////////////
+// 📄 HISTÓRICO DE DISCIPLINAS
+//////////////////////////////////////////////////
+
+async function abrirHistorico(disciplina, curso){
+
+  const { data } = await client
+    .from("disciplinas_historico")
+    .select("*")
+    .eq("disciplina", disciplina)
+    .eq("curso", curso);
+
+  let html = `
+    <h3>📄 Histórico - ${disciplina}</h3>
+
+    <input id="profHist" placeholder="Professor">
+    <input id="inicioHist" type="date">
+    <input id="fimHist" type="date">
+
+    <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">Salvar</button>
+
+    <table>
+      <tr><th>Professor</th><th>Início</th><th>Fim</th></tr>
+  `;
+
+  data.forEach(h=>{
+    html+=`
+      <tr>
+        <td>${h.professor}</td>
+        <td>${h.data_inicio}</td>
+        <td>${h.data_fim || "-"}</td>
+      </tr>`;
+  });
+
+  html+="</table>";
+  conteudo.innerHTML=html;
+}
+
+async function salvarHistorico(disciplina, curso){
+  await client.from("disciplinas_historico").insert([{
+    disciplina,
+    curso,
+    professor:profHist.value,
+    data_inicio:inicioHist.value,
+    data_fim:fimHist.value || null
+  }]);
+  abrirHistorico(disciplina, curso);
 }
   //////////////////////////////////////////////////
-// NOTAS
+// 📝 NOTAS
 //////////////////////////////////////////////////
 
-function notas(){
-  conteudo.innerHTML = `<div class="card">Notas em breve</div>`;
-}
+async function notas(){
 
-//////////////////////////////////////////////////
-// PRESENÇA
-//////////////////////////////////////////////////
+  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
 
-function frequencia(){
-  conteudo.innerHTML = `<div class="card">Presença em breve</div>`;
-}
+  let html=`
+    <h3>📝 Notas</h3>
 
-//////////////////////////////////////////////////
-// AVISOS
-//////////////////////////////////////////////////
+    <select id="alunoSelect" onchange="carregarNotasAluno()">
+      <option value="">Selecione</option>
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
+    </select>
 
-function avisos(){
-  conteudo.innerHTML = `<div class="card">Avisos em breve</div>`;
-}
+    <button class="btn" onclick="gerarBoletim()">📊 Boletim</button>
 
-//////////////////////////////////////////////////
-// FINANCEIRO + PDF
-//////////////////////////////////////////////////
-
-function financeiro(){
-
-  conteudo.innerHTML = `
-  <div class="card">
-  <h3>Financeiro</h3>
-
-  <input id="valor" placeholder="Valor">
-
-  <button class="btn" onclick="gerarPDF()">Gerar PDF</button>
-  </div>
+    <div id="tabelaNotas"></div>
   `;
+
+  conteudo.innerHTML=html;
 }
 
-function gerarPDF(){
+async function carregarNotasAluno(){
 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  const email = alunoSelect.value;
 
-  doc.text("FAESP",20,20);
-  doc.text("Valor: " + document.getElementById("valor").value,20,40);
+  const { data: disciplinasMaster } = await client.from("disciplinas_master").select("*");
+  const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
 
-  doc.save("recibo.pdf");
+  let html="<table><tr><th>Disciplina</th><th>Nota</th></tr>";
+
+  disciplinasMaster.forEach(d=>{
+    const nota = notas.find(n=>n.nome===d.nome);
+    html+=`
+      <tr>
+        <td>${d.nome}</td>
+        <td><input value="${nota?nota.nota:""}" onchange="salvarNota('${email}','${d.nome}',this.value)"></td>
+      </tr>`;
+  });
+
+  html+="</table>";
+  tabelaNotas.innerHTML=html;
+}
+
+async function salvarNota(email,nome,nota){
+
+  const { data } = await client.from("disciplinas").select("*").eq("email",email).eq("nome",nome);
+
+  if(data.length>0){
+    await client.from("disciplinas").update({nota}).eq("id",data[0].id);
+  }else{
+    await client.from("disciplinas").insert([{email,nome,nota}]);
+  }
 }
 
 //////////////////////////////////////////////////
-// INIT
+// 📅 PRESENÇA
+//////////////////////////////////////////////////
+
+async function frequencia(){
+
+  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
+  const { data: disciplinas } = await client.from("disciplinas_master").select("*");
+
+  let html=`
+    <h3>📅 Presença</h3>
+
+    <select id="alunoFreq">
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
+    </select>
+
+    <select id="disciplinaFreq">
+      ${disciplinas.map(d=>`<option>${d.nome}</option>`).join("")}
+    </select>
+
+    <input type="date" id="dataFreq">
+
+    <select id="presenca">
+      <option value="true">Presente</option>
+      <option value="false">Falta</option>
+    </select>
+
+    <button class="btn" onclick="salvarFrequencia()">Salvar</button>
+  `;
+
+  conteudo.innerHTML=html;
+}
+
+async function salvarFrequencia(){
+
+  await client.from("frequencia").insert([{
+    email: alunoFreq.value,
+    disciplina: disciplinaFreq.value,
+    data: dataFreq.value,
+    presente: presenca.value==="true"
+  }]);
+
+  alert("Salvo!");
+}
+
+//////////////////////////////////////////////////
+// 📊 BOLETIM
+//////////////////////////////////////////////////
+
+async function gerarBoletim(){
+
+  const email = alunoSelect.value;
+
+  if(!email){
+    alert("Selecione um aluno");
+    return;
+  }
+
+  const { data: aluno } = await client.from("usuarios").select("*").eq("email",email).single();
+  const { data: notas } = await client.from("disciplinas").select("*").eq("email",email);
+  const { data: freq } = await client.from("frequencia").select("*").eq("email",email);
+
+  let soma = 0;
+  let qtd = 0;
+  let linhas = "";
+
+  notas.forEach(n=>{
+    const lista = freq.filter(f=>f.disciplina===n.nome);
+    const total = lista.length;
+    const pres = lista.filter(f=>f.presente).length;
+    const perc = total>0 ? Math.round((pres/total)*100) : 0;
+
+    const nota = parseFloat(n.nota) || 0;
+
+    if(n.nota){
+      soma += nota;
+      qtd++;
+    }
+
+    linhas += `
+      <tr>
+        <td>${n.nome}</td>
+        <td>${n.nota || "-"}</td>
+        <td>${perc}%</td>
+      </tr>
+    `;
+  });
+
+  const media = qtd > 0 ? (soma / qtd).toFixed(1) : "-";
+  const situacao = media >= 7 ? "APROVADO" : "REPROVADO";
+
+  let html = `
+    <div style="font-family:Segoe UI;padding:30px;max-width:800px;margin:auto;border:1px solid #ddd;border-radius:10px;">
+      <h2 style="text-align:center;">🎓 FAESP</h2>
+
+      <p><strong>Aluno:</strong> ${aluno.nome}</p>
+
+      <table style="width:100%;border-collapse:collapse;">
+        <tr style="background:#2c5364;color:white;">
+          <th>Disciplina</th>
+          <th>Nota</th>
+          <th>Presença</th>
+        </tr>
+        ${linhas}
+      </table>
+
+      <div style="margin-top:20px;display:flex;justify-content:space-between;">
+        <div>Média: ${media}</div>
+        <div style="color:${situacao==='APROVADO'?'green':'red'}">${situacao}</div>
+      </div>
+    </div>
+  `;
+
+  const w = window.open("", "_blank");
+  w.document.write(html);
+  w.document.close();
+}
+
+//////////////////////////////////////////////////
+// 📢 AVISOS
+//////////////////////////////////////////////////
+
+async function avisos(){
+
+  const { data } = await client.from("avisos").select("*").order("data",{ascending:false});
+
+  let html = `
+    <h3>📢 Avisos</h3>
+
+    <input id="tituloAviso" placeholder="Título">
+    <textarea id="mensagemAviso" style="width:100%;margin-top:5px;"></textarea>
+    <input type="date" id="dataAviso">
+
+    <button class="btn" onclick="salvarAviso()">Publicar</button>
+
+    <table>
+      <tr><th>Título</th><th>Mensagem</th><th>Data</th><th>Ação</th></tr>
+  `;
+
+  data.forEach(a=>{
+    html+=`
+      <tr>
+        <td>${a.titulo}</td>
+        <td>${a.mensagem}</td>
+        <td>${a.data}</td>
+        <td><button class="btn" style="background:red;" onclick="excluirAviso('${a.id}')">🗑️</button></td>
+      </tr>`;
+  });
+
+  html+="</table>";
+  conteudo.innerHTML=html;
+}
+
+async function salvarAviso(){
+  await client.from("avisos").insert([{
+    titulo: tituloAviso.value,
+    mensagem: mensagemAviso.value,
+    data: dataAviso.value
+  }]);
+  avisos();
+}
+
+async function excluirAviso(id){
+  if(!confirm("Excluir aviso?")) return;
+  await client.from("avisos").delete().eq("id", id);
+  avisos();
+}
+
+//////////////////////////////////////////////////
+// 💰 FINANCEIRO
+//////////////////////////////////////////////////
+
+async function financeiro(){
+
+  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
+  const { data } = await client.from("financeiro").select("*");
+
+  let html = `
+    <h3>💰 Financeiro</h3>
+
+    <select id="alunoFin">
+      ${alunos.map(a=>`<option value="${a.email}">${a.nome}</option>`).join("")}
+    </select>
+
+    <input id="disciplinaFin" placeholder="Disciplina">
+    <input id="valorFin" type="number" placeholder="Valor">
+
+    <select id="statusFin">
+      <option value="pago">Pago</option>
+      <option value="pendente">Pendente</option>
+      <option value="atrasado">Atrasado</option>
+    </select>
+
+    <input id="dataFin" type="date">
+    <input id="pdfFin" placeholder="Link PDF">
+
+    <button class="btn" onclick="salvarFinanceiro()">Salvar</button>
+
+    <table>
+      <tr>
+        <th>Aluno</th><th>Disciplina</th><th>Valor</th><th>Status</th><th>Data</th><th>Ação</th>
+      </tr>
+  `;
+
+  (data || []).forEach(f=>{
+    html+=`
+      <tr>
+        <td>${alunos.find(a=>a.email===f.email)?.nome || f.email}</td>
+        <td>${f.disciplina}</td>
+        <td>${f.valor}</td>
+        <td>${f.status}</td>
+        <td>${f.data_pagamento || "-"}</td>
+        <td><button class="btn" style="background:red;" onclick="excluirFinanceiro('${f.id}')">🗑️</button></td>
+      </tr>`;
+  });
+
+  html+="</table>";
+  conteudo.innerHTML=html;
+}
+
+async function salvarFinanceiro(){
+  await client.from("financeiro").insert([{
+    email: alunoFin.value,
+    disciplina: disciplinaFin.value,
+    valor: Number(valorFin.value),
+    status: statusFin.value,
+    data_pagamento: dataFin.value,
+    pdf_url: pdfFin.value
+  }]);
+  financeiro();
+}
+
+async function excluirFinanceiro(id){
+  if(!confirm("Excluir?")) return;
+  await client.from("financeiro").delete().eq("id",id);
+  financeiro();
+}
+
+//////////////////////////////////////////////////
+// 🚀 INICIALIZAÇÃO
 //////////////////////////////////////////////////
 
 dashboard();
