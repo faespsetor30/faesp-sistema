@@ -315,7 +315,7 @@ async function carregarDisciplinasCurso(){
   const { data } = await client
     .from("disciplinas_master")
     .select("*")
-    .eq("curso", cursoMaster.value);
+    .eq("curso", document.getElementById("cursoMaster").value);
 
   let html=`<table>
     <tr><th>Curso</th><th>Disciplina</th><th>Histórico</th><th>Ação</th></tr>`;
@@ -331,6 +331,9 @@ async function carregarDisciplinasCurso(){
   });
 
   html+="</table>";
+
+  document.getElementById("tabela").innerHTML = html;
+}
  async function carregarDisciplinasCurso(){
 }
 
