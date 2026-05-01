@@ -7,7 +7,7 @@
   <style>
     body {
       margin:0;
-      font-family:'Segoe UI';
+      font-family:'Segoe UI';async function selecionarAluno(id){
       display:flex;
       flex-direction:column;
       height:100vh;
@@ -709,15 +709,14 @@ async function selecionarMateria(nome, curso){
     ).join("")}
   `;
 }
-
+console.log(alunoSelecionado);
 async function selecionarAluno(id){
 
-const { data } = await client
-  .from("usuarios")
-  .select("*")
-  .eq("tipo", "Aluno")
-  .eq("curso", curso)
-  .eq("status", "ativo");
+  const { data } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("id", id)
+    .single();
 
   alunoSelecionado = data;
 
