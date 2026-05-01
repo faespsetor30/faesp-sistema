@@ -772,11 +772,11 @@ async function selecionarAluno(id){
   }
 
   // 🔥 PEGA URL
-  const { data: urlData } = client.storage
-    .from("comprovantes")
-    .getPublicUrl(nomeArquivo);
+const { data: urlData } = client.storage
+  .from("comprovantes")
+  .getPublicUrl(nomeArquivo);
 
-  const pdfUrl = urlData.publicUrl;
+const pdfUrl = urlData.publicUrl + `?t=${Date.now()}`;
 
   // 🔥 👉 AQUI ENTRA O SEU CÓDIGO
   await client.from("pagamentos").insert([{
