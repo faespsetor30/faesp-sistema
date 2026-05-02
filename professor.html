@@ -10,24 +10,40 @@ let usuario = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  usuario = JSON.parse(localStorage.getItem("usuario"));
+  try {
+    usuario = JSON.parse(localStorage.getItem("usuario"));
+  } catch (e) {
+    console.error("Erro ao ler usuário", e);
+    localStorage.removeItem("usuario");
+    window.location.href = "index.html";
+    return;
+  }
 
   console.log("Usuário carregado:", usuario);
 
-  if (!usuario) {
+  // 🔥 evita erro de undefined
+  if (!usuario || typeof usuario !== "object") {
     window.location.href = "index.html";
     return;
   }
 
-  // 🔥 validação corrigida
-  if ((usuario.tipo || "").trim().toLowerCase() !== "professor") {
+  // 🔥 comparação SUPER segura
+  const tipo = String(usuario.tipo || "")
+    .trim()
+    .toLowerCase();
+
+  console.log("Tipo tratado:", tipo);
+
+  if (tipo !== "professor") {
+    console.warn("Tipo inválido:", tipo);
     window.location.href = "index.html";
     return;
   }
+
+  console.log("Login OK ✅");
 
   minhasDisciplinas();
 });
-
 function sair(){
   localStorage.removeItem("usuario");
   window.location.href="index.html";
