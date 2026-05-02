@@ -287,13 +287,15 @@ async function cronograma(){
       ${diasSemana.map(d=>`<div style="text-align:center; font-weight:bold;">${d}</div>`).join("")}
     </div>
 
-    <div style="
-      display:grid;
-      grid-template-columns: repeat(7,1fr);
-      gap:10px;
-      margin-top:10px;
-    ">
-  `;
+<div style="
+  display:grid;
+  grid-template-columns: repeat(7,1fr);
+  gap:6px;
+  margin-top:10px;
+  max-width:900px;
+  margin-left:auto;
+  margin-right:auto;
+">
 
   for(let i=0;i<primeiroDia;i++){
     html += `<div></div>`;
@@ -308,9 +310,9 @@ async function cronograma(){
       <div onclick="abrirModal('${dataFormatada}')"
         style="
           background:white;
-          padding:10px;
+          padding:6px;
           border-radius:10px;
-          min-height:110px;
+          min-height:80px;
           cursor:pointer;
           box-shadow:0 3px 10px rgba(0,0,0,0.05);
           transition:0.2s;
@@ -329,7 +331,7 @@ async function cronograma(){
       padding:6px;
       border-radius:6px;
       margin-top:5px;
-      font-size:12px;
+      font-size:11px;
       cursor:pointer;
     ">
     ${ev.disciplina}
