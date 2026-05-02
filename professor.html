@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FAESP - Professor</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin:0;
+      font-family:'Segoe UI';
+      display:flex;
+      height:100vh;
+      background:#0f172a;
+      color:white;
+      flex-direction:column;
+    }
+
+    .main { display:flex; flex:1; }
+
+    .sidebar {
+      width:240px;
+      background:#020617;
+      padding:20px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      border-right:1px solid #1e293b;
+      align-items:center;
+    }
+
+    .menu button {
+      width:100%;
+      padding:12px;
+      margin-bottom:10px;
+      border:none;
+      background:#1e293b;
+      color:white;
+      border-radius:10px;
+      cursor:pointer;
+    }
+
+    .menu button:hover { background:#334155; }
+
+    .content { flex:1; padding:25px; }
+
+    .box {
+      background:#020617;
+      padding:20px;
+      border-radius:12px;
+    }
+
+    .btn {
+      background:#22c55e;
+      border:none;
+      padding:6px 10px;
+      border-radius:6px;
+      cursor:pointer;
+    }
+
+    input {
+      width:100%;
+      margin-top:5px;
+      padding:8px;
+      border-radius:6px;
+      border:none;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="main">
+
+  <div class="sidebar">
+    <div style="width:100%; text-align:center;">
+      <h3>👨‍🏫 PROFESSOR</h3>
+
+      <div class="menu">
+        <button onclick="minhasDisciplinas()">📚 Minhas Disciplinas</button>
+        <button onclick="lancarNotas()">📝 Lançar Notas</button>
+        <button onclick="lancarPresenca()">📅 Presença</button>
+        <button onclick="cronograma()">📅 Cronograma</button>
+      </div>
+    </div>
+
+    <button onclick="sair()">🚪 Sair</button>
+  </div>
+
+  <div class="content">
+    <div class="box" id="conteudo"></div>
+  </div>
+
+</div>
+
+<script>
+
+const client = supabase.createClient(
+  "https://nzygdvixqmiltelgzzrn.supabase.co",
+  "SUA_KEY"
+);
+
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+if (!usuario || usuario.tipo !== "Professor") {
+  window.location.href = "index.html";
+}
+
+function sair(){
+  localStorage.removeItem("usuario");
+  window.location.href="index.html";
+}
+
+//////////////////////////////////////////////////
+// 📚 MINHAS DISCIPLINAS
+//////////////////////////////////////////////////
+
+async function minhasDisciplinas(){
+
+  const { data } = await client
+    .from("disciplinas_historico")
+    .select("*")
+    .eq("professor", usuario.nome);
+
+  let html = `<h3>📚 Minhas Disciplinas</h3>`;
+
+  (data || []).forEach(d=>{
+    html += `
+      <div style="background:#1e293b;padding:10px;margin:5px;border-radius:8px">
+        ${d.disciplina} - ${d.curso}
+      </div>
+    `;
+  });
+
+  conteudo.innerHTML = html;
+}
+
+//////////////////////////////////////////////////
+// 📝 LANÇAR NOTAS
+//////////////////////////////////////////////////
+
+async function lancarNotas(){
+
+  const { data: alunos } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("tipo","Aluno");
+
+  let html = `<h3>📝 Lançar Notas</h3>`;
+
+  alunos.forEach(a=>{
+    html += `
+      <div style="margin-bottom:10px">
+        ${a.nome}
+        <input placeholder="Nota"
+          onchange="salvarNota('${a.email}', this.value)">
+      </div>
+    `;
+  });
+
+  conteudo.innerHTML = html;
+}
+
+async function salvarNota(email, nota){
+
+  await client.from("disciplinas").insert([{
+    email,
+    nome: "Disciplina Professor",
+    nota
+  }]);
+
+  alert("Salvo!");
+}
+
+//////////////////////////////////////////////////
+// 📅 PRESENÇA
+//////////////////////////////////////////////////
+
+async function lancarPresenca(){
+
+  const { data: alunos } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("tipo","Aluno");
+
+  let html = `<h3>📅 Presença</h3>`;
+
+  alunos.forEach(a=>{
+    html += `
+      <div style="margin-bottom:10px">
+        ${a.nome}
+        <button onclick="marcarPresenca('${a.email}', true)">✔️</button>
+        <button onclick="marcarPresenca('${a.email}', false)">❌</button>
+      </div>
+    `;
+  });
+
+  conteudo.innerHTML = html;
+}
+
+async function marcarPresenca(email, presente){
+
+  await client.from("frequencia").insert([{
+    email,
+    presente,
+    data: new Date()
+  }]);
+
+  alert("Salvo!");
+}
+
+//////////////////////////////////////////////////
+// 📅 CRONOGRAMA (SÓ VISUAL)
+//////////////////////////////////////////////////
+
+function cronograma(){
+  conteudo.innerHTML = `<h3>📅 Cronograma</h3><p>Mesmo do aluno</p>`;
+}
+
+//////////////////////////////////////////////////
+
+minhasDisciplinas();
+
+</script>
+
+</body>
+</html>
