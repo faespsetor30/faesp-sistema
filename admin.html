@@ -697,7 +697,7 @@ async function financeiro(){
         <h3>🎓 Curso Básico</h3>
         <div id="materiasBasico"></div>
       </div>
-
+<input type="file" id="arquivoPDF" accept="application/pdf">
       <div style="flex:1; background:#fff; padding:20px; border-radius:12px">
         <h3>🎓 Curso Médio</h3>
         <div id="materiasMedio"></div>
@@ -708,6 +708,27 @@ async function financeiro(){
     <div id="areaAlunos" style="margin-top:20px; display:none"></div>
 
     <div id="areaPagamento" style="margin-top:20px; display:none">
+  
+  <input id="valor" placeholder="Valor">
+
+  <select id="forma">
+    <option>Pix</option>
+    <option>Cartão</option>
+    <option>Boleto</option>
+  </select>
+
+  <!-- 📄 Upload do PDF -->
+  <input type="file" id="arquivoPDF" accept="application/pdf">
+
+  <br><br>
+
+  <!-- 🔽 PASSO 1 -->
+  <button class="btn" onclick="finalizarPagamento()">📥 Gerar PDF</button>
+
+  <!-- 🔼 PASSO 2 -->
+  <button class="btn" onclick="enviarPDF()">📤 Enviar PDF</button>
+
+</div>
       
       <input id="valor" placeholder="Valor">
 
@@ -728,6 +749,8 @@ async function financeiro(){
   
 async function finalizarPagamento(){
 
+ async function finalizarPagamento(){
+
   const valor = document.getElementById("valor").value;
   const forma = document.getElementById("forma").value;
 
@@ -746,7 +769,6 @@ async function finalizarPagamento(){
 
   const dataAtual = new Date().toLocaleDateString("pt-BR");
 
-  // 🧾 MONTA PDF
   doc.text("RECIBO DE PAGAMENTO", 70, 20);
   doc.text("Recebedor: FAESP - Setor 30", 20, 40);
 
@@ -765,23 +787,42 @@ async function finalizarPagamento(){
   doc.line(20, 180, 100, 180);
   doc.text("Matheus Campos", 20, 190);
 
-  // 🔥 CONVERTE PDF DIRETO (sem baixar)
-  const pdfBlob = doc.output("blob");
+  // 📥 BAIXA O PDF
+  doc.save(`recibo_${alunoSelecionado.nome}.pdf`);
+
+  alert("PDF gerado! Agora selecione o arquivo e clique em Enviar PDF 📤");
+
+}
+  async function enviarPDF(){
+
+  if(!alunoSelecionado){
+    alert("Selecione um aluno");
+    return;
+  }
+
+  const fileInput = document.getElementById("arquivoPDF");
+
+  if (!fileInput.files.length) {
+    alert("Selecione o PDF");
+    return;
+  }
+
+  const file = fileInput.files[0];
 
   const nomeArquivo = `recibo_${alunoSelecionado.id}_${Date.now()}.pdf`;
 
-  // 🔥 UPLOAD AUTOMÁTICO
-  const { error: uploadError } = await client.storage
+  // 🔥 UPLOAD
+  const { error } = await client.storage
     .from("comprovantes")
-    .upload(nomeArquivo, pdfBlob);
+    .upload(nomeArquivo, file);
 
-  if (uploadError) {
-    console.log(uploadError);
+  if (error) {
+    console.log(error);
     alert("Erro ao subir PDF");
     return;
   }
 
-  // 🔗 URL DO PDF
+  // 🔗 URL
   const { data: urlData } = client.storage
     .from("comprovantes")
     .getPublicUrl(nomeArquivo);
@@ -797,8 +838,8 @@ async function finalizarPagamento(){
       cpf: alunoSelecionado.cpf,
       curso: alunoSelecionado.curso,
       materia: materiaSelecionada,
-      valor: parseFloat(valor),
-      forma_pagamento: forma,
+      valor: parseFloat(document.getElementById("valor").value),
+      forma_pagamento: document.getElementById("forma").value,
       recibo_url: pdfUrl
     }]);
 
@@ -810,11 +851,11 @@ async function finalizarPagamento(){
 
   alert("Pagamento salvo com sucesso! 🎉");
 
-  // 🧹 LIMPA TELA
+  // 🧹 LIMPA CAMPOS
+  document.getElementById("arquivoPDF").value = "";
   document.getElementById("valor").value = "";
   document.getElementById("areaPagamento").style.display = "none";
 }
-
 //////////////////////////////////////////////////
 // 🚀 INICIALIZAÇÃO
 //////////////////////////////////////////////////
