@@ -7,13 +7,25 @@
 
 <body>
 
+<div style="max-width:400px;margin:auto;margin-top:100px;text-align:center;">
+  
+  <h2>FAESP Login</h2>
+
+  <input id="email" placeholder="Email" style="width:100%;padding:10px;margin:5px;"><br>
+  <input id="senha" type="password" placeholder="Senha" style="width:100%;padding:10px;margin:5px;"><br>
+
+  <button onclick="login()" style="width:100%;padding:10px;">Entrar</button>
+
+  <div id="resultado" style="margin-top:10px;"></div>
+
+</div>
+
 <script>
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
-// LOGIN
 async function login() {
 
   const email = document.getElementById("email").value;
@@ -36,28 +48,11 @@ async function login() {
     return;
   }
 
-  const { data: usuario, error: erroUsuario } = await client
+  const { data: usuario } = await client
     .from("usuarios")
     .select("*")
     .eq("email", email)
     .single();
-
-  if (erroUsuario || !usuario) {
-    document.getElementById("resultado").innerText = "Usuário não encontrado";
-    return;
-  }
-
-  if (usuario.status !== "ativo") {
-    document.getElementById("resultado").innerText =
-      "Cadastro aguardando aprovação";
-    return;
-  }
-
-  if (usuario.primeiro_acesso) {
-    localStorage.setItem("usuario_temp", JSON.stringify(usuario));
-    window.location.href = "primeiro-acesso.html";
-    return;
-  }
 
   localStorage.setItem("usuario", JSON.stringify(usuario));
 
@@ -69,54 +64,6 @@ async function login() {
     window.location.href = "dashboard.html";
   }
 }
-
-// MODAL
-function abrirCadastro() {
-  document.getElementById("modalCadastro").style.display = "flex";
-}
-
-function fecharCadastro() {
-  document.getElementById("modalCadastro").style.display = "none";
-}
-
-// CADASTRO
-async function salvarCadastro() {
-
-  const nome = document.getElementById("novoNome").value;
-  const email = document.getElementById("novoEmail").value;
-  const cpf = document.getElementById("novoCpf").value;
-  const rg = document.getElementById("novoRg").value;
-  const data = document.getElementById("novaData").value;
-  const endereco = document.getElementById("novoEndereco").value;
-  const celular = document.getElementById("novoCelular").value;
-
-  if (!nome || !email) {
-    document.getElementById("msgCadastro").innerText = "Preencha nome e email";
-    return;
-  }
-
-  const { error } = await client
-    .from("usuarios")
-    .insert([{
-      nome,
-      email,
-      cpf,
-      rg,
-      data_nascimento: data,
-      endereco,
-      celular,
-      status: "pendente",
-      tipo: "Aluno"
-    }]);
-
-  if (error) {
-    document.getElementById("msgCadastro").innerText = "Erro ao cadastrar";
-  } else {
-    document.getElementById("msgCadastro").innerText =
-      "Cadastro enviado! Aguarde aprovação.";
-  }
-}
-
 </script>
 
 </body>
