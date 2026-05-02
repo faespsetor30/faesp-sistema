@@ -3,20 +3,105 @@
 
 <head>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      background: linear-gradient(180deg, #0f172a, #020617);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      background: rgba(0,0,0,0.85);
+      padding: 40px;
+      border-radius: 16px;
+      width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      width: 90px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 5px 0;
+      color: #22c55e;
+      font-size: 22px;
+      letter-spacing: 1px;
+    }
+
+    h2 {
+      margin: 0 0 25px 0;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: normal;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: none;
+      background: #1e293b;
+      color: white;
+      font-size: 14px;
+    }
+
+    input:focus {
+      outline: none;
+      border: 1px solid #22c55e;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #22c55e;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #16a34a;
+      transform: scale(1.02);
+    }
+
+    #resultado {
+      margin-top: 12px;
+      color: #22c55e;
+      font-size: 13px;
+    }
+  </style>
 </head>
 
 <body>
 
-<div style="max-width:400px;margin:auto;margin-top:100px;text-align:center;">
-  
-  <h2>FAESP Login</h2>
+<div class="card">
 
-  <input id="email" placeholder="Email" style="width:100%;padding:10px;margin:5px;"><br>
-  <input id="senha" type="password" placeholder="Senha" style="width:100%;padding:10px;margin:5px;"><br>
+  <!-- SE TIVER LOGO, COLOCA AQUI -->
+  <!-- <img src="logo faesp.png" class="logo"> -->
 
-  <button onclick="login()" style="width:100%;padding:10px;">Entrar</button>
+  <h1>FAESP</h1>
+  <h2>Setor 30 • Campo Limpo Paulista</h2>
 
-  <div id="resultado" style="margin-top:10px;"></div>
+  <input id="email" placeholder="Email">
+  <input id="senha" type="password" placeholder="Senha">
+
+  <button onclick="login()">Entrar</button>
+
+  <div id="resultado"></div>
 
 </div>
 
