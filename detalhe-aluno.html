@@ -63,7 +63,21 @@ const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
+function verRecibo(url){
 
+  document.getElementById("visualizarPDF").innerHTML = `
+    <div class="card">
+      <h3>📄 Recibo</h3>
+
+      <iframe 
+        src="${url}" 
+        width="100%" 
+        height="500px" 
+        style="border:none;">
+      </iframe>
+    </div>
+  `;
+}
 const id = new URLSearchParams(window.location.search).get("id");
 
 let aluno = null;
@@ -120,9 +134,9 @@ async function carregarPagamentos(){
         <td>R$ ${p.valor}</td>
         <td>${p.forma_pagamento}</td>
         <td>
-          <a href="${p.recibo_url}" target="_blank" class="btn btn-primary">
-            📄 Ver Recibo
-          </a>
+        <button class="btn btn-primary" onclick="verRecibo('${p.recibo_url}')">
+  📄 Ver Recibo
+</button>
         </td>
       </tr>
     `;
@@ -233,7 +247,7 @@ async function render(){
 
   '</div>';
 }
-
+<div id="visualizarPDF"></div>
 // 🔓 EDITAR
 function toggleEdit(){
   editando = !editando;
