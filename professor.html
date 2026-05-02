@@ -5,20 +5,31 @@ const client = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
-// 🔥 AGORA GLOBAL (CORREÇÃO)
-let usuario = null;
-
 document.addEventListener("DOMContentLoaded", () => {
 
   try {
-    usuario = JSON.parse(localStorage.getItem("usuario"));
   } catch (e) {
     console.error("Erro ao ler usuário", e);
     localStorage.removeItem("usuario");
     window.location.href = "index.html";
     return;
   }
+document.addEventListener("DOMContentLoaded", () => {
 
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  if (!usuario) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  if ((usuario.tipo || "").toLowerCase() !== "professor") {
+    window.location.href = "index.html";
+    return;
+  }
+
+  minhasDisciplinas();
+});
   console.log("Usuário carregado:", usuario);
 
   // 🔥 evita erro de undefined
@@ -63,7 +74,9 @@ async function minhasDisciplinas(){
   const { data } = await client
     .from("disciplinas_historico")
     .select("*")
-    .eq("professor", usuario.nome);
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+.eq("professor", usuario.nome);
 
   let html = `<h3>📚 Minhas Disciplinas</h3>`;
 
