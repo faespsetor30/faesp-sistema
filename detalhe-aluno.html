@@ -148,7 +148,13 @@ async function carregarPagamentos(){
     <td>${p.materia}</td>
     <td>R$ ${p.valor}</td>
     <td>${p.forma_pagamento}</td>
-    <td>${p.data_pagamento ? new Date(p.data_pagamento).toLocaleDateString("pt-BR") : "-"}</td>
+    <td>
+  ${
+    p.data_pagamento
+      ? new Date(p.data_pagamento).toLocaleDateString("pt-BR")
+      : "-"
+  }
+</td>
     <td>—</td>
   </tr>
 `;
