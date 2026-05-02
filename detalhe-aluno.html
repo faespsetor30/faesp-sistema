@@ -63,29 +63,7 @@ const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
-  
-async function verRecibo(nomeArquivo){
 
-  const { data } = await client.storage
-    .from("comprovantes")
-    .createSignedUrl(nomeArquivo, 60);
-
-  window.open(data.signedUrl, "_blank");
-
-}
-  document.getElementById("visualizarPDF").innerHTML = `
-    <div class="card">
-      <h3>📄 Recibo</h3>
-
-      <iframe 
-        src="${url}" 
-        width="100%" 
-        height="500px" 
-        style="border:none;">
-      </iframe>
-    </div>
-  `;
-}
 const id = new URLSearchParams(window.location.search).get("id");
 
 let aluno = null;
@@ -145,11 +123,7 @@ async function carregarPagamentos(){
         <td>${p.materia}</td>
         <td>R$ ${p.valor}</td>
         <td>${p.forma_pagamento}</td>
-        <td>
-          <button class="btn btn-primary" onclick="verRecibo('${p.recibo_url}')">
-            📄 Ver Recibo
-          </button>
-        </td>
+        <td>—</td>
       </tr>
     `;
   });
@@ -158,6 +132,7 @@ async function carregarPagamentos(){
 
   return html;
 }
+
 // 🚀 CARREGAR
 async function carregar(){
   const { data, error } = await client
@@ -176,7 +151,7 @@ async function carregar(){
   await render();
 }
 
-// 🎨 RENDER (CORRIGIDO)
+// 🎨 RENDER
 async function render(){
 
   if(!aluno){
@@ -259,6 +234,7 @@ async function render(){
 
   '</div>';
 }
+
 // 🔓 EDITAR
 function toggleEdit(){
   editando = !editando;
@@ -315,6 +291,5 @@ carregar();
 
 </script>
 
-<div id="visualizarPDF"></div>
 </body>
 </html>
