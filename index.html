@@ -181,15 +181,23 @@ async function login() {
     return;
   }
 
-  // SALVAR USUÁRIO
-  localStorage.setItem("usuario", JSON.stringify(usuario));
+// SALVAR USUÁRIO
+localStorage.setItem("usuario", JSON.stringify(usuario));
 
-  // REDIRECIONAR
-  if (usuario.tipo === "Coordenacao") {
-    window.location.href = "admin.html";
-  } else {
-    window.location.href = "dashboard.html";
-  }
+// 🔥 REDIRECIONAMENTO CORRETO
+const tipo = (usuario.tipo || "").toLowerCase();
+
+if (tipo === "coordenacao") {
+  window.location.href = "admin.html";
+}
+else if (tipo === "aluno") {
+  window.location.href = "aluno.html";
+}
+else if (tipo === "professor") {
+  window.location.href = "professor.html";
+}
+else {
+  document.getElementById("resultado").innerText = "Tipo de usuário inválido";
 }
 
 // MODAL
