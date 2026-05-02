@@ -287,26 +287,42 @@ primeiroDia = primeiroDia === 0 ? 0 : primeiroDia;
       <button class="btn" onclick="proximoMes()">➡️</button>
     </div>
 
-    <div style="display:grid; grid-template-columns: repeat(7,1fr); margin-top:15px;">
-      ${diasSemana.map(d=>`<div style="text-align:center; font-weight:bold;">${d}</div>`).join("")}
-    </div>
+ let html = `
+  <h2>📅 Cronograma</h2>
 
-    <div style="
-      display:grid;
-      grid-template-columns: repeat(7,1fr);
-      gap:6px;
-      margin-top:10px;
-      max-width:900px;
-      margin-left:auto;
-      margin-right:auto;
-    ">
-  `;
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <button class="btn" onclick="mesAnterior()">⬅️</button>
+    <h3>${nomesMes[mesAtual]} / ${anoAtual}</h3>
+    <button class="btn" onclick="proximoMes()">➡️</button>
+  </div>
+
+  <div style="
+    display:grid;
+    grid-template-columns: repeat(7,1fr);
+    gap:6px;
+    margin-top:15px;
+    max-width:900px;
+    margin-left:auto;
+    margin-right:auto;
+  ">
+`;
 
   // 🔹 espaços vazios antes do mês começar
   for(let i=0;i<primeiroDia;i++){
     html += `<div></div>`;
   }
-
+// Cabeçalho (dias da semana)
+diasSemana.forEach(d => {
+  html += `
+    <div style="
+      text-align:center;
+      font-weight:bold;
+      padding:8px;
+    ">
+      ${d}
+    </div>
+  `;
+});
   // 🔹 dias do mês
   for(let dia=1; dia<=diasNoMes; dia++){
 
