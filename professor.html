@@ -22,10 +22,15 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Usuário carregado:", usuario);
 
   // 🔥 evita erro de undefined
-  if (!usuario || typeof usuario !== "object") {
-    window.location.href = "index.html";
-    return;
-  }
+if (usuario.tipo.toLowerCase() === "professor") {
+  window.location.href = "professor.html";
+} 
+else if (usuario.tipo.toLowerCase() === "aluno") {
+  window.location.href = "aluno.html";
+}
+else if (usuario.tipo.toLowerCase() === "coordenacao") {
+  window.location.href = "admin.html";
+}
 
   // 🔥 comparação SUPER segura
   const tipo = String(usuario.tipo || "")
