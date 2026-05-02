@@ -632,96 +632,6 @@ let materiaSelecionada = "";
 let cursoSelecionado = "";
 let alunoSelecionado = null;
 
-async function financeiro(){
-
-  conteudo.innerHTML = `
-    <h2>💰 Financeiro</h2>
-
-    <div style="display:flex; gap:20px">
-
-      <div style="flex:1; background:#fff; padding:20px; border-radius:12px">
-        <h3>🎓 Curso Básico</h3>
-        <div id="materiasBasico"></div>
-      </div>
-
-      <div style="flex:1; background:#fff; padding:20px; border-radius:12px">
-        <h3>🎓 Curso Médio</h3>
-        <div id="materiasMedio"></div>
-      </div>
-
-    </div>
-
-    <div id="areaAlunos" style="margin-top:20px; display:none"></div>
-
-    <div id="areaPagamento" style="margin-top:20px; display:none">
-      <input id="valor" placeholder="Valor">
-      <select id="forma">
-        <option>Pix</option>
-        <option>Cartão</option>
-        <option>Boleto</option>
-      </select>
-
-      <br><br>
-      <button class="btn" onclick="finalizarPagamento()">Gerar Recibo</button>
-    </div>
-  `;
-
-  carregarMaterias();
-}
-
-async function carregarMaterias(){
-
-  const { data } = await client.from("disciplinas_master").select("*");
-
-  const basico = data.filter(d => d.curso === "Curso Básico");
-  const medio = data.filter(d => d.curso === "Curso Médio");
-
-  document.getElementById("materiasBasico").innerHTML =
-    basico.map(d =>
-      `<div onclick="selecionarMateria('${d.nome}','Curso Básico')" class="btn">${d.nome}</div>`
-    ).join("");
-
-  document.getElementById("materiasMedio").innerHTML =
-    medio.map(d =>
-      `<div onclick="selecionarMateria('${d.nome}','Curso Médio')" class="btn">${d.nome}</div>`
-    ).join("");
-}
-
-async function selecionarMateria(nome, curso){
-
-  materiaSelecionada = nome;
-  cursoSelecionado = curso;
-
-  const areaAlunos = document.getElementById("areaAlunos");
-  areaAlunos.style.display = "block";
-
-  const { data } = await client
-  .from("usuarios")
-.select("*")
-.eq("tipo", "Aluno")
-.eq("curso", curso)
-.eq("status", "ativo")
-
-  areaAlunos.innerHTML = `
-    <h3>Selecionar Aluno</h3>
-    ${data.map(a =>
-      `<div onclick="selecionarAluno('${a.id}')" class="btn">${a.nome}</div>`
-    ).join("")}
-  `;
-}
-console.log(alunoSelecionado);
-async function selecionarAluno(id){
-
-  const { data } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  alunoSelecionado = data;
-
-  document.getElementById("areaPagamento").style.display = "block";
-}
 async function finalizarPagamento(){
 
   const valor = document.getElementById("valor").value;
@@ -737,51 +647,30 @@ async function finalizarPagamento(){
     return;
   }
 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
+  // 📄 PEGA O PDF DO INPUT
+  const fileInput = document.getElementById("arquivoPDF");
 
-  const data = new Date().toLocaleDateString("pt-BR");
-
-  doc.text("RECIBO DE PAGAMENTO", 70, 20);
-  doc.text("Recebedor: FAESP - Setor 30", 20, 40);
-
-  doc.text(`Nome: ${alunoSelecionado.nome}`, 20, 60);
-  doc.text(`CPF: ${alunoSelecionado.cpf}`, 20, 70);
-  doc.text(`Curso: ${alunoSelecionado.curso}`, 20, 80);
-
-  doc.text(`Matéria: ${materiaSelecionada}`, 20, 100);
-
-  doc.text(`Valor: R$ ${valor}`, 20, 120);
-  doc.text(`Forma: ${forma}`, 20, 130);
-  doc.text(`Data: ${data}`, 20, 140);
-
-  doc.text("São Paulo", 20, 160);
-
-  doc.line(20, 180, 100, 180);
-  doc.text("Matheus Campos", 20, 190);
-
-  // 👉 TESTE PDF
-  doc.save(`recibo_${alunoSelecionado.nome}.pdf`);
-
-  console.log("CLIQUEI NO BOTÃO");
-
-  // 🔥 CONVERTE PDF
-  const pdfBlob = doc.output("blob");
-
-  const nomeArquivo = `recibo_${alunoSelecionado.id}_${Date.now()}.pdf`;
-
-  // 🔥 UPLOAD
-  const { error } = await client.storage
-    .from("comprovantes")
-    .upload(nomeArquivo, pdfBlob);
-
-  if (error) {
-    alert("Erro ao subir PDF");
-    console.log(error);
+  if (!fileInput.files.length) {
+    alert("Selecione o PDF do recibo");
     return;
   }
 
-  // 🔥 URL
+  const file = fileInput.files[0];
+
+  const nomeArquivo = `recibo_${alunoSelecionado.id}_${Date.now()}.pdf`;
+
+  // 🔥 UPLOAD DO ARQUIVO REAL (não blob)
+  const { error } = await client.storage
+    .from("comprovantes")
+    .upload(nomeArquivo, file);
+
+  if (error) {
+    console.log(error);
+    alert("Erro ao subir PDF");
+    return;
+  }
+
+  // 🔥 PEGA URL
   const { data: urlData } = client.storage
     .from("comprovantes")
     .getPublicUrl(nomeArquivo);
