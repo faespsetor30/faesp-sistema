@@ -623,7 +623,57 @@ async function excluirAviso(id){
   await client.from("avisos").delete().eq("id", id);
   avisos();
 }
+async function carregarMaterias(){
 
+  const { data } = await client.from("disciplinas_master").select("*");
+
+  const basico = data.filter(d => d.curso === "Curso Básico");
+  const medio = data.filter(d => d.curso === "Curso Médio");
+
+  document.getElementById("materiasBasico").innerHTML =
+    basico.map(d =>
+      `<div onclick="selecionarMateria('${d.nome}','Curso Básico')" class="btn">${d.nome}</div>`
+    ).join("");
+
+  document.getElementById("materiasMedio").innerHTML =
+    medio.map(d =>
+      `<div onclick="selecionarMateria('${d.nome}','Curso Médio')" class="btn">${d.nome}</div>`
+    ).join("");
+}
+  async function selecionarMateria(nome, curso){
+
+  materiaSelecionada = nome;
+  cursoSelecionado = curso;
+
+  const areaAlunos = document.getElementById("areaAlunos");
+  areaAlunos.style.display = "block";
+
+  const { data } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("tipo", "Aluno")
+    .eq("curso", curso)
+    .eq("status", "ativo");
+
+  areaAlunos.innerHTML = `
+    <h3>Selecionar Aluno</h3>
+    ${data.map(a =>
+      `<div onclick="selecionarAluno('${a.id}')" class="btn">${a.nome}</div>`
+    ).join("")}
+  `;
+}
+  async function selecionarAluno(id){
+
+  const { data } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  alunoSelecionado = data;
+
+  document.getElementById("areaPagamento").style.display = "block";
+}
 //////////////////////////////////////////////////
 // 💰 NOVO FINANCEIRO
 //////////////////////////////////////////////////
