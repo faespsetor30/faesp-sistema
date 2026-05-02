@@ -632,6 +632,53 @@ let materiaSelecionada = "";
 let cursoSelecionado = "";
 let alunoSelecionado = null;
 
+  //////////////////////////////////////////////////
+// 💰 FINANCEIRO
+//////////////////////////////////////////////////
+
+async function financeiro(){
+
+  conteudo.innerHTML = `
+    <h2>💰 Financeiro</h2>
+
+    <div style="display:flex; gap:20px">
+
+      <div style="flex:1; background:#fff; padding:20px; border-radius:12px">
+        <h3>🎓 Curso Básico</h3>
+        <div id="materiasBasico"></div>
+      </div>
+
+      <div style="flex:1; background:#fff; padding:20px; border-radius:12px">
+        <h3>🎓 Curso Médio</h3>
+        <div id="materiasMedio"></div>
+      </div>
+
+    </div>
+
+    <div id="areaAlunos" style="margin-top:20px; display:none"></div>
+
+    <div id="areaPagamento" style="margin-top:20px; display:none">
+      
+      <input id="valor" placeholder="Valor">
+
+      <select id="forma">
+        <option>Pix</option>
+        <option>Cartão</option>
+        <option>Boleto</option>
+      </select>
+
+      <!-- 📄 UPLOAD PDF -->
+      <input type="file" id="arquivoPDF" accept="application/pdf">
+
+      <br><br>
+      <button class="btn" onclick="finalizarPagamento()">Salvar Pagamento</button>
+
+    </div>
+  `;
+
+  carregarMaterias();
+}
+  
 async function finalizarPagamento(){
 
   const valor = document.getElementById("valor").value;
