@@ -64,9 +64,14 @@ const client = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
   
-function verRecibo(url){
-  alert(url);
-  window.open(url, "_blank");
+async function verRecibo(nomeArquivo){
+
+  const { data } = await client.storage
+    .from("comprovantes")
+    .createSignedUrl(nomeArquivo, 60);
+
+  window.open(data.signedUrl, "_blank");
+
 }
   document.getElementById("visualizarPDF").innerHTML = `
     <div class="card">
@@ -141,7 +146,7 @@ async function carregarPagamentos(){
         <td>R$ ${p.valor}</td>
         <td>${p.forma_pagamento}</td>
         <td>
-          <button class="btn btn-primary" onclick="verRecibo('${p.recibo_url}')">
+          <button class="btn btn-primary" onclick="verRecibo('${p.arquivo_nome}')">
             📄 Ver Recibo
           </button>
         </td>
