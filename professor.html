@@ -100,11 +100,27 @@ const client = supabase.createClient(
   "SUA_KEY"
 );
 
-const usuario = JSON.parse(localStorage.getItem("usuario"));
+document.addEventListener("DOMContentLoaded", () => {
 
-if (!usuario || usuario.tipo !== "Professor") {if (!usuario || usuario.tipo.trim().toLowerCase() !== "professor") {
-  window.location.href = "index.html";
-}
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  console.log("Usuário carregado:", usuario); // 👈 debug
+
+  if (!usuario) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  // 🔥 validação blindada
+  if ((usuario.tipo || "").trim().toLowerCase() !== "professor") {
+    window.location.href = "index.html";
+    return;
+  }
+
+  // 🚀 só entra aqui se estiver OK
+  minhasDisciplinas();
+
+});
 
 function sair(){
   localStorage.removeItem("usuario");
