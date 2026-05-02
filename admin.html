@@ -697,7 +697,7 @@ async function financeiro(){
         <h3>🎓 Curso Básico</h3>
         <div id="materiasBasico"></div>
       </div>
-<input type="file" id="arquivoPDF" accept="application/pdf">
+
       <div style="flex:1; background:#fff; padding:20px; border-radius:12px">
         <h3>🎓 Curso Médio</h3>
         <div id="materiasMedio"></div>
@@ -708,27 +708,6 @@ async function financeiro(){
     <div id="areaAlunos" style="margin-top:20px; display:none"></div>
 
     <div id="areaPagamento" style="margin-top:20px; display:none">
-  
-  <input id="valor" placeholder="Valor">
-
-  <select id="forma">
-    <option>Pix</option>
-    <option>Cartão</option>
-    <option>Boleto</option>
-  </select>
-
-  <!-- 📄 Upload do PDF -->
-  <input type="file" id="arquivoPDF" accept="application/pdf">
-
-  <br><br>
-
-  <!-- 🔽 PASSO 1 -->
-  <button class="btn" onclick="finalizarPagamento()">📥 Gerar PDF</button>
-
-  <!-- 🔼 PASSO 2 -->
-  <button class="btn" onclick="enviarPDF()">📤 Enviar PDF</button>
-
-</div>
       
       <input id="valor" placeholder="Valor">
 
@@ -738,17 +717,18 @@ async function financeiro(){
         <option>Boleto</option>
       </select>
 
+      <input type="file" id="arquivoPDF" accept="application/pdf">
+
       <br><br>
-      <button class="btn" onclick="finalizarPagamento()">Salvar Pagamento</button>
+
+      <button class="btn" onclick="finalizarPagamento()">📥 Gerar PDF</button>
+      <button class="btn" onclick="enviarPDF()">📤 Enviar PDF</button>
 
     </div>
   `;
 
   carregarMaterias();
 }
-  
-async function finalizarPagamento(){
-
  async function finalizarPagamento(){
 
   const valor = document.getElementById("valor").value;
@@ -782,18 +762,11 @@ async function finalizarPagamento(){
   doc.text(`Forma: ${forma}`, 20, 130);
   doc.text(`Data: ${dataAtual}`, 20, 140);
 
-  doc.text("São Paulo", 20, 160);
-
-  doc.line(20, 180, 100, 180);
-  doc.text("Matheus Campos", 20, 190);
-
-  // 📥 BAIXA O PDF
   doc.save(`recibo_${alunoSelecionado.nome}.pdf`);
 
-  alert("PDF gerado! Agora selecione o arquivo e clique em Enviar PDF 📤");
-
+  alert("PDF gerado! Agora envie o arquivo 📤");
 }
-  async function enviarPDF(){
+async function enviarPDF(){
 
   if(!alunoSelecionado){
     alert("Selecione um aluno");
@@ -811,7 +784,6 @@ async function finalizarPagamento(){
 
   const nomeArquivo = `recibo_${alunoSelecionado.id}_${Date.now()}.pdf`;
 
-  // 🔥 UPLOAD
   const { error } = await client.storage
     .from("comprovantes")
     .upload(nomeArquivo, file);
@@ -822,39 +794,24 @@ async function finalizarPagamento(){
     return;
   }
 
-  // 🔗 URL
   const { data: urlData } = client.storage
     .from("comprovantes")
     .getPublicUrl(nomeArquivo);
 
   const pdfUrl = urlData.publicUrl;
 
-  // 💾 SALVA NO BANCO
-  const { error: insertError } = await client
-    .from("pagamentos")
-    .insert([{
-      aluno_id: alunoSelecionado.id,
-      nome_aluno: alunoSelecionado.nome,
-      cpf: alunoSelecionado.cpf,
-      curso: alunoSelecionado.curso,
-      materia: materiaSelecionada,
-      valor: parseFloat(document.getElementById("valor").value),
-      forma_pagamento: document.getElementById("forma").value,
-      recibo_url: pdfUrl
-    }]);
-
-  if (insertError) {
-    console.log(insertError);
-    alert("Erro ao salvar pagamento");
-    return;
-  }
+  await client.from("pagamentos").insert([{
+    aluno_id: alunoSelecionado.id,
+    nome_aluno: alunoSelecionado.nome,
+    cpf: alunoSelecionado.cpf,
+    curso: alunoSelecionado.curso,
+    materia: materiaSelecionada,
+    valor: parseFloat(document.getElementById("valor").value),
+    forma_pagamento: document.getElementById("forma").value,
+    recibo_url: pdfUrl
+  }]);
 
   alert("Pagamento salvo com sucesso! 🎉");
-
-  // 🧹 LIMPA CAMPOS
-  document.getElementById("arquivoPDF").value = "";
-  document.getElementById("valor").value = "";
-  document.getElementById("areaPagamento").style.display = "none";
 }
 //////////////////////////////////////////////////
 // 🚀 INICIALIZAÇÃO
