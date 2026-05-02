@@ -2,134 +2,140 @@
 <html>
 
 <head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-body {
-  margin:0;
-  font-family:'Segoe UI', sans-serif;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:#020617;
-  overflow:hidden;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      background: linear-gradient(180deg, #0b1f2a, #020617);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
 
-/* 🎬 FUNDO CANVAS */
-canvas{
-  position:fixed;
-  top:0;
-  left:0;
-  z-index:0;
-}
+    /* 🎬 FUNDO DINÂMICO */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(220,38,38,0.15) 0%, transparent 60%);
+      animation: pulse 6s infinite;
+    }
 
-/* 🎬 CARD */
-.card{
-  position:relative;
-  z-index:2;
-  background:rgba(2,6,23,0.95);
-  padding:40px;
-  border-radius:16px;
-  width:380px;
-  text-align:center;
-  box-shadow:0 25px 80px rgba(0,0,0,0.8);
-  animation:fadeUp .8s ease;
-}
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.2); opacity: 0.2; }
+      100% { transform: scale(1); opacity: 0.4; }
+    }
 
-@keyframes fadeUp{
-  from{opacity:0; transform:translateY(40px) scale(.95);}
-  to{opacity:1; transform:translateY(0) scale(1);}
-}
+    /* 🎬 CARD */
+    .card {
+      position: relative;
+      background: rgba(2,6,23,0.95);
+      padding: 40px;
+      border-radius: 16px;
+      width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      text-align: center;
+      backdrop-filter: blur(12px);
+      animation: fadeUp 0.8s ease;
+    }
 
-.logo{
-  width:90px;
-  margin-bottom:10px;
-}
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-h1{color:white; letter-spacing:2px;}
-h2{color:#94a3b8; font-size:13px; margin-bottom:20px;}
+    .logo {
+      width: 90px;
+      margin-bottom: 10px;
+    }
 
-input{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border-radius:8px;
-  border:none;
-  background:#1e293b;
-  color:white;
-}
+    h1 {
+      margin: 5px 0;
+      color: white;
+      font-size: 24px;
+      letter-spacing: 2px;
+    }
 
-input:focus{
-  outline:none;
-  box-shadow:0 0 10px rgba(30,58,138,.6);
-}
+    h2 {
+      margin: 0 0 25px 0;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: normal;
+    }
 
-/* BOTÃO PREMIUM */
-button{
-  width:100%;
-  padding:12px;
-  margin-top:12px;
-  border:none;
-  border-radius:8px;
-  background:linear-gradient(90deg,#1e3a8a,#dc2626);
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-  transition:.3s;
-}
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: none;
+      background: #1e293b;
+      color: white;
+      font-size: 14px;
+    }
 
-button:hover{
-  transform:scale(1.03);
-  box-shadow:0 0 25px rgba(220,38,38,.6);
-}
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #1e3a8a, #dc2626);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-#resultado{
-  margin-top:10px;
-  color:#dc2626;
-}
+    #resultado {
+      margin-top: 10px;
+      color: #dc2626;
+    }
 
-/* MODAL */
-#modalCadastro{
-  display:none;
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,.7);
-  justify-content:center;
-  align-items:center;
-  z-index:10;
-}
+    /* MODAL */
+    #modalCadastro {
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.6);
+      justify-content:center;
+      align-items:center;
+    }
 
-.modal-box{
-  background:#020617;
-  padding:20px;
-  border-radius:12px;
-  width:300px;
-}
-</style>
+    .modal-box {
+      background:#020617;
+      padding:25px;
+      border-radius:12px;
+      width:320px;
+    }
+
+  </style>
 </head>
 
 <body>
 
-<canvas id="bg"></canvas>
-
 <div class="card">
 
-<img src="logo faesp.png" class="logo">
+  <img src="logo faesp.png" class="logo">
 
-<h1>FAESP</h1>
-<h2>Setor 30 • Campo Limpo Paulista</h2>
+  <h1>FAESP</h1>
+  <h2>Setor 30 • Campo Limpo Paulista</h2>
 
-<input id="email" placeholder="Email">
-<input id="senha" type="password" placeholder="Senha">
+  <input id="email" placeholder="Email">
+  <input id="senha" type="password" placeholder="Senha">
 
-<button onclick="login()">Entrar</button>
-<button onclick="abrirCadastro()">Criar conta</button>
+  <button onclick="login()">Entrar</button>
+  <button onclick="abrirCadastro()">Criar conta</button>
 
-<div id="resultado"></div>
+  <div id="resultado"></div>
 
 </div>
 
@@ -139,161 +145,115 @@ button:hover{
 
     <h3 style="color:white">Cadastro</h3>
 
-    <input id="novoNome" placeholder="Nome">
+    <input id="novoNome" placeholder="Nome completo">
     <input id="novoEmail" placeholder="Email">
+    <input id="novoCpf" placeholder="CPF">
+    <input id="novoRg" placeholder="RG">
+    <input id="novoEndereco" placeholder="Endereço">
+    <input id="novoTelefone" placeholder="Telefone">
+    <input id="novaData" type="date">
 
     <button onclick="salvarCadastro()">Cadastrar</button>
     <button onclick="fecharCadastro()">Cancelar</button>
 
-    <div id="msgCadastro"></div>
+    <div id="msgCadastro" style="color:white;margin-top:10px;"></div>
 
   </div>
 </div>
 
 <script>
-// SUPABASE
+
 const client = supabase.createClient(
-"https://nzygdvixqmiltelgzzrn.supabase.co",
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "https://nzygdvixqmiltelgzzrn.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
-
-// 🎬 FUNDO PREMIUM
-const canvas = document.getElementById("bg");
-const ctx = canvas.getContext("2d");
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let particles = [];
-let mouse = {x:null,y:null};
-
-for(let i=0;i<80;i++){
-particles.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-dx:Math.random()-0.5,
-dy:Math.random()-0.5
-});
-}
-
-window.addEventListener("mousemove",e=>{
-mouse.x=e.x;
-mouse.y=e.y;
-});
-
-function draw(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-particles.forEach(p=>{
-p.x+=p.dx;
-p.y+=p.dy;
-
-if(p.x<0||p.x>canvas.width)p.dx*=-1;
-if(p.y<0||p.y>canvas.height)p.dy*=-1;
-
-ctx.beginPath();
-ctx.arc(p.x,p.y,2,0,Math.PI*2);
-ctx.fillStyle="rgba(30,58,138,0.7)";
-ctx.fill();
-
-particles.forEach(p2=>{
-let dist=Math.hypot(p.x-p2.x,p.y-p2.y);
-if(dist<120){
-ctx.beginPath();
-ctx.moveTo(p.x,p.y);
-ctx.lineTo(p2.x,p2.y);
-ctx.strokeStyle="rgba(220,38,38,0.1)";
-ctx.stroke();
-}
-});
-
-if(mouse.x){
-let distMouse=Math.hypot(p.x-mouse.x,p.y-mouse.y);
-if(distMouse<120){
-p.x+=(p.x-mouse.x)*0.01;
-p.y+=(p.y-mouse.y)*0.01;
-}
-}
-
-});
-
-requestAnimationFrame(draw);
-}
-draw();
 
 // LOGIN
 async function login(){
 
-const email=emailInput.value;
-const senha=senhaInput.value;
+  const email = emailInput = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
 
-if(!email||!senha){
-resultado.innerText="Preencha email e senha";
-return;
-}
+  if(!email || !senha){
+    resultado.innerText = "Preencha email e senha";
+    return;
+  }
 
-resultado.innerText="Entrando...";
+  resultado.innerText = "Entrando...";
 
-const {error}=await client.auth.signInWithPassword({
-email,
-password:senha
-});
+  const { error } = await client.auth.signInWithPassword({
+    email,
+    password: senha
+  });
 
-if(error){
-resultado.innerText="Email ou senha inválidos";
-return;
-}
+  if(error){
+    resultado.innerText = "Email ou senha inválidos";
+    return;
+  }
 
-const {data:usuario}=await client
-.from("usuarios")
-.select("*")
-.eq("email",email)
-.single();
+  const { data: usuario } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("email", email)
+    .single();
 
-localStorage.setItem("usuario",JSON.stringify(usuario));
+  localStorage.setItem("usuario", JSON.stringify(usuario));
 
-if(usuario.tipo==="Coordenacao"){
-window.location.href="admin.html";
-}else if(usuario.tipo==="Professor"){
-window.location.href="professor.html";
-}else{
-window.location.href="dashboard.html";
-}
+  if (usuario.tipo === "Coordenacao") {
+    window.location.href = "admin.html";
+  } else if (usuario.tipo === "Professor") {
+    window.location.href = "professor.html";
+  } else {
+    window.location.href = "dashboard.html";
+  }
 }
 
 // MODAL
 function abrirCadastro(){
-modalCadastro.style.display="flex";
+  modalCadastro.style.display = "flex";
 }
 
 function fecharCadastro(){
-modalCadastro.style.display="none";
+  modalCadastro.style.display = "none";
 }
 
 // CADASTRO
 async function salvarCadastro(){
 
-const nome=novoNome.value;
-const email=novoEmail.value;
+  const nome = novoNome.value;
+  const email = novoEmail.value;
+  const cpf = novoCpf.value;
+  const rg = novoRg.value;
+  const endereco = novoEndereco.value;
+  const telefone = novoTelefone.value;
+  const data = novaData.value;
 
-if(!nome||!email){
-msgCadastro.innerText="Preencha os campos";
-return;
+  if(!nome || !email){
+    msgCadastro.innerText = "Preencha nome e email";
+    return;
+  }
+
+  const { error } = await client
+    .from("usuarios")
+    .insert([{
+      nome,
+      email,
+      cpf,
+      rg,
+      endereco,
+      celular: telefone,
+      data_nascimento: data,
+      status: "pendente",
+      tipo: "Aluno"
+    }]);
+
+  if(error){
+    msgCadastro.innerText = "Erro ao cadastrar";
+  } else {
+    msgCadastro.innerText = "Cadastro enviado! Aguarde aprovação.";
+  }
 }
 
-const {error}=await client.from("usuarios").insert([{
-nome,
-email,
-status:"pendente",
-tipo:"Aluno"
-}]);
-
-if(error){
-msgCadastro.innerText="Erro ao cadastrar";
-}else{
-msgCadastro.innerText="Cadastro enviado!";
-}
-}
 </script>
 
 </body>
