@@ -278,15 +278,6 @@ async function cronograma(){
 // (faz o calendário começar certinho na coluna correta)
 primeiroDia = primeiroDia === 0 ? 0 : primeiroDia;
 
-  let html = `
-    <h2>📅 Cronograma</h2>
-
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <button class="btn" onclick="mesAnterior()">⬅️</button>
-      <h3>${nomesMes[mesAtual]} / ${anoAtual}</h3>
-      <button class="btn" onclick="proximoMes()">➡️</button>
-    </div>
-
  let html = `
   <h2>📅 Cronograma</h2>
 
