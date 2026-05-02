@@ -99,8 +99,9 @@ async function gerarMatricula(){
 
 // 💰 PAGAMENTOS
 async function carregarPagamentos(){
-console.log("URL do banco:", p.recibo_url);
+
   console.log("CARREGANDO PAGAMENTOS");
+
   const { data, error } = await client
     .from("pagamentos")
     .select("*")
@@ -129,15 +130,17 @@ console.log("URL do banco:", p.recibo_url);
   `;
 
   data.forEach(p=>{
+    console.log("URL DO BANCO:", p.recibo_url);
+
     html += `
       <tr>
         <td>${p.materia}</td>
         <td>R$ ${p.valor}</td>
         <td>${p.forma_pagamento}</td>
         <td>
-        <button class="btn btn-primary" onclick="verRecibo('${p.recibo_url}')">
-  📄 Ver Recibo
-</button>
+          <button class="btn btn-primary" onclick="verRecibo('${p.recibo_url}')">
+            📄 Ver Recibo
+          </button>
         </td>
       </tr>
     `;
@@ -248,7 +251,6 @@ async function render(){
 
   '</div>';
 }
-<div id="visualizarPDF"></div>
 // 🔓 EDITAR
 function toggleEdit(){
   editando = !editando;
@@ -305,5 +307,6 @@ carregar();
 
 </script>
 
+<div id="visualizarPDF"></div>
 </body>
 </html>
