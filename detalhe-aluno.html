@@ -92,7 +92,7 @@ async function carregarPagamentos(){
     .eq("aluno_id", id);
 
   if(error){
-    console.log("Erro pagamentos:", error);
+    console.log(error);
     return "<p>Erro ao carregar pagamentos</p>";
   }
 
@@ -120,9 +120,9 @@ async function carregarPagamentos(){
         <td>R$ ${p.valor}</td>
         <td>${p.forma_pagamento}</td>
         <td>
-<a href="${p.recibo_url}" target="_blank" rel="noopener noreferrer" download class="btn btn-primary">
-  📄 Ver Recibo
-</a>
+          <a href="${p.recibo_url}" target="_blank" class="btn btn-primary">
+            📄 Ver Recibo
+          </a>
         </td>
       </tr>
     `;
@@ -132,7 +132,6 @@ async function carregarPagamentos(){
 
   return html;
 }
-
 // 🚀 CARREGAR
 async function carregar(){
   const { data, error } = await client
