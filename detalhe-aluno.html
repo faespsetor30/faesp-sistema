@@ -100,6 +100,7 @@ async function gerarMatricula(){
 // 💰 PAGAMENTOS
 async function carregarPagamentos(){
 console.log("URL do banco:", p.recibo_url);
+  console.log("CARREGANDO PAGAMENTOS");
   const { data, error } = await client
     .from("pagamentos")
     .select("*")
