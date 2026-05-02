@@ -287,6 +287,7 @@ async function cronograma(){
       ${diasSemana.map(d=>`<div style="text-align:center; font-weight:bold;">${d}</div>`).join("")}
     </div>
 
+  html += `
 <div style="
   display:grid;
   grid-template-columns: repeat(7,1fr);
@@ -296,6 +297,56 @@ async function cronograma(){
   margin-left:auto;
   margin-right:auto;
 ">
+`;
+
+  // espaços antes do primeiro dia
+  for(let i=0;i<primeiroDia;i++){
+    html += `<div></div>`;
+  }
+
+  // dias do mês
+  for(let dia=1; dia<=diasNoMes; dia++){
+
+    const dataFormatada = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const eventosDia = eventos.filter(e => e.data === dataFormatada);
+
+    html += `
+      <div onclick="abrirModal('${dataFormatada}')"
+        style="
+          background:white;
+          padding:6px;
+          border-radius:10px;
+          min-height:80px;
+          cursor:pointer;
+          box-shadow:0 3px 10px rgba(0,0,0,0.05);
+          transition:0.2s;
+        "
+        onmouseover="this.style.transform='scale(1.02)'"
+        onmouseout="this.style.transform='scale(1)'"
+      >
+
+        <strong>${dia}</strong>
+
+        ${eventosDia.map(ev=>`
+          <div onclick="event.stopPropagation(); verEvento(${JSON.stringify(ev).replace(/"/g, '&quot;')})"
+            style="
+              background:#2c5364;
+              color:white;
+              padding:6px;
+              border-radius:6px;
+              margin-top:5px;
+              font-size:11px;
+              cursor:pointer;
+            ">
+            ${ev.disciplina}
+          </div>
+        `).join("")}
+
+      </div>
+    `;
+  }
+
+  html += `</div>`;
 
   for(let i=0;i<primeiroDia;i++){
     html += `<div></div>`;
