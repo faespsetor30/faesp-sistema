@@ -1,125 +1,31 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>FAESP - Professor</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
-    body {
-      margin:0;
-      font-family:'Segoe UI';
-      display:flex;
-      height:100vh;
-      background:#0f172a;
-      color:white;
-      flex-direction:column;
-    }
-
-    .main { display:flex; flex:1; }
-
-    .sidebar {
-      width:240px;
-      background:#020617;
-      padding:20px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      border-right:1px solid #1e293b;
-      align-items:center;
-    }
-
-    .menu button {
-      width:100%;
-      padding:12px;
-      margin-bottom:10px;
-      border:none;
-      background:#1e293b;
-      color:white;
-      border-radius:10px;
-      cursor:pointer;
-    }
-
-    .menu button:hover { background:#334155; }
-
-    .content { flex:1; padding:25px; }
-
-    .box {
-      background:#020617;
-      padding:20px;
-      border-radius:12px;
-    }
-
-    .btn {
-      background:#22c55e;
-      border:none;
-      padding:6px 10px;
-      border-radius:6px;
-      cursor:pointer;
-    }
-
-    input {
-      width:100%;
-      margin-top:5px;
-      padding:8px;
-      border-radius:6px;
-      border:none;
-    }
-
-  </style>
-</head>
-
-<body>
-
-<div class="main">
-
-  <div class="sidebar">
-    <div style="width:100%; text-align:center;">
-      <h3>👨‍🏫 PROFESSOR</h3>
-
-      <div class="menu">
-        <button onclick="minhasDisciplinas()">📚 Minhas Disciplinas</button>
-        <button onclick="lancarNotas()">📝 Lançar Notas</button>
-        <button onclick="lancarPresenca()">📅 Presença</button>
-        <button onclick="cronograma()">📅 Cronograma</button>
-      </div>
-    </div>
-
-    <button onclick="sair()">🚪 Sair</button>
-  </div>
-
-  <div class="content">
-    <div class="box" id="conteudo"></div>
-  </div>
-
-</div>
-
 <script>
 
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "SUA_KEY"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
+
+// 🔥 AGORA GLOBAL (CORREÇÃO)
+let usuario = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  usuario = JSON.parse(localStorage.getItem("usuario"));
 
-  console.log("Usuário carregado:", usuario); // 👈 debug
+  console.log("Usuário carregado:", usuario);
 
   if (!usuario) {
     window.location.href = "index.html";
     return;
   }
 
-  // 🔥 validação blindada
+  // 🔥 validação corrigida
   if ((usuario.tipo || "").trim().toLowerCase() !== "professor") {
     window.location.href = "index.html";
     return;
   }
 
-  // 🚀 só entra aqui se estiver OK
   minhasDisciplinas();
-
 });
 
 function sair(){
@@ -164,7 +70,7 @@ async function lancarNotas(){
 
   let html = `<h3>📝 Lançar Notas</h3>`;
 
-  alunos.forEach(a=>{
+  (alunos || []).forEach(a=>{
     html += `
       <div style="margin-bottom:10px">
         ${a.nome}
@@ -201,7 +107,7 @@ async function lancarPresenca(){
 
   let html = `<h3>📅 Presença</h3>`;
 
-  alunos.forEach(a=>{
+  (alunos || []).forEach(a=>{
     html += `
       <div style="margin-bottom:10px">
         ${a.nome}
@@ -226,7 +132,7 @@ async function marcarPresenca(email, presente){
 }
 
 //////////////////////////////////////////////////
-// 📅 CRONOGRAMA (SÓ VISUAL)
+// 📅 CRONOGRAMA
 //////////////////////////////////////////////////
 
 function cronograma(){
@@ -235,9 +141,4 @@ function cronograma(){
 
 //////////////////////////////////////////////////
 
-minhasDisciplinas();
-
 </script>
-
-</body>
-</html>
