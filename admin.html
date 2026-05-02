@@ -229,45 +229,55 @@ function sair(){
   localStorage.removeItem("usuario");
   window.location.href="index.html";
 }
-//////////////////////////////////////////////////
-// 📅 CRONOGRAMA
-//////////////////////////////////////////////////
-
-let mesAtual = new Date().getMonth();
-let anoAtual = new Date().getFullYear();
-
 async function cronograma(){
+
+  const nomesMes = [
+    "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+  ];
+
+  const diasSemana = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
 
   const { data: eventos } = await client
     .from("cronograma")
     .select("*");
 
   const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+  const primeiroDia = new Date(anoAtual, mesAtual, 1).getDay();
 
   let html = `
     <h2>📅 Cronograma</h2>
 
-    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
       <button class="btn" onclick="mesAnterior()">⬅️</button>
-      <strong>${mesAtual+1}/${anoAtual}</strong>
+      <h3>${nomesMes[mesAtual]} / ${anoAtual}</h3>
       <button class="btn" onclick="proximoMes()">➡️</button>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(7,1fr); margin-top:15px;">
+      ${diasSemana.map(d=>`<div style="text-align:center; font-weight:bold;">${d}</div>`).join("")}
     </div>
 
     <div style="
       display:grid;
       grid-template-columns: repeat(7,1fr);
       gap:10px;
+      margin-top:10px;
     ">
   `;
+
+  // espaços antes do primeiro dia
+  for(let i=0;i<primeiroDia;i++){
+    html += `<div></div>`;
+  }
 
   for(let dia=1; dia<=diasNoMes; dia++){
 
     const dataFormatada = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-
     const eventosDia = eventos.filter(e => e.data === dataFormatada);
 
     html += `
-      <div onclick="abrirDia('${dataFormatada}')"
+      <div onclick="abrirModal('${dataFormatada}')"
         style="
           background:white;
           padding:10px;
@@ -275,7 +285,11 @@ async function cronograma(){
           min-height:110px;
           cursor:pointer;
           box-shadow:0 3px 10px rgba(0,0,0,0.05);
-        ">
+          transition:0.2s;
+        "
+        onmouseover="this.style.transform='scale(1.02)'"
+        onmouseout="this.style.transform='scale(1)'"
+      >
 
         <strong>${dia}</strong>
 
@@ -300,71 +314,65 @@ async function cronograma(){
 
   conteudo.innerHTML = html;
 }
+  function abrirModal(data){
 
-//////////////////////////////////////////////////
-// 🔁 NAVEGAÇÃO
-//////////////////////////////////////////////////
+  const modal = document.createElement("div");
 
-function mesAnterior(){
-  mesAtual--;
-  if(mesAtual < 0){
-    mesAtual = 11;
-    anoAtual--;
-  }
-  cronograma();
-}
-
-function proximoMes(){
-  mesAtual++;
-  if(mesAtual > 11){
-    mesAtual = 0;
-    anoAtual++;
-  }
-  cronograma();
-}
-
-//////////////////////////////////////////////////
-// 📅 ABRIR DIA
-//////////////////////////////////////////////////
-
-function abrirDia(data){
-
-  conteudo.innerHTML = `
-    <h3>📅 ${data}</h3>
-
-    <input id="disciplina" placeholder="Disciplina">
-    <input id="professor" placeholder="Professor">
-    <input id="horario" placeholder="Horário (ex: 19:00)">
-    <input id="local" placeholder="Local">
-
-    <br><br>
-
-    <button class="btn" onclick="salvarEvento('${data}')">
-      Salvar
-    </button>
-
-    <button class="btn" onclick="cronograma()">
-      Voltar
-    </button>
+  modal.style = `
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.4);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
   `;
+
+  modal.innerHTML = `
+    <div style="
+      background:white;
+      padding:25px;
+      border-radius:12px;
+      width:350px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);
+      animation:fadeIn 0.2s;
+    ">
+
+      <h3 style="margin-bottom:15px;">📅 ${data}</h3>
+
+      <input id="disciplina" placeholder="Disciplina">
+      <input id="professor" placeholder="Professor">
+      <input id="horario" placeholder="Horário">
+      <input id="local" placeholder="Local">
+
+      <br><br>
+
+      <button class="btn" onclick="salvarEventoModal('${data}', this)">Salvar</button>
+      <button class="btn" onclick="this.closest('div').remove()">Fechar</button>
+
+    </div>
+  `;
+
+  document.body.appendChild(modal);
 }
+  async function salvarEventoModal(data, botao){
 
-//////////////////////////////////////////////////
-// 💾 SALVAR
-//////////////////////////////////////////////////
-
-async function salvarEvento(data){
+  const modal = botao.closest("div").parentElement;
 
   await client.from("cronograma").insert([{
     data,
-    disciplina: document.getElementById("disciplina").value,
-    professor: document.getElementById("professor").value,
-    horario: document.getElementById("horario").value,
-    local: document.getElementById("local").value
+    disciplina: modal.querySelector("#disciplina").value,
+    professor: modal.querySelector("#professor").value,
+    horario: modal.querySelector("#horario").value,
+    local: modal.querySelector("#local").value
   }]);
 
-  alert("Evento salvo! 🎉");
+  alert("Salvo! 🎉");
 
+  modal.remove();
   cronograma();
 }
 //////////////////////////////////////////////////
