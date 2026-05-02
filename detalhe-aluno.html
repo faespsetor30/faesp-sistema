@@ -109,24 +109,25 @@ async function carregarPagamentos(){
       <table style="width:100%; border-collapse:collapse;">
         <tr>
           <th>Matéria</th>
-          <th>Valor</th>
-          <th>Forma</th>
-          <th>Recibo</th>
+<th>Valor</th>
+<th>Forma</th>
+<th>Data</th>
+<th>Recibo</th>
         </tr>
   `;
 
   data.forEach(p=>{
     console.log("URL do banco:", p.recibo_url);
 
-    html += `
-      <tr>
-        <td>${p.materia}</td>
-        <td>R$ ${p.valor}</td>
-        <td>${p.forma_pagamento}</td>
-        <td>—</td>
-      </tr>
-    `;
-  });
+   html += `
+  <tr>
+    <td>${p.materia}</td>
+    <td>R$ ${p.valor}</td>
+    <td>${p.forma_pagamento}</td>
+    <td>${p.data_pagamento ? new Date(p.data_pagamento).toLocaleDateString("pt-BR") : "-"}</td>
+    <td>—</td>
+  </tr>
+`;
 
   html += "</table></div>";
 
