@@ -272,7 +272,11 @@ async function cronograma(){
     .select("*");
 
   const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
-  const primeiroDia = new Date(anoAtual, mesAtual, 1).getDay();
+ let primeiroDia = new Date(anoAtual, mesAtual, 1).getDay();
+
+// 🔧 Ajuste para alinhar corretamente
+// (faz o calendário começar certinho na coluna correta)
+primeiroDia = primeiroDia === 0 ? 0 : primeiroDia;
 
   let html = `
     <h2>📅 Cronograma</h2>
