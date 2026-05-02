@@ -9,38 +9,23 @@
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       height: 100vh;
-      background: linear-gradient(180deg, #0b1f2a, #020617);
+      background: #020617;
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
     }
 
-    /* 🔥 FUNDO ANIMADO (PARTÍCULAS) */
-    .particula {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 50%;
-      animation: subir linear infinite;
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
     }
 
-    @keyframes subir {
-      from {
-        transform: translateY(100vh);
-        opacity: 0;
-      }
-      20% { opacity: 1; }
-      to {
-        transform: translateY(-10vh);
-        opacity: 0;
-      }
-    }
-
-    /* 🎬 CARD */
     .card {
       position: relative;
+      z-index: 10;
       background: rgba(2,6,23,0.95);
       padding: 40px;
       border-radius: 16px;
@@ -48,13 +33,6 @@
       box-shadow: 0 20px 60px rgba(0,0,0,0.6);
       text-align: center;
       backdrop-filter: blur(12px);
-      z-index: 10;
-      animation: fadeUp 0.8s ease;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     .logo {
@@ -62,57 +40,51 @@
       margin-bottom: 10px;
     }
 
-    h1 {
-      margin: 5px 0;
-      color: white;
-      font-size: 24px;
-      letter-spacing: 2px;
-    }
-
-    h2 {
-      margin: 0 0 25px 0;
-      color: #cbd5e1;
-      font-size: 13px;
-    }
+    h1 { color:white; }
+    h2 { color:#cbd5e1; font-size:13px; }
 
     input {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border-radius: 8px;
-      border: none;
-      background: #1e293b;
-      color: white;
-    }
-
-    input:focus {
-      outline: none;
-      border: 1px solid #1e3a8a;
-      box-shadow: 0 0 8px rgba(30,58,138,0.6);
+      width:100%;
+      padding:12px;
+      margin:6px 0;
+      border-radius:8px;
+      border:none;
+      background:#1e293b;
+      color:white;
     }
 
     button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(90deg, #1e3a8a, #dc2626);
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      border:none;
+      border-radius:8px;
+      background:linear-gradient(90deg,#1e3a8a,#dc2626);
+      color:white;
+      font-weight:bold;
+      cursor:pointer;
     }
 
-    button:hover {
-      transform: scale(1.03);
-      box-shadow: 0 5px 20px rgba(220,38,38,0.4);
+    #resultado { color:#dc2626; margin-top:10px; }
+
+    #modalCadastro {
+      display:none;
+      position:fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:rgba(0,0,0,0.7);
+      justify-content:center;
+      align-items:center;
+      z-index:20;
     }
 
-    #resultado {
-      margin-top: 12px;
-      color: #dc2626;
-      font-size: 13px;
+    .modal-box {
+      background:#020617;
+      padding:25px;
+      border-radius:12px;
+      width:320px;
     }
 
   </style>
@@ -120,17 +92,7 @@
 
 <body>
 
-<!-- 🔥 PARTÍCULAS -->
-<script>
-for(let i=0; i<40; i++){
-  const p = document.createElement("div");
-  p.className = "particula";
-  p.style.left = Math.random()*100 + "vw";
-  p.style.animationDuration = (5 + Math.random()*5) + "s";
-  p.style.animationDelay = Math.random()*5 + "s";
-  document.body.appendChild(p);
-}
-</script>
+<canvas id="bg"></canvas>
 
 <div class="card">
 
@@ -143,60 +105,145 @@ for(let i=0; i<40; i++){
   <input id="senha" type="password" placeholder="Senha">
 
   <button onclick="login()">Entrar</button>
+  <button onclick="abrirCadastro()">Criar conta</button>
 
   <div id="resultado"></div>
 
 </div>
 
+<div id="modalCadastro">
+  <div class="modal-box">
+
+    <h3 style="color:white">Cadastro</h3>
+
+    <input id="novoNome" placeholder="Nome">
+    <input id="novoEmail" placeholder="Email">
+    <input id="novoCpf" placeholder="CPF">
+    <input id="novoRg" placeholder="RG">
+    <input id="novoEndereco" placeholder="Endereço">
+    <input id="novoTelefone" placeholder="Telefone">
+    <input id="novaData" type="date">
+
+    <button onclick="salvarCadastro()">Cadastrar</button>
+    <button onclick="fecharCadastro()">Cancelar</button>
+
+    <div id="msgCadastro" style="color:white"></div>
+
+  </div>
+</div>
+
 <script>
-const client = supabase.createClient(
-  "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
-);
+// 🎬 CANVAS ANIMATION
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
 
-async function login() {
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
+let particles = [];
 
-  if (!email || !senha) {
-    resultado.innerText = "Preencha email e senha";
-    return;
-  }
+for(let i=0;i<80;i++){
+  particles.push({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    vx: (Math.random()-0.5)*0.5,
+    vy: (Math.random()-0.5)*0.5
+  });
+}
 
-  resultado.innerText = "Entrando...";
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-  const { error } = await client.auth.signInWithPassword({
-    email: email,
-    password: senha
+  particles.forEach(p=>{
+    p.x+=p.vx;
+    p.y+=p.vy;
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,2,0,Math.PI*2);
+    ctx.fillStyle="rgba(255,255,255,0.4)";
+    ctx.fill();
   });
 
-  if (error) {
-    resultado.innerText = "Email ou senha inválidos";
+  // linhas
+  for(let i=0;i<particles.length;i++){
+    for(let j=i;j<particles.length;j++){
+      let dx=particles[i].x-particles[j].x;
+      let dy=particles[i].y-particles[j].y;
+      let dist=Math.sqrt(dx*dx+dy*dy);
+
+      if(dist<120){
+        ctx.strokeStyle="rgba(30,58,138,0.2)";
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x,particles[i].y);
+        ctx.lineTo(particles[j].x,particles[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+
+<script>
+const client = supabase.createClient("SUA_URL","SUA_KEY");
+
+// LOGIN
+async function login(){
+  const email=emailInput=document.getElementById("email").value;
+  const senha=document.getElementById("senha").value;
+
+  if(!email || !senha){
+    resultado.innerText="Preencha email e senha";
     return;
   }
 
-  const { data: usuario } = await client
-    .from("usuarios")
-    .select("*")
-    .eq("email", email)
-    .single();
+  const { error } = await client.auth.signInWithPassword({email,password:senha});
 
-  // 🔥 VALIDAÇÃO DE APROVAÇÃO
-  if (usuario.status !== "ativo") {
-    resultado.innerText = "Cadastro aguardando aprovação";
+  if(error){
+    resultado.innerText="Email ou senha inválidos";
+    return;
+  }
+
+  const { data: usuario } = await client.from("usuarios").select("*").eq("email",email).single();
+
+  if(usuario.status !== "ativo"){
+    resultado.innerText="Cadastro aguardando aprovação";
     return;
   }
 
   localStorage.setItem("usuario", JSON.stringify(usuario));
 
-  if (usuario.tipo === "Coordenacao") {
-    window.location.href = "admin.html";
-  } else if (usuario.tipo === "Professor") {
-    window.location.href = "professor.html";
+  if(usuario.tipo==="Coordenacao"){
+    window.location.href="admin.html";
+  } else if(usuario.tipo==="Professor"){
+    window.location.href="professor.html";
   } else {
-    window.location.href = "dashboard.html";
+    window.location.href="dashboard.html";
   }
+}
+
+// MODAL
+function abrirCadastro(){ modalCadastro.style.display="flex"; }
+function fecharCadastro(){ modalCadastro.style.display="none"; }
+
+// CADASTRO
+async function salvarCadastro(){
+  const { error } = await client.from("usuarios").insert([{
+    nome:novoNome.value,
+    email:novoEmail.value,
+    cpf:novoCpf.value,
+    rg:novoRg.value,
+    endereco:novoEndereco.value,
+    celular:novoTelefone.value,
+    data_nascimento:novaData.value,
+    status:"pendente",
+    tipo:"Aluno"
+  }]);
+
+  msgCadastro.innerText = error ? "Erro ao cadastrar" : "Cadastro enviado!";
 }
 </script>
 
