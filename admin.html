@@ -808,7 +808,7 @@ async function enviarPDF(){
     materia: materiaSelecionada,
     valor: parseFloat(document.getElementById("valor").value),
     forma_pagamento: document.getElementById("forma").value,
-    recibo_url: pdfUrl
+    arquivo_nome: nomeArquivo
   }]);
 
   alert("Pagamento salvo com sucesso! 🎉");
