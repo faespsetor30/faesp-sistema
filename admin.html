@@ -229,6 +229,35 @@ function sair(){
   localStorage.removeItem("usuario");
   window.location.href="index.html";
 }
+//////////////////////////////////////////////////
+// CRONOGRAMA
+//////////////////////////////////////////////////
+
+  // 📅 CONTROLE DE DATA (OBRIGATÓRIO)
+let hoje = new Date();
+let mesAtual = hoje.getMonth();
+let anoAtual = hoje.getFullYear();
+
+// ⬅️➡️ NAVEGAÇÃO
+function mesAnterior(){
+  mesAtual--;
+  if(mesAtual < 0){
+    mesAtual = 11;
+    anoAtual--;
+  }
+  cronograma();
+}
+
+function proximoMes(){
+  mesAtual++;
+  if(mesAtual > 11){
+    mesAtual = 0;
+    anoAtual++;
+  }
+  cronograma();
+}
+
+// 📅 TELA PRINCIPAL
 async function cronograma(){
 
   const nomesMes = [
@@ -266,7 +295,6 @@ async function cronograma(){
     ">
   `;
 
-  // espaços antes do primeiro dia
   for(let i=0;i<primeiroDia;i++){
     html += `<div></div>`;
   }
@@ -311,10 +339,11 @@ async function cronograma(){
   }
 
   html += `</div>`;
-
   conteudo.innerHTML = html;
 }
-  function abrirModal(data){
+
+// 📌 MODAL
+function abrirModal(data){
 
   const modal = document.createElement("div");
 
@@ -338,7 +367,6 @@ async function cronograma(){
       border-radius:12px;
       width:350px;
       box-shadow:0 10px 30px rgba(0,0,0,0.2);
-      animation:fadeIn 0.2s;
     ">
 
       <h3 style="margin-bottom:15px;">📅 ${data}</h3>
@@ -351,16 +379,18 @@ async function cronograma(){
       <br><br>
 
       <button class="btn" onclick="salvarEventoModal('${data}', this)">Salvar</button>
-      <button class="btn" onclick="this.closest('div').remove()">Fechar</button>
+      <button class="btn" onclick="this.closest('div').parentElement.remove()">Fechar</button>
 
     </div>
   `;
 
   document.body.appendChild(modal);
 }
-  async function salvarEventoModal(data, botao){
 
-  const modal = botao.closest("div").parentElement;
+// 💾 SALVAR EVENTO
+async function salvarEventoModal(data, botao){
+
+  const modal = botao.closest("div");
 
   await client.from("cronograma").insert([{
     data,
@@ -372,9 +402,10 @@ async function cronograma(){
 
   alert("Salvo! 🎉");
 
-  modal.remove();
+  modal.parentElement.remove();
   cronograma();
 }
+  
 //////////////////////////////////////////////////
 // DASHBOARD
 //////////////////////////////////////////////////
