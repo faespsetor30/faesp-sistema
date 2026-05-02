@@ -194,6 +194,7 @@
         <button onclick="frequencia()">📅 Presença</button>
         <button onclick="avisos()">📢 Avisos</button>
         <button onclick="financeiro()">💰 Financeiro</button>
+        <button onclick="cronograma()">📅 Cronograma</button>
       </div>
     </div>
 
@@ -228,7 +229,144 @@ function sair(){
   localStorage.removeItem("usuario");
   window.location.href="index.html";
 }
+//////////////////////////////////////////////////
+// 📅 CRONOGRAMA
+//////////////////////////////////////////////////
 
+let mesAtual = new Date().getMonth();
+let anoAtual = new Date().getFullYear();
+
+async function cronograma(){
+
+  const { data: eventos } = await client
+    .from("cronograma")
+    .select("*");
+
+  const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+
+  let html = `
+    <h2>📅 Cronograma</h2>
+
+    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+      <button class="btn" onclick="mesAnterior()">⬅️</button>
+      <strong>${mesAtual+1}/${anoAtual}</strong>
+      <button class="btn" onclick="proximoMes()">➡️</button>
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns: repeat(7,1fr);
+      gap:10px;
+    ">
+  `;
+
+  for(let dia=1; dia<=diasNoMes; dia++){
+
+    const dataFormatada = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+
+    const eventosDia = eventos.filter(e => e.data === dataFormatada);
+
+    html += `
+      <div onclick="abrirDia('${dataFormatada}')"
+        style="
+          background:white;
+          padding:10px;
+          border-radius:10px;
+          min-height:110px;
+          cursor:pointer;
+          box-shadow:0 3px 10px rgba(0,0,0,0.05);
+        ">
+
+        <strong>${dia}</strong>
+
+        ${eventosDia.map(ev=>`
+          <div style="
+            background:#2c5364;
+            color:white;
+            padding:5px;
+            border-radius:6px;
+            margin-top:5px;
+            font-size:12px;
+          ">
+            ${ev.disciplina}
+          </div>
+        `).join("")}
+
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+
+  conteudo.innerHTML = html;
+}
+
+//////////////////////////////////////////////////
+// 🔁 NAVEGAÇÃO
+//////////////////////////////////////////////////
+
+function mesAnterior(){
+  mesAtual--;
+  if(mesAtual < 0){
+    mesAtual = 11;
+    anoAtual--;
+  }
+  cronograma();
+}
+
+function proximoMes(){
+  mesAtual++;
+  if(mesAtual > 11){
+    mesAtual = 0;
+    anoAtual++;
+  }
+  cronograma();
+}
+
+//////////////////////////////////////////////////
+// 📅 ABRIR DIA
+//////////////////////////////////////////////////
+
+function abrirDia(data){
+
+  conteudo.innerHTML = `
+    <h3>📅 ${data}</h3>
+
+    <input id="disciplina" placeholder="Disciplina">
+    <input id="professor" placeholder="Professor">
+    <input id="horario" placeholder="Horário (ex: 19:00)">
+    <input id="local" placeholder="Local">
+
+    <br><br>
+
+    <button class="btn" onclick="salvarEvento('${data}')">
+      Salvar
+    </button>
+
+    <button class="btn" onclick="cronograma()">
+      Voltar
+    </button>
+  `;
+}
+
+//////////////////////////////////////////////////
+// 💾 SALVAR
+//////////////////////////////////////////////////
+
+async function salvarEvento(data){
+
+  await client.from("cronograma").insert([{
+    data,
+    disciplina: document.getElementById("disciplina").value,
+    professor: document.getElementById("professor").value,
+    horario: document.getElementById("horario").value,
+    local: document.getElementById("local").value
+  }]);
+
+  alert("Evento salvo! 🎉");
+
+  cronograma();
+}
 //////////////////////////////////////////////////
 // DASHBOARD
 //////////////////////////////////////////////////
