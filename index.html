@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
 <script>
+
+// 🔗 CONEXÃO SUPABASE (CORRIGIDO)
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI:...
 );
 
 // LOGIN
@@ -30,7 +29,7 @@ async function login() {
     return;
   }
 
-  // BUSCAR USUÁRIO
+  // 🔎 BUSCAR USUÁRIO
   const { data: usuario, error: erroUsuario } = await client
     .from("usuarios")
     .select("*")
@@ -42,25 +41,31 @@ async function login() {
     return;
   }
 
+  // 🔒 STATUS
   if (usuario.status !== "ativo") {
     document.getElementById("resultado").innerText =
       "Cadastro aguardando aprovação";
     return;
   }
 
+  // 🆕 PRIMEIRO ACESSO
   if (usuario.primeiro_acesso) {
     localStorage.setItem("usuario_temp", JSON.stringify(usuario));
     window.location.href = "primeiro-acesso.html";
     return;
   }
 
+  // 💾 SALVAR SESSÃO
   localStorage.setItem("usuario", JSON.stringify(usuario));
 
+  // 🚀 REDIRECIONAMENTO (CORRIGIDO COMPLETO)
   if (usuario.tipo === "Coordenacao") {
     window.location.href = "admin.html";
-  } else if (usuario.tipo === "Professor") {
+  } 
+  else if (usuario.tipo === "Professor") {
     window.location.href = "professor.html";
-  } else {
+  } 
+  else {
     window.location.href = "dashboard.html";
   }
 }
@@ -100,7 +105,8 @@ async function salvarCadastro() {
       data_nascimento: data,
       endereco,
       celular,
-      status: "pendente"
+      status: "pendente",
+      tipo: "Aluno" // 👈 GARANTE QUE NÃO QUEBRE LOGIN
     }]);
 
   if (error) {
@@ -110,4 +116,5 @@ async function salvarCadastro() {
       "Cadastro enviado! Aguarde aprovação.";
   }
 }
+
 </script>
