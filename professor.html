@@ -102,7 +102,7 @@ const client = supabase.createClient(
 
 const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-if (!usuario || usuario.tipo !== "Professor") {
+if (!usuario || usuario.tipo !== "Professor") {if (!usuario || usuario.tipo.trim().toLowerCase() !== "professor") {
   window.location.href = "index.html";
 }
 
