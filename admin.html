@@ -4,107 +4,177 @@
   <title>FAESP - Coordenação</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    body {
-      margin:0;
-      font-family:'Segoe UI';
-      display:flex;
-      flex-direction:column;
-      height:100vh;
-      background:#eef2f7;
+<style>
+  body {
+    margin:0;
+    font-family:'Segoe UI';
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    background:#eef2f7;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .main {
+    display:flex;
+    flex:1;
+    width:100%;
+  }
+
+  .sidebar {
+    width:240px;
+    background:white;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    border-right:1px solid #ddd;
+    align-items:center;
+    transition: all 0.3s ease;
+  }
+
+  .logo {
+    width:120px;
+    margin-bottom:10px;
+    transition: transform 0.3s ease;
+  }
+
+  .logo:hover {
+    transform: scale(1.05);
+  }
+
+  .menu button {
+    width:100%;
+    padding:12px;
+    margin-bottom:10px;
+    border:none;
+    background:#f1f5f9;
+    border-radius:10px;
+    cursor:pointer;
+    text-align:left;
+    transition: all 0.25s ease;
+  }
+
+  .menu button:hover {
+    background:#2c5364;
+    color:white;
+    transform: translateX(5px);
+  }
+
+  .logout {
+    background:black;
+    color:white;
+    font-weight:bold;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    width:100%;
+    transition: all 0.3s ease;
+  }
+
+  .logout:hover {
+    background:#333;
+    transform: scale(1.03);
+  }
+
+  .content {
+    flex:1;
+    padding:25px;
+    width:100%;
+    animation: fadeInUp 0.4s ease;
+  }
+
+  .header, .box {
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+  }
+
+  .box:hover {
+    transform: translateY(-3px);
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+  }
+
+  table {
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+  }
+
+  th, td {
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+    transition: background 0.2s;
+  }
+
+  tr:hover td {
+    background:#f9fafb;
+  }
+
+  .btn {
+    background:#2c5364;
+    color:white;
+    border:none;
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    transition: all 0.25s ease;
+  }
+
+  .btn:hover {
+    transform: scale(1.05);
+    background:#1e3c4a;
+  }
+
+  input, select {
+    padding:8px;
+    margin-top:5px;
+    width:100%;
+    border-radius:6px;
+    border:1px solid #ddd;
+    transition: all 0.2s ease;
+  }
+
+  input:focus, select:focus {
+    outline:none;
+    border-color:#2c5364;
+    box-shadow:0 0 0 2px rgba(44,83,100,0.2);
+  }
+
+  a.nome-link {
+    color:#2c5364;
+    font-weight:bold;
+    text-decoration:none;
+    transition: all 0.2s ease;
+  }
+
+  a.nome-link:hover {
+    text-decoration:underline;
+    color:#1e3c4a;
+  }
+
+  /* ✨ ANIMAÇÕES */
+
+  @keyframes fadeIn {
+    from { opacity:0; }
+    to { opacity:1; }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity:0;
+      transform: translateY(10px);
     }
-
-    .main {
-      display:flex;
-      flex:1;
-      width:100%;
+    to {
+      opacity:1;
+      transform: translateY(0);
     }
-
-    .sidebar {
-      width:240px;
-      background:white;
-      padding:20px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      border-right:1px solid #ddd;
-      align-items:center;
-    }
-
-    .logo { width:120px; margin-bottom:10px;}
-
-    .menu button {
-      width:100%;
-      padding:12px;
-      margin-bottom:10px;
-      border:none;
-      background:#f1f5f9;
-      border-radius:10px;
-      cursor:pointer;
-      text-align:left;
-    }
-
-    .menu button:hover { background:#e2e8f0;}
-
-    .logout {
-      background:black;
-      color:white;
-      font-weight:bold;
-      padding:12px;
-      border-radius:10px;
-      border:none;
-      width:100%;
-    }
-
-    .content {
-      flex:1;
-      padding:25px;
-      width:100%;
-    }
-
-    .header, .box {
-      background:white;
-      padding:20px;
-      border-radius:12px;
-      margin-bottom:20px;
-      box-shadow:0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    table {
-      width:100%;
-      border-collapse:collapse;
-      margin-top:10px;
-    }
-
-    th, td {
-      padding:10px;
-      border-bottom:1px solid #ddd;
-      text-align:center;
-    }
-
-    .btn {
-      background:#2c5364;
-      color:white;
-      border:none;
-      padding:6px 10px;
-      border-radius:6px;
-      cursor:pointer;
-    }
-
-    input, select {
-      padding:8px;
-      margin-top:5px;
-      width:100%;
-    }
-
-    a.nome-link {
-      color:#2c5364;
-      font-weight:bold;
-      text-decoration:none;
-    }
-
-    a.nome-link:hover { text-decoration:underline;}
-  </style>
+  }
+</style>
 </head>
 
 <body>
