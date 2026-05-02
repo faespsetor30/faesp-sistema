@@ -9,37 +9,75 @@
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       height: 100vh;
-      background: linear-gradient(180deg, #0f172a, #020617);
+      background: linear-gradient(180deg, #0b1f2a, #020617);
       display: flex;
       justify-content: center;
       align-items: center;
+      overflow: hidden;
     }
 
+    /* 🎬 ANIMAÇÃO DE FUNDO */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,0,0,0.15) 0%, transparent 60%);
+      animation: pulse 6s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.2); opacity: 0.2; }
+      100% { transform: scale(1); opacity: 0.4; }
+    }
+
+    /* 🎬 CARD */
     .card {
-      background: rgba(0,0,0,0.85);
+      position: relative;
+      background: rgba(2,6,23,0.95);
       padding: 40px;
       border-radius: 16px;
       width: 380px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.6);
       text-align: center;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
+
+      animation: fadeUp 0.8s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .logo {
       width: 90px;
       margin-bottom: 10px;
+      animation: zoom 0.8s ease;
+    }
+
+    @keyframes zoom {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
 
     h1 {
       margin: 5px 0;
-      color: #22c55e;
-      font-size: 22px;
-      letter-spacing: 1px;
+      color: white;
+      font-size: 24px;
+      letter-spacing: 2px;
     }
 
     h2 {
       margin: 0 0 25px 0;
-      color: #94a3b8;
+      color: #cbd5e1;
       font-size: 13px;
       font-weight: normal;
     }
@@ -53,34 +91,36 @@
       background: #1e293b;
       color: white;
       font-size: 14px;
+      transition: 0.2s;
     }
 
     input:focus {
       outline: none;
-      border: 1px solid #22c55e;
+      border: 1px solid #1e3a8a;
+      box-shadow: 0 0 8px rgba(30,58,138,0.6);
     }
 
     button {
       width: 100%;
       padding: 12px;
-      margin-top: 10px;
+      margin-top: 12px;
       border: none;
       border-radius: 8px;
-      background: #22c55e;
-      color: black;
+      background: linear-gradient(90deg, #1e3a8a, #dc2626);
+      color: white;
       font-weight: bold;
       cursor: pointer;
       transition: 0.3s;
     }
 
     button:hover {
-      background: #16a34a;
-      transform: scale(1.02);
+      transform: scale(1.03);
+      box-shadow: 0 5px 20px rgba(220,38,38,0.4);
     }
 
     #resultado {
       margin-top: 12px;
-      color: #22c55e;
+      color: #dc2626;
       font-size: 13px;
     }
   </style>
@@ -90,8 +130,8 @@
 
 <div class="card">
 
-  <!-- LOGO -->
-  img src="logo faesp.png" class="logo"
+  <!-- LOGO (AGORA CORRETO) -->
+  <img src="logo faesp.png" class="logo">
 
   <h1>FAESP</h1>
   <h2>Setor 30 • Campo Limpo Paulista</h2>
