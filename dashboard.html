@@ -329,11 +329,152 @@ if(status === "pago"){
 }
 
 // CRONOGRAMA
-function cronograma(){
-  trocarConteudo(`
+// 📅 CONTROLE GLOBAL (coloca acima da função cronograma)
+let hoje = new Date();
+let mesAtual = hoje.getMonth();
+let anoAtual = hoje.getFullYear();
+
+function mesAnteriorAluno(){
+  mesAtual--;
+  if(mesAtual < 0){
+    mesAtual = 11;
+    anoAtual--;
+  }
+  cronograma();
+}
+
+function proximoMesAluno(){
+  mesAtual++;
+  if(mesAtual > 11){
+    mesAtual = 0;
+    anoAtual++;
+  }
+  cronograma();
+}
+
+// 📅 CRONOGRAMA DO ALUNO
+async function cronograma(){
+
+  const nomesMes = [
+    "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+  ];
+
+  const diasSemana = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+  const { data: eventos } = await client
+    .from("cronograma")
+    .select("*");
+
+  const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+  const primeiroDia = new Date(anoAtual, mesAtual, 1).getDay();
+
+  let html = `
     <h3>📅 Cronograma</h3>
-    <p>Em desenvolvimento...</p>
-  `);
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <button class="btn" onclick="mesAnteriorAluno()">⬅️</button>
+      <h3>${nomesMes[mesAtual]} / ${anoAtual}</h3>
+      <button class="btn" onclick="proximoMesAluno()">➡️</button>
+    </div>
+
+    <div style="
+      display:grid;
+      grid-template-columns: repeat(7,1fr);
+      gap:6px;
+      margin-top:15px;
+    ">
+  `;
+
+  // 🔹 dias da semana
+  diasSemana.forEach(d => {
+    html += `<div style="text-align:center;font-weight:bold;padding:8px;">${d}</div>`;
+  });
+
+  // 🔹 espaços antes do mês começar
+  for(let i=0;i<primeiroDia;i++){
+    html += `<div></div>`;
+  }
+
+  // 🔹 dias do mês
+  for(let dia=1; dia<=diasNoMes; dia++){
+
+    const dataFormatada = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+    const eventosDia = (eventos || []).filter(e => e.data === dataFormatada);
+
+    html += `
+      <div style="
+        background:#1e293b;
+        padding:8px;
+        border-radius:10px;
+        min-height:80px;
+      ">
+        <strong>${dia}</strong>
+
+        ${eventosDia.map(ev=>`
+          <div onclick="verEventoAluno(${JSON.stringify(ev).replace(/"/g, '&quot;')})"
+            style="
+              background:#22c55e;
+              color:black;
+              padding:5px;
+              border-radius:6px;
+              margin-top:5px;
+              font-size:11px;
+              cursor:pointer;
+            ">
+            ${ev.disciplina}
+          </div>
+        `).join("")}
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+
+  trocarConteudo(html);
+}
+  function verEventoAluno(ev){
+
+  const modal = document.createElement("div");
+
+  modal.style = `
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:999;
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      background:#020617;
+      color:white;
+      padding:25px;
+      border-radius:12px;
+      width:320px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    ">
+
+      <h3>📚 ${ev.disciplina}</h3>
+
+      <p><strong>Professor:</strong> ${ev.professor || "-"}</p>
+      <p><strong>Horário:</strong> ${ev.horario || "-"}</p>
+      <p><strong>Local:</strong> ${ev.local || "-"}</p>
+      <p><strong>Data:</strong> ${new Date(ev.data).toLocaleDateString("pt-BR")}</p>
+
+      <br>
+
+      <button class="btn" onclick="this.closest('div').parentElement.remove()">Fechar</button>
+
+    </div>
+  `;
+
+  document.body.appendChild(modal);
 }
 
 // AVISOS
