@@ -209,12 +209,46 @@ async function login(){
     password: senha
   });
 
-  if(error){
-    resultado.innerText="Email ou senha inválidos";
-    return;
-  }
+if(error){
+  resultado.innerText="Email ou senha inválidos";
+  return;
+}
 
-  resultado.innerText="Login OK";
+// 🔍 BUSCA USUÁRIO NA TABELA
+const { data: usuario, error: erroUser } = await client
+  .from("usuarios")
+  .select("*")
+  .eq("email", email)
+  .single();
+
+if(erroUser || !usuario){
+  resultado.innerText = "Usuário não encontrado";
+  return;
+}
+
+// 🚫 VALIDA APROVAÇÃO
+if(usuario.status !== "ativo"){
+  resultado.innerText = "Cadastro aguardando aprovação";
+  return;
+}
+
+// 💾 SALVA USUÁRIO
+localStorage.setItem("usuario", JSON.stringify(usuario));
+
+// 🔀 REDIRECIONAMENTO
+const tipo = (usuario.tipo || "").toLowerCase();
+
+if(tipo === "coordenacao"){
+  window.location.href = "admin.html";
+}
+else if(tipo === "professor"){
+  window.location.href = "professor.html";
+}
+else if(tipo === "aluno"){
+  window.location.href = "aluno.html";
+}
+else{
+  resultado.innerText = "Tipo de usuário inválido";
 }
 
 // MODAL
