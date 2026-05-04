@@ -187,7 +187,7 @@ draw();
 </script>
 
 <script>
-const SUPABASE_URL = "https://nzygdvixqmiltelegzzrn.supabase.co";
+const SUPABASE_URL = "https://nzygdvixqmiltelgzzrn.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -226,11 +226,64 @@ function fecharCadastro(){
   document.getElementById("modalCadastro").style.display="none";
 }
 
-// CADASTRO (simplificado para não quebrar)
+// ✅ CADASTRO INTEGRADO COM AUTH
 async function salvarCadastro(){
+
+  const nome = document.getElementById("novoNome").value;
+  const email = document.getElementById("novoEmail").value;
+  const cpf = document.getElementById("novoCpf").value;
+  const rg = document.getElementById("novoRg").value;
+  const endereco = document.getElementById("novoEndereco").value;
+  const celular = document.getElementById("novoTelefone").value;
+  const data = document.getElementById("novaData").value;
+
   const msgCadastro = document.getElementById("msgCadastro");
 
-  msgCadastro.innerText = "Cadastro temporariamente simples (sem Auth)";
+  if(!nome || !email){
+    msgCadastro.innerText = "Preencha nome e email";
+    return;
+  }
+
+  try {
+
+    const senhaPadrao = "123456";
+
+    // 🔐 cria no Auth
+    const { error: authError } = await client.auth.signUp({
+      email: email,
+      password: senhaPadrao
+    });
+
+    if(authError){
+      msgCadastro.innerText = "Erro no Auth: " + authError.message;
+      return;
+    }
+
+    // 📄 salva na tabela
+    const { error } = await client.from("usuarios").insert([{
+      nome,
+      email,
+      cpf,
+      rg,
+      endereco,
+      celular,
+      data_nascimento: data,
+      status: "pendente",
+      tipo: "aluno",
+      primeiro_acesso: true
+    }]);
+
+    if(error){
+      msgCadastro.innerText = "Erro ao salvar na base";
+      return;
+    }
+
+    msgCadastro.innerText = "Cadastro realizado! Senha: 123456";
+
+  } catch(e){
+    console.error(e);
+    msgCadastro.innerText = "Erro inesperado";
+  }
 }
 </script>
 
