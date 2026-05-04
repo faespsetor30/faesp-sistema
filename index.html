@@ -188,26 +188,43 @@ draw();
 </script>
 
 <script>
+const SUPABASE_URL = "https://nzygdkvixqmiltelegzzrn.supabase.co"; // CONFERE SE ESTÁ CERTO
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"; // sua anon key completa
+
 const client = supabase.createClient(eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8);
+
+const resultado = document.getElementById("resultado");
 
 // LOGIN
 async function login(){
-  const email=emailInput=document.getElementById("email").value;
-  const senha=document.getElementById("senha").value;
+  const email = document.getElementById("email").value;
+  const senha = document.getElementById("senha").value;
 
   if(!email || !senha){
     resultado.innerText="Preencha email e senha";
     return;
   }
 
-  const { error } = await client.auth.signInWithPassword({email,password:senha});
+  const { error } = await client.auth.signInWithPassword({
+    email: email,
+    password: senha
+  });
 
   if(error){
     resultado.innerText="Email ou senha inválidos";
     return;
   }
 
-  const { data: usuario } = await client.from("usuarios").select("*").eq("email",email).single();
+  const { data: usuario, error: erroUser } = await client
+    .from("usuarios")
+    .select("*")
+    .eq("email", email)
+    .single();
+
+  if(erroUser || !usuario){
+    resultado.innerText="Usuário não encontrado";
+    return;
+  }
 
   if(usuario.status !== "ativo"){
     resultado.innerText="Cadastro aguardando aprovação";
@@ -226,19 +243,26 @@ async function login(){
 }
 
 // MODAL
-function abrirCadastro(){ modalCadastro.style.display="flex"; }
-function fecharCadastro(){ modalCadastro.style.display="none"; }
+function abrirCadastro(){
+  document.getElementById("modalCadastro").style.display="flex";
+}
+
+function fecharCadastro(){
+  document.getElementById("modalCadastro").style.display="none";
+}
 
 // CADASTRO
 async function salvarCadastro(){
+  const msgCadastro = document.getElementById("msgCadastro");
+
   const { error } = await client.from("usuarios").insert([{
-    nome:novoNome.value,
-    email:novoEmail.value,
-    cpf:novoCpf.value,
-    rg:novoRg.value,
-    endereco:novoEndereco.value,
-    celular:novoTelefone.value,
-    data_nascimento:novaData.value,
+    nome:document.getElementById("novoNome").value,
+    email:document.getElementById("novoEmail").value,
+    cpf:document.getElementById("novoCpf").value,
+    rg:document.getElementById("novoRg").value,
+    endereco:document.getElementById("novoEndereco").value,
+    celular:document.getElementById("novoTelefone").value,
+    data_nascimento:document.getElementById("novaData").value,
     status:"pendente",
     tipo:"Aluno"
   }]);
