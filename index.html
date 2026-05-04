@@ -250,37 +250,43 @@ function fecharCadastro(){
 }
 
 // CADASTRO
-vasync function salvarCadastro(){
+async function salvarCadastro(){
   const msgCadastro = document.getElementById("msgCadastro");
 
-  const email = document.getElementById("novoEmail").value;
-  const senha = "123456"; // senha padrão (depois podemos melhorar)
+  try {
+    const email = document.getElementById("novoEmail").value;
+    const senha = "123456";
 
-  // 🔐 cria no AUTH
-  const { error: authError } = await client.auth.signUp({
-    email: email,
-    password: senha
-  });
+    const { error: authError } = await client.auth.signUp({
+      email: email,
+      password: senha
+    });
 
-  if(authError){
-    msgCadastro.innerText = "Erro no Auth: " + authError.message;
-    return;
+    if(authError){
+      msgCadastro.innerText = "Erro no Auth: " + authError.message;
+      return;
+    }
+
+    const { error } = await client.from("usuarios").insert([{
+      nome:document.getElementById("novoNome").value,
+      email:email,
+      cpf:document.getElementById("novoCpf").value,
+      rg:document.getElementById("novoRg").value,
+      endereco:document.getElementById("novoEndereco").value,
+      celular:document.getElementById("novoTelefone").value,
+      data_nascimento:document.getElementById("novaData").value,
+      status:"pendente",
+      tipo:"Aluno"
+    }]);
+
+    msgCadastro.innerText = error 
+      ? "Erro ao cadastrar" 
+      : "Cadastro enviado! Senha: 123456";
+
+  } catch (e) {
+    msgCadastro.innerText = "Erro inesperado: " + e.message;
+    console.error(e);
   }
-
-  // 📄 salva na tabela
-  const { error } = await client.from("usuarios").insert([{
-    nome:document.getElementById("novoNome").value,
-    email:email,
-    cpf:document.getElementById("novoCpf").value,
-    rg:document.getElementById("novoRg").value,
-    endereco:document.getElementById("novoEndereco").value,
-    celular:document.getElementById("novoTelefone").value,
-    data_nascimento:document.getElementById("novaData").value,
-    status:"pendente",
-    tipo:"Aluno"
-  }]);
-
-  msgCadastro.innerText = error ? "Erro ao cadastrar" : "Cadastro enviado! Senha padrão: 123456";
 }
 </script>
 
