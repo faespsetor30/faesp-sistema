@@ -250,12 +250,27 @@ function fecharCadastro(){
 }
 
 // CADASTRO
-async function salvarCadastro(){
+vasync function salvarCadastro(){
   const msgCadastro = document.getElementById("msgCadastro");
 
+  const email = document.getElementById("novoEmail").value;
+  const senha = "123456"; // senha padrão (depois podemos melhorar)
+
+  // 🔐 cria no AUTH
+  const { error: authError } = await client.auth.signUp({
+    email: email,
+    password: senha
+  });
+
+  if(authError){
+    msgCadastro.innerText = "Erro no Auth: " + authError.message;
+    return;
+  }
+
+  // 📄 salva na tabela
   const { error } = await client.from("usuarios").insert([{
     nome:document.getElementById("novoNome").value,
-    email:document.getElementById("novoEmail").value,
+    email:email,
     cpf:document.getElementById("novoCpf").value,
     rg:document.getElementById("novoRg").value,
     endereco:document.getElementById("novoEndereco").value,
@@ -265,7 +280,7 @@ async function salvarCadastro(){
     tipo:"Aluno"
   }]);
 
-  msgCadastro.innerText = error ? "Erro ao cadastrar" : "Cadastro enviado!";
+  msgCadastro.innerText = error ? "Erro ao cadastrar" : "Cadastro enviado! Senha padrão: 123456";
 }
 </script>
 
