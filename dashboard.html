@@ -181,7 +181,11 @@ const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
-
+client.auth.onAuthStateChange((event, session) => {
+  if (!session) {
+    window.location.href = "index.html";
+  }
+});
 // 🔥 FUNÇÃO DE TRANSIÇÃO (ADICIONADA)
 function trocarConteudo(html){
   const el = document.getElementById("conteudo");
@@ -201,7 +205,15 @@ function trocarConteudo(html){
 }
 
 // LOAD
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+
+  // 🔐 valida sessão real do Supabase
+  const { data: { session } } = await client.auth.getSession();
+
+  if (!session) {
+    window.location.href = "index.html";
+    return;
+  }
 
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
@@ -210,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  if (usuario.tipo !== "Aluno") {
+  if ((usuario.tipo || "").toLowerCase() !== "aluno") {
     window.location.href = "admin.html";
     return;
   }
