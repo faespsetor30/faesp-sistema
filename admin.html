@@ -217,15 +217,39 @@ const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
-
+client.auth.onAuthStateChange((event, session) => {
+  if (!session) {
+    window.location.href = "index.html";
+  }
+});
 const conteudo = document.getElementById("conteudo");
 
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-if (!usuario || usuario.tipo !== "Coordenacao") {
-  window.location.href = "index.html";
-}
+document.addEventListener("DOMContentLoaded", async () => {
 
-function sair(){
+  // 🔐 valida sessão REAL do Supabase
+  const { data: { session } } = await client.auth.getSession();
+
+  if (!session) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+  if (!usuario) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  if ((usuario.tipo || "").toLowerCase() !== "coordenacao") {
+    window.location.href = "aluno.html";
+    return;
+  }
+
+});
+
+async function sair(){
+  await client.auth.signOut();
   localStorage.removeItem("usuario");
   window.location.href="index.html";
 }
