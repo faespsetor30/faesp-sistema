@@ -125,14 +125,29 @@ async function alterarSenha() {
     .update({ primeiro_acesso: false })
     .eq("id", usuario.id);
 
-  // 🔥 SALVA USUÁRIO
-  localStorage.setItem("usuario", JSON.stringify(usuario));
+ // 🔄 ATUALIZA OBJETO LOCAL
+usuario.primeiro_acesso = false;
+
+// 🔥 SALVA USUÁRIO
+localStorage.setItem("usuario", JSON.stringify(usuario));
 
   document.getElementById("msg").innerText = "Senha alterada com sucesso! 🚀";
 
-  setTimeout(() => {
+setTimeout(() => {
+
+  const tipo = (usuario.tipo || "").toLowerCase();
+
+  if(tipo === "coordenacao"){
+    window.location.href = "admin.html";
+  }
+  else if(tipo === "professor"){
+    window.location.href = "professor.html";
+  }
+  else{
     window.location.href = "dashboard.html";
-  }, 1500);
+  }
+
+}, 1500);
 }
 </script>
 
