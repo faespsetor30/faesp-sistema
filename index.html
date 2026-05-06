@@ -9,7 +9,7 @@
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       height: 100vh;
-      background: #020617;
+      background: linear-gradient(135deg, #1B2A41, #223A5E);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -26,7 +26,7 @@
     .card {
       position: relative;
       z-index: 10;
-      background: rgba(2,6,23,0.95);
+      background: rgba(27,42,65,0.92);
       padding: 40px;
       border-radius: 16px;
       width: 380px;
@@ -41,7 +41,7 @@
     }
 
     h1 { color:white; }
-    h2 { color:#cbd5e1; font-size:13px; }
+    h2 { color:#d6e4f0; font-size:13px; }
 
     input {
       width:100%;
@@ -49,7 +49,7 @@
       margin:6px 0;
       border-radius:8px;
       border:none;
-      background:#1e293b;
+      background:#2c3e57;
       color:white;
     }
 
@@ -59,7 +59,7 @@
       margin-top:10px;
       border:none;
       border-radius:8px;
-      background:linear-gradient(90deg,#1e3a8a,#dc2626);
+      background:linear-gradient(90deg,#355C7D,#4B79A1);
       color:white;
       font-weight:bold;
       cursor:pointer;
@@ -171,7 +171,7 @@ function draw(){
       let dist=Math.sqrt(dx*dx+dy*dy);
 
       if(dist<120){
-        ctx.strokeStyle="rgba(30,58,138,0.2)";
+       ctx.strokeStyle="rgba(75,121,161,0.25)";
         ctx.beginPath();
         ctx.moveTo(particles[i].x,particles[i].y);
         ctx.lineTo(particles[j].x,particles[j].y);
