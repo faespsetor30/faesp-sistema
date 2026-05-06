@@ -323,7 +323,7 @@ primeiroDia = primeiroDia === 0 ? 0 : primeiroDia;
   ">
 `;
 
-  // Cabeçalho (dias da semana)
+// Cabeçalho (dias da semana)
 diasSemana.forEach(d => {
 
   html += `
@@ -344,108 +344,97 @@ diasSemana.forEach(d => {
 for(let i=0;i<primeiroDia;i++){
   html += `<div></div>`;
 }
-  html += `
-    <div style="
-      text-align:center;
-      font-weight:bold;
-      padding:8px;
-    ">
-      ${d}
-    </div>
-  `;
-});
-  // 🔹 dias do mês
-  for(let dia=1; dia<=diasNoMes; dia++){
 
-    const dataFormatada = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-    const eventosDia = eventos.filter(e => {
+// 🔹 dias do mês
+for(let dia=1; dia<=diasNoMes; dia++){
 
-  // 📅 EVENTO NORMAL
-  if(e.data === dataFormatada){
-    return true;
-  }
+  const dataFormatada = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
 
-  // 🔁 SEM RECORRÊNCIA
-  if(!e.recorrencia){
-    return false;
-  }
+  const eventosDia = eventos.filter(e => {
 
-  const dataEvento = new Date(e.data);
-  const dataAtualLoop = new Date(dataFormatada);
+    // 📅 EVENTO NORMAL
+    if(e.data === dataFormatada){
+      return true;
+    }
 
-  // ⛔ NÃO MOSTRA ANTES DO EVENTO ORIGINAL
-  if(dataAtualLoop < dataEvento){
-    return false;
-  }
-
-  // ⛔ LIMITE DE REPETIÇÃO
-  if(e.repetir_ate){
-
-    const limite = new Date(e.repetir_ate);
-
-    if(dataAtualLoop > limite){
+    // ❌ SEM RECORRÊNCIA
+    if(!e.recorrencia){
       return false;
     }
 
-  }
+    const dataEvento = new Date(e.data);
+    const dataAtualLoop = new Date(dataFormatada);
 
-  // 🔁 DIÁRIA
-  if(e.recorrencia === "diaria"){
-    return true;
-  }
+    // ⛔ NÃO MOSTRA ANTES DA DATA ORIGINAL
+    if(dataAtualLoop < dataEvento){
+      return false;
+    }
 
-  // 🔁 SEMANAL
-  if(e.recorrencia === "semanal"){
+    // ⛔ LIMITE DA REPETIÇÃO
+    if(e.repetir_ate){
 
-    return dataAtualLoop.getDay() === dataEvento.getDay();
+      const limite = new Date(e.repetir_ate);
 
-  }
+      if(dataAtualLoop > limite){
+        return false;
+      }
 
-  // 🔁 MENSAL
-  if(e.recorrencia === "mensal"){
+    }
 
-    return dataAtualLoop.getDate() === dataEvento.getDate();
+    // 🔁 DIÁRIA
+    if(e.recorrencia === "diaria"){
+      return true;
+    }
 
-  }
+    // 🔁 SEMANAL
+    if(e.recorrencia === "semanal"){
+      return dataAtualLoop.getDay() === dataEvento.getDay();
+    }
 
-  return false;
+    // 🔁 MENSAL
+    if(e.recorrencia === "mensal"){
+      return dataAtualLoop.getDate() === dataEvento.getDate();
+    }
 
-});
+    return false;
 
-    html += `
-      <div onclick="abrirModal('${dataFormatada}')"
-        style="
-          background:white;
-          padding:6px;
-          border-radius:10px;
-          min-height:80px;
-          cursor:pointer;
-          box-shadow:0 3px 10px rgba(0,0,0,0.05);
-        "
-      >
-        <strong>${dia}</strong>
+  });
 
-        ${eventosDia.map(ev=>`
-          <div onclick="event.stopPropagation(); verEvento(${JSON.stringify(ev).replace(/"/g, '&quot;')})"
-            style="
-              background:#2c5364;
-              color:white;
-              padding:6px;
-              border-radius:6px;
-              margin-top:5px;
-              font-size:11px;
-              cursor:pointer;
-            ">
-            ${ev.disciplina}
-          </div>
-        `).join("")}
-      </div>
-    `;
-  }
+  html += `
+    <div onclick="abrirModal('${dataFormatada}')"
+      style="
+        background:white;
+        padding:6px;
+        border-radius:10px;
+        min-height:80px;
+        cursor:pointer;
+        box-shadow:0 3px 10px rgba(0,0,0,0.05);
+      "
+    >
+      <strong>${dia}</strong>
 
-  html += `</div>`;
+      ${eventosDia.map(ev=>`
+        <div onclick="event.stopPropagation(); verEvento(${JSON.stringify(ev).replace(/"/g, '&quot;')})"
+          style="
+            background:#2c5364;
+            color:white;
+            padding:6px;
+            border-radius:6px;
+            margin-top:5px;
+            font-size:11px;
+            cursor:pointer;
+          ">
+          ${ev.disciplina}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
 
-  conteudo.innerHTML = html;
+html += `</div>`;
+
+conteudo.innerHTML = html;
+}
 }
   function verEvento(ev){
 
