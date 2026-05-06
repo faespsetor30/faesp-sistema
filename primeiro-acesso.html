@@ -1,101 +1,254 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Primeiro Acesso - FAESP</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body {
+      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #2c5364, #203a43);
+      height: 100vh;
+      background: #020617;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
     }
 
     .card {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      width: 350px;
+      position: relative;
+      z-index: 10;
+      background: rgba(2, 6, 23, 0.92);
+      padding: 40px;
+      border-radius: 20px;
+      width: 380px;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.08);
+      animation: aparecer 0.6s ease;
+    }
+
+    @keyframes aparecer {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo {
+      width: 90px;
+      margin-bottom: 10px;
     }
 
     h2 {
+      color: white;
       margin-bottom: 10px;
-      color: #2c5364;
+      font-size: 28px;
     }
 
     p {
+      color: #cbd5e1;
       font-size: 14px;
-      color: #555;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      line-height: 1.5;
     }
 
     input {
-      width: 90%;
-      padding: 12px;
+      width: 100%;
+      padding: 14px;
       margin: 8px 0;
       border-radius: 10px;
-      border: 1px solid #ccc;
+      border: none;
+      background: #1e293b;
+      color: white;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    input:focus {
+      background: #334155;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.4);
+    }
+
+    input::placeholder {
+      color: #94a3b8;
     }
 
     button {
       width: 100%;
-      padding: 12px;
-      background: #2c5364;
-      color: white;
+      padding: 14px;
+      margin-top: 15px;
       border: none;
       border-radius: 10px;
-      cursor: pointer;
+      background: linear-gradient(90deg, #1e3a8a, #dc2626);
+      color: white;
       font-weight: bold;
-      margin-top: 10px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(30,58,138,0.4);
     }
 
     #msg {
-      margin-top: 15px;
+      margin-top: 18px;
+      color: #f8fafc;
       font-weight: bold;
-      color: #2c5364;
+      min-height: 20px;
     }
+
+    .seguranca {
+      margin-top: 18px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
   </style>
 </head>
 
 <body>
 
+<canvas id="bg"></canvas>
+
 <div class="card">
 
+  <img src="logo faesp.png" class="logo">
+
   <h2>🔐 Primeiro Acesso</h2>
-  <p>Defina sua nova senha para continuar</p>
+
+  <p>
+    Por segurança, defina sua nova senha para continuar utilizando a plataforma FAESP.
+  </p>
 
   <input id="novaSenha" type="password" placeholder="Nova senha">
   <input id="confirmarSenha" type="password" placeholder="Confirmar senha">
 
-  <button onclick="alterarSenha()">Salvar nova senha</button>
+  <button onclick="alterarSenha()">
+    Salvar nova senha
+  </button>
 
-  <p id="msg"></p>
+  <div id="msg"></div>
+
+  <div class="seguranca">
+    Utilize uma senha segura e fácil de lembrar.
+  </div>
 
 </div>
 
 <script>
+// 🎬 CANVAS ANIMATION
+const canvas = document.getElementById("bg");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let particles = [];
+
+for(let i = 0; i < 80; i++){
+  particles.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5
+  });
+}
+
+function draw(){
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  particles.forEach(p => {
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,2,0,Math.PI*2);
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.fill();
+
+  });
+
+  for(let i=0;i<particles.length;i++){
+
+    for(let j=i;j<particles.length;j++){
+
+      let dx = particles[i].x - particles[j].x;
+      let dy = particles[i].y - particles[j].y;
+
+      let dist = Math.sqrt(dx*dx + dy*dy);
+
+      if(dist < 120){
+
+        ctx.strokeStyle = "rgba(30,58,138,0.2)";
+
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+
+      }
+
+    }
+
+  }
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+
+<script>
+
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
 async function alterarSenha() {
+
   const senha = document.getElementById("novaSenha").value;
   const confirmar = document.getElementById("confirmarSenha").value;
 
   if (!senha || senha.length < 6) {
-    document.getElementById("msg").innerText = "Senha deve ter pelo menos 6 caracteres";
+
+    document.getElementById("msg").innerText =
+      "Senha deve ter pelo menos 6 caracteres";
+
     return;
   }
 
   if (senha !== confirmar) {
-    document.getElementById("msg").innerText = "As senhas não conferem";
+
+    document.getElementById("msg").innerText =
+      "As senhas não conferem";
+
     return;
   }
 
@@ -105,11 +258,14 @@ async function alterarSenha() {
   });
 
   if (error) {
-    document.getElementById("msg").innerText = "Erro: " + error.message;
+
+    document.getElementById("msg").innerText =
+      "Erro: " + error.message;
+
     return;
   }
 
-  // 🔥 PEGA USUÁRIO LOGADO PELO LINK DO EMAIL
+  // 🔥 PEGA USUÁRIO LOGADO
   const { data: { user } } = await client.auth.getUser();
 
   // 🔄 BUSCA NA TABELA
@@ -125,29 +281,31 @@ async function alterarSenha() {
     .update({ primeiro_acesso: false })
     .eq("id", usuario.id);
 
- // 🔄 ATUALIZA OBJETO LOCAL
-usuario.primeiro_acesso = false;
+  // 🔄 ATUALIZA OBJETO LOCAL
+  usuario.primeiro_acesso = false;
 
-// 🔥 SALVA USUÁRIO
-localStorage.setItem("usuario", JSON.stringify(usuario));
+  // 🔥 SALVA USUÁRIO
+  localStorage.setItem("usuario", JSON.stringify(usuario));
 
-  document.getElementById("msg").innerText = "Senha alterada com sucesso! 🚀";
+  document.getElementById("msg").innerText =
+    "Senha alterada com sucesso! 🚀";
 
-setTimeout(() => {
+  setTimeout(() => {
 
-  const tipo = (usuario.tipo || "").toLowerCase();
+    const tipo = (usuario.tipo || "").toLowerCase();
 
-  if(tipo === "coordenacao"){
-    window.location.href = "admin.html";
-  }
-  else if(tipo === "professor"){
-    window.location.href = "professor.html";
-  }
-  else{
-    window.location.href = "dashboard.html";
-  }
+    if(tipo === "coordenacao"){
+      window.location.href = "admin.html";
+    }
+    else if(tipo === "professor"){
+      window.location.href = "professor.html";
+    }
+    else{
+      window.location.href = "dashboard.html";
+    }
 
-}, 1500);
+  }, 1500);
+
 }
 </script>
 
