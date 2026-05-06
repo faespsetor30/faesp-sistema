@@ -627,9 +627,9 @@ let html = `
 
         <td>
           <select onchange="alterarTipo('${u.id}',this.value)">
-            <option ${u.tipo==="Aluno"?"selected":""}>Aluno</option>
-            <option ${u.tipo==="Professor"?"selected":""}>Professor</option>
-            <option ${u.tipo==="Coordenacao"?"selected":""}>Coordenação</option>
+<option value="aluno" ${u.tipo==="aluno"?"selected":""}>Aluno</option>
+<option value="professor" ${u.tipo==="professor"?"selected":""}>Professor</option>
+<option value="coordenacao" ${u.tipo==="coordenacao"?"selected":""}>Coordenação</option>
           </select>
         </td>
 
