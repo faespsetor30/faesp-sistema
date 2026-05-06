@@ -9,7 +9,7 @@
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       height: 100vh;
-      background: linear-gradient(135deg, #1B2A41, #223A5E);
+      background: linear-gradient(135deg, #284766, #3D5A80);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -26,7 +26,8 @@
     .card {
       position: relative;
       z-index: 10;
-      background: rgba(27,42,65,0.92);
+      background: rgba(31,48,74,0.82);
+      border: 1px solid rgba(255,255,255,0.08);
       padding: 40px;
       border-radius: 16px;
       width: 380px;
@@ -35,10 +36,15 @@
       backdrop-filter: blur(12px);
     }
 
-    .logo {
-      width: 90px;
-      margin-bottom: 10px;
-    }
+ .logo {
+  width: 140px;
+  margin-bottom: 20px;
+  animation: flutuar 4s ease-in-out infinite;
+  filter:
+    drop-shadow(0 0 10px rgba(75,121,161,0.4))
+    drop-shadow(0 0 25px rgba(75,121,161,0.25));
+  transition: all 0.3s ease;
+}
 
     h1 { color:white; }
     h2 { color:#d6e4f0; font-size:13px; }
@@ -59,12 +65,17 @@
       margin-top:10px;
       border:none;
       border-radius:8px;
-      background:linear-gradient(90deg,#355C7D,#4B79A1);
+      background: linear-gradient(90deg,#4B79A1,#5C8DB8);
       color:white;
       font-weight:bold;
       cursor:pointer;
+      box-shadow: 0 8px 20px rgba(75,121,161,0.25);
+transition: all 0.3s ease;
     }
-
+/* 👇 AQUI FORA */
+button:hover{
+  transform: translateY(-2px);
+  filter: brightness(1.05);
     #resultado { color:#dc2626; margin-top:10px; }
 
     #modalCadastro {
@@ -86,7 +97,21 @@
       border-radius:12px;
       width:320px;
     }
+@keyframes flutuar {
 
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+
+}
   </style>
 </head>
 
