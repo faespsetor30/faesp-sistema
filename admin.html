@@ -513,7 +513,14 @@ function abrirModal(data){
       <input id="professor" placeholder="Professor">
       <input id="horario" placeholder="Horário">
       <input id="local" placeholder="Local">
+<select id="recorrencia">
+  <option value="">Sem recorrência</option>
+  <option value="diaria">Diariamente</option>
+  <option value="semanal">Semanalmente</option>
+  <option value="mensal">Mensalmente</option>
+</select>
 
+<input id="repetir_ate" type="date">
       <br><br>
 
       <button class="btn" onclick="salvarEventoModal('${data}', this)">Salvar</button>
@@ -535,7 +542,9 @@ async function salvarEventoModal(data, botao){
     disciplina: modal.querySelector("#disciplina").value,
     professor: modal.querySelector("#professor").value,
     horario: modal.querySelector("#horario").value,
-    local: modal.querySelector("#local").value
+    local: modal.querySelector("#local").value,
+recorrencia: modal.querySelector("#recorrencia").value,
+repetir_ate: modal.querySelector("#repetir_ate").value || null
   }]);
 
   alert("Salvo! 🎉");
