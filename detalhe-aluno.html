@@ -5,57 +5,185 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    body { font-family:'Segoe UI'; background:#eef2f7; padding:20px; }
 
-    .card {
-      background:white; padding:20px; border-radius:12px;
-      margin-bottom:20px; box-shadow:0 5px 15px rgba(0,0,0,0.05);
-    }
+body{
+  margin:0;
+  font-family:'Segoe UI';
+  background:#eef2f7;
+  padding:30px;
+  animation:fadeIn .4s ease;
+}
 
-    input, select {
-      width:100%; padding:8px; margin:5px 0;
-    }
+.topo{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:25px;
+}
 
-    input[readonly] {
-      background:#f1f5f9;
-      cursor:not-allowed;
-    }
+.titulo{
+  font-size:36px;
+  font-weight:bold;
+  color:#0f172a;
+}
 
-    .btn {
-      padding:8px 12px;
-      margin-top:10px;
-      cursor:pointer;
-      border:none;
-      border-radius:8px;
-    }
+.card{
+  background:white;
+  padding:25px;
+  border-radius:18px;
+  margin-bottom:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.05);
+  transition:.3s;
+}
 
-    .btn-primary { background:#2c5364; color:white; }
-    .btn-edit { background:#f59e0b; color:white; }
-    table {
+.card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 15px 35px rgba(0,0,0,0.08);
+}
+
+.card h3{
+  margin-top:0;
+  color:#1e293b;
+  margin-bottom:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+.campo{
+  display:flex;
+  flex-direction:column;
+}
+
+label{
+  margin-bottom:6px;
+  color:#334155;
+  font-weight:600;
+  font-size:14px;
+}
+
+input, select{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #dbe2ea;
+  background:#f8fafc;
+  font-size:14px;
+  transition:.2s;
+  box-sizing:border-box;
+}
+
+input:focus,
+select:focus{
+  outline:none;
+  border-color:#2c5364;
+  box-shadow:0 0 0 3px rgba(44,83,100,0.15);
+}
+
+input[readonly]{
+  background:#edf2f7;
+  color:#475569;
+}
+
+.btn{
+  border:none;
+  padding:12px 18px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:.25s;
+}
+
+.btn:hover{
+  transform:translateY(-2px);
+}
+
+.btn-primary{
+  background:linear-gradient(90deg,#1e3a8a,#2563eb);
+  color:white;
+}
+
+.btn-edit{
+  background:linear-gradient(90deg,#f59e0b,#f97316);
+  color:white;
+}
+
+.btn-voltar{
+  background:#0f172a;
+  color:white;
+}
+
+.btn-status{
+  color:white;
+}
+
+table{
   width:100%;
   border-collapse:collapse;
   margin-top:10px;
-  text-align:center;
+  overflow:hidden;
+  border-radius:12px;
 }
 
-th {
-  background:#2c5364;
+th{
+  background:#1e293b;
   color:white;
-  padding:12px;
+  padding:14px;
 }
 
-td {
-  padding:12px;
+td{
+  padding:14px;
+  border-bottom:1px solid #edf2f7;
 }
 
-tr {
-  transition: all 0.2s ease;
+tr{
+  transition:.2s;
 }
 
-tr:hover {
-  background:#f9fafb;
+tr:hover{
+  background:#f8fafc;
 }
-  </style>
+
+.badge{
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:bold;
+}
+
+.badge-ativo{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.badge-inativo{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.acoes{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(10px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+</style>
 </head>
 
 <body>
@@ -216,11 +344,11 @@ async function render(){
   '</select>' +
 
   '<label>Tipo</label>' +
-  '<select id="tipo" '+ (travado?"disabled":"") +'>' +
-    '<option value="Aluno" '+ (aluno.tipo==="Aluno"?"selected":"") +'>Aluno</option>' +
-    '<option value="Professor" '+ (aluno.tipo==="Professor"?"selected":"") +'>Professor</option>' +
-    '<option value="Coordenacao" '+ (aluno.tipo==="Coordenacao"?"selected":"") +'>Coordenação</option>' +
-  '</select>' +
+'<select id="tipo" '+ (travado?"disabled":"") +'>' +
+  '<option value="aluno" '+ (aluno.tipo==="aluno"?"selected":"") +'>Aluno</option>' +
+  '<option value="professor" '+ (aluno.tipo==="professor"?"selected":"") +'>Professor</option>' +
+  '<option value="coordenacao" '+ (aluno.tipo==="coordenacao"?"selected":"") +'>Coordenação</option>' +
+'</select>' +
 
   '<label>CPF</label>' +
   '<input id="cpf" value="'+ (aluno.cpf || "") +'" '+ (travado?"readonly":"") +'>' +
