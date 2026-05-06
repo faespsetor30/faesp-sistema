@@ -552,8 +552,8 @@ async function dashboard(){
   const { data: usuarios } = await client.from("usuarios").select("*");
   const { data: hist } = await client.from("disciplinas_historico").select("*");
 
-  const alunos = usuarios.filter(u=>u.tipo==="Aluno").length;
-  const professores = usuarios.filter(u=>u.tipo==="Professor").length;
+const alunos = usuarios.filter(u=>u.tipo==="aluno").length;
+const professores = usuarios.filter(u=>u.tipo==="professor").length;
   const ativos = usuarios.filter(u=>u.status==="ativo").length;
 
   const hoje = new Date().toISOString().split("T")[0];
@@ -790,7 +790,7 @@ async function salvarHistorico(disciplina, curso){
 
 async function notas(){
 
-  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
+  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","aluno");
 
   let html=`
     <h3>📝 Notas</h3>
