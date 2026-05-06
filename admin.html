@@ -315,19 +315,35 @@ primeiroDia = primeiroDia === 0 ? 0 : primeiroDia;
     display:grid;
     grid-template-columns: repeat(7,1fr);
     gap:6px;
+    align-items:start;
     margin-top:15px;
-    max-width:900px;
+    width:100%;
     margin-left:auto;
     margin-right:auto;
   ">
 `;
 
-  // 🔹 espaços vazios antes do mês começar
-  for(let i=0;i<primeiroDia;i++){
-    html += `<div></div>`;
-  }
 // Cabeçalho (dias da semana)
 diasSemana.forEach(d => {
+
+  html += `
+    <div style="
+      text-align:center;
+      font-weight:bold;
+      padding:10px;
+      background:#f8fafc;
+      border-radius:8px;
+    ">
+      ${d}
+    </div>
+  `;
+
+});
+
+// 🔹 espaços vazios antes do mês começar
+for(let i=0;i<primeiroDia;i++){
+  html += `<div></div>`;
+}
   html += `
     <div style="
       text-align:center;
