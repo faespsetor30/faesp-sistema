@@ -235,6 +235,12 @@ if(usuario.status !== "ativo"){
 // 💾 SALVA USUÁRIO
 localStorage.setItem("usuario", JSON.stringify(usuario));
 
+// 🔐 VERIFICA PRIMEIRO ACESSO
+if(usuario.primeiro_acesso === true){
+  window.location.href = "primeiro-acesso.html";
+  return;
+}
+
 // 🔀 REDIRECIONAMENTO
 const tipo = (usuario.tipo || "").toLowerCase();
 
