@@ -434,6 +434,7 @@ for(let dia=1; dia<=diasNoMes; dia++){
 html += `</div>`;
 
 conteudo.innerHTML = html;
+  
   // 🔥 CARREGA PROFESSORES
 const { data: professores } = await client
   .from("usuarios")
@@ -844,8 +845,14 @@ async function abrirHistorico(disciplina, curso){
    <select id="profHist">
   <option value="">Selecione o professor</option>
 </select>
-    <input id="inicioHist" type="date">
-    <input id="fimHist" type="date">
+
+<input id="diaHist" placeholder="Dia da semana">
+
+<input id="horarioHist" placeholder="Horário">
+
+<input id="inicioHist" type="date">
+
+<input id="fimHist" type="date">
 
     <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">Salvar</button>
 
@@ -867,13 +874,22 @@ async function abrirHistorico(disciplina, curso){
 }
 
 async function salvarHistorico(disciplina, curso){
-  await client.from("disciplinas_historico").insert([{
-    disciplina,
-    curso,
-    professor:profHist.value,
-    data_inicio:inicioHist.value,
-    data_fim:fimHist.value || null
-  }]);
+await client.from("disciplinas_historico").insert([{
+
+  disciplina,
+  curso,
+
+  professor: profHist.value,
+
+  dia_semana: diaHist.value,
+
+  horario: horarioHist.value,
+
+  data_inicio: inicioHist.value,
+
+  data_fim: fimHist.value || null
+
+}]);
   abrirHistorico(disciplina, curso);
 }
   //////////////////////////////////////////////////
