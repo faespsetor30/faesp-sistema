@@ -860,34 +860,39 @@ async function abrirHistorico(disciplina, curso){
       <tr><th>Professor</th><th>Início</th><th>Fim</th></tr>
   `;
 
-  data.forEach(h=>{
-    html+=`
-     <tr>
+  data.forEach(h => {
 
-  <td>${h.professor}</td>
+  html += `
+    <tr>
 
-  <td>${h.data_inicio}</td>
+      <td>${h.professor}</td>
 
-  <td>${h.data_fim}</td>
+      <td>${h.data_inicio}</td>
 
-  <td>
-    <button onclick="excluirHistorico('${h.id}')"
-      style="
-        background:#dc2626;
-        color:white;
-        border:none;
-        padding:8px 12px;
-        border-radius:8px;
-        cursor:pointer;
-      ">
-      🗑️ Excluir
-    </button>
-  </td>
+      <td>${h.data_fim || "-"}</td>
 
-</tr>
-  });
+      <td>
+        <button
+          onclick="excluirHistorico('${h.id}')"
+          style="
+            background:#dc2626;
+            color:white;
+            border:none;
+            padding:8px 12px;
+            border-radius:8px;
+            cursor:pointer;
+          "
+        >
+          🗑️ Excluir
+        </button>
+      </td>
 
-  html+="</table>";
+    </tr>
+  `;
+
+});
+
+html += "</table>";
   conteudo.innerHTML=html;
 }
 
