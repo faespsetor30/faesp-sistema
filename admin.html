@@ -431,11 +431,10 @@ for(let dia=1; dia<=diasNoMes; dia++){
   `;
 }
 
-html += `</div>`;
-
+html += "</table>";
 conteudo.innerHTML = html;
-  
-  // 🔥 CARREGA PROFESSORES
+
+// 🔥 CARREGA PROFESSORES
 const { data: professores } = await client
   .from("usuarios")
   .select("*")
@@ -452,7 +451,7 @@ const selectProfessor = document.getElementById("profHist");
   `;
 
 });
-}
+  
   function verEvento(ev){
 
   const modal = document.createElement("div");
