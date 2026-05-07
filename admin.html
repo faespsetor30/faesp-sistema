@@ -895,7 +895,23 @@ async function abrirHistorico(disciplina, curso){
 html += "</table>";
   conteudo.innerHTML=html;
 }
+// 🔥 CARREGA PROFESSORES
+const { data: professores } = await client
+  .from("usuarios")
+  .select("*")
+  .eq("tipo", "professor");
 
+const selectProfessor = document.getElementById("profHist");
+
+(professores || []).forEach(p => {
+
+  selectProfessor.innerHTML += `
+    <option value="${p.nome}">
+      ${p.nome}
+    </option>
+  `;
+
+});
 async function salvarHistorico(disciplina, curso){
 await client.from("disciplinas_historico").insert([{
 
