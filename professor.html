@@ -11,19 +11,108 @@
 
 body{
   margin:0;
-  font-family:'Segoe UI',sans-serif;
-  background:#0f172a;
+  font-family:'Segoe UI';
+  background:#eef2f7;
+}
+
+.main{
+  display:flex;
   min-height:100vh;
 }
 
-.fundo{
-  min-height:100vh;
-  padding:40px;
-  background:
-  linear-gradient(rgba(15,23,42,0.90), rgba(15,23,42,0.90)),
-  url('https://images.unsplash.com/photo-1513258496099-48168024aec0');
-  background-size:cover;
-  background-position:center;
+.sidebar{
+  width:240px;
+  background:white;
+  padding:20px;
+  border-right:1px solid #ddd;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  width:120px;
+  margin-bottom:10px;
+}
+
+.menu{
+  width:100%;
+}
+
+.menu button{
+  width:100%;
+  padding:12px;
+  margin-bottom:10px;
+  border:none;
+  border-radius:10px;
+  background:#f1f5f9;
+  cursor:pointer;
+  text-align:left;
+  transition:0.3s;
+}
+
+.menu button:hover{
+  background:#2c5364;
+  color:white;
+}
+
+.logout{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:black;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.content{
+  flex:1;
+  padding:25px;
+}
+
+.header{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:20px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+.box{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+.card-disciplina{
+  background:#f8fafc;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:15px;
+  border:1px solid #e2e8f0;
+}
+
+.btn{
+  background:#2c5364;
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.btn:hover{
+  background:#1e3c4a;
+}
+
+input{
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ddd;
 }
 
 </style>
@@ -32,9 +121,45 @@ body{
 
 <body>
 
-<div class="fundo">
+<div class="main">
 
-<div id="conteudo"></div>
+  <div class="sidebar">
+
+    <div style="width:100%; text-align:center;">
+
+      <img src="logo faesp.png" class="logo">
+
+      <h3>👨‍🏫 PROFESSOR</h3>
+
+      <div class="menu">
+
+        <button onclick="minhasDisciplinas()">📚 Minhas Disciplinas</button>
+
+        <button onclick="lancarNotas()">📝 Lançar Notas</button>
+
+        <button onclick="lancarPresenca()">📅 Presença</button>
+
+        <button onclick="cronograma()">📆 Cronograma</button>
+
+      </div>
+
+    </div>
+
+    <button class="logout" onclick="sair()">
+      🚪 Sair
+    </button>
+
+  </div>
+
+  <div class="content">
+
+    <div class="header">
+      <h2>FAESP - Painel do Professor</h2>
+    </div>
+
+    <div class="box" id="conteudo"></div>
+
+  </div>
 
 </div>
 
@@ -458,4 +583,5 @@ function cronograma(){
 </script>
 
 </body>
-</html>
+</body>
+</html></html>
