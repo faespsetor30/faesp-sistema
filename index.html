@@ -365,10 +365,11 @@ async function salvarCadastro(){
       primeiro_acesso: true
     }]);
 
-    if(error){
-      msgCadastro.innerText = "Erro ao salvar na base";
-      return;
-    }
+ if(error){
+  console.log(error);
+  msgCadastro.innerText = error.message;
+  return;
+}
 
     msgCadastro.innerText = "Cadastro realizado! Senha: 123456";
 
