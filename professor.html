@@ -5,64 +5,47 @@ const client = supabase.createClient(
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56eWdkdml4cW1pbHRlbGd6enJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxMDk5MjQsImV4cCI6MjA5MTY4NTkyNH0.wMaTGEgL_VCbSewnB-4BmdoA6rcGJWDsWIVaIo5dTy8"
 );
 
-document.addEventListener("DOMContentLoaded", () => {
+const conteudo = document.getElementById("conteudo");
 
-  try {
-  } catch (e) {
-    console.error("Erro ao ler usuário", e);
-    localStorage.removeItem("usuario");
-    window.location.href = "index.html";
-    return;
-  }
+//////////////////////////////////////////////////
+// 🚀 LOGIN PROFESSOR
+//////////////////////////////////////////////////
+
 document.addEventListener("DOMContentLoaded", () => {
 
   const usuario = JSON.parse(localStorage.getItem("usuario"));
 
+  // 🔒 sem login
   if (!usuario) {
     window.location.href = "index.html";
     return;
   }
 
-  if ((usuario.tipo || "").toLowerCase() !== "professor") {
-    window.location.href = "index.html";
-    return;
-  }
-
-  minhasDisciplinas();
-});
-  console.log("Usuário carregado:", usuario);
-
-  // 🔥 evita erro de undefined
-if (usuario.tipo.toLowerCase() === "professor") {
-  window.location.href = "professor.html";
-} 
-else if (usuario.tipo.toLowerCase() === "aluno") {
-  window.location.href = "aluno.html";
-}
-else if (usuario.tipo.toLowerCase() === "coordenacao") {
-  window.location.href = "admin.html";
-}
-
-  // 🔥 comparação SUPER segura
+  // 🔒 tipo inválido
   const tipo = String(usuario.tipo || "")
     .trim()
     .toLowerCase();
 
-  console.log("Tipo tratado:", tipo);
-
   if (tipo !== "professor") {
-    console.warn("Tipo inválido:", tipo);
     window.location.href = "index.html";
     return;
   }
 
-  console.log("Login OK ✅");
+  console.log("Professor logado ✅");
 
   minhasDisciplinas();
+
 });
+
+//////////////////////////////////////////////////
+// 🚪 SAIR
+//////////////////////////////////////////////////
+
 function sair(){
+
   localStorage.removeItem("usuario");
-  window.location.href="index.html";
+  window.location.href = "index.html";
+
 }
 
 //////////////////////////////////////////////////
@@ -71,24 +54,131 @@ function sair(){
 
 async function minhasDisciplinas(){
 
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+
   const { data } = await client
     .from("disciplinas_historico")
     .select("*")
-    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    .eq("professor", usuario.nome);
 
-.eq("professor", usuario.nome);
+  let html = `
 
-  let html = `<h3>📚 Minhas Disciplinas</h3>`;
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:30px;
+    ">
 
-  (data || []).forEach(d=>{
-    html += `
-      <div style="background:#1e293b;padding:10px;margin:5px;border-radius:8px">
-        ${d.disciplina} - ${d.curso}
+      <div>
+        <h1 style="
+          color:white;
+          margin:0;
+          font-size:32px;
+        ">
+          🎬 Painel do Professor
+        </h1>
+
+        <p style="
+          color:#94a3b8;
+          margin-top:5px;
+        ">
+          Bem-vindo, ${usuario.nome}
+        </p>
       </div>
+
+      <button onclick="sair()" style="
+        background:#e50914;
+        color:white;
+        border:none;
+        padding:12px 18px;
+        border-radius:10px;
+        cursor:pointer;
+        font-weight:bold;
+      ">
+        Sair
+      </button>
+
+    </div>
+
+    <h2 style="
+      color:white;
+      margin-bottom:20px;
+    ">
+      📚 Minhas Disciplinas
+    </h2>
+
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+      gap:20px;
+    ">
+  `;
+
+  (data || []).forEach(d => {
+
+    html += `
+
+      <div style="
+        background:linear-gradient(135deg,#111827,#1e293b);
+        border-radius:18px;
+        padding:20px;
+        box-shadow:0 10px 25px rgba(0,0,0,0.4);
+        transition:0.3s;
+      ">
+
+        <div style="
+          height:120px;
+          border-radius:12px;
+          background:linear-gradient(135deg,#dc2626,#7f1d1d);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:40px;
+          margin-bottom:15px;
+        ">
+          📖
+        </div>
+
+        <h3 style="
+          color:white;
+          margin:0;
+          margin-bottom:10px;
+        ">
+          ${d.disciplina}
+        </h3>
+
+        <p style="
+          color:#cbd5e1;
+          margin:0;
+        ">
+          ${d.curso}
+        </p>
+
+        <button onclick="lancarNotas()" style="
+          margin-top:15px;
+          width:100%;
+          padding:10px;
+          border:none;
+          border-radius:10px;
+          background:#e50914;
+          color:white;
+          font-weight:bold;
+          cursor:pointer;
+        ">
+          📝 Lançar Notas
+        </button>
+
+      </div>
+
     `;
+
   });
 
+  html += `</div>`;
+
   conteudo.innerHTML = html;
+
 }
 
 //////////////////////////////////////////////////
@@ -100,22 +190,63 @@ async function lancarNotas(){
   const { data: alunos } = await client
     .from("usuarios")
     .select("*")
-    .eq("tipo","Aluno");
+    .eq("tipo","aluno");
 
-  let html = `<h3>📝 Lançar Notas</h3>`;
+  let html = `
 
-  (alunos || []).forEach(a=>{
+    <h1 style="
+      color:white;
+      margin-bottom:25px;
+    ">
+      📝 Lançamento de Notas
+    </h1>
+
+  `;
+
+  (alunos || []).forEach(a => {
+
     html += `
-      <div style="margin-bottom:10px">
-        ${a.nome}
-        <input placeholder="Nota"
-          onchange="salvarNota('${a.email}', this.value)">
+
+      <div style="
+        background:#111827;
+        padding:20px;
+        border-radius:14px;
+        margin-bottom:15px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+      ">
+
+        <div style="color:white;">
+          👨‍🎓 ${a.nome}
+        </div>
+
+        <input
+          placeholder="Nota"
+          onchange="salvarNota('${a.email}', this.value)"
+          style="
+            width:120px;
+            padding:10px;
+            border:none;
+            border-radius:8px;
+            background:#1e293b;
+            color:white;
+          "
+        >
+
       </div>
+
     `;
+
   });
 
   conteudo.innerHTML = html;
+
 }
+
+//////////////////////////////////////////////////
+// 💾 SALVAR NOTA
+//////////////////////////////////////////////////
 
 async function salvarNota(email, nota){
 
@@ -125,7 +256,8 @@ async function salvarNota(email, nota){
     nota
   }]);
 
-  alert("Salvo!");
+  alert("Nota salva com sucesso 🚀");
+
 }
 
 //////////////////////////////////////////////////
@@ -137,22 +269,85 @@ async function lancarPresenca(){
   const { data: alunos } = await client
     .from("usuarios")
     .select("*")
-    .eq("tipo","Aluno");
+    .eq("tipo","aluno");
 
-  let html = `<h3>📅 Presença</h3>`;
+  let html = `
 
-  (alunos || []).forEach(a=>{
+    <h1 style="
+      color:white;
+      margin-bottom:25px;
+    ">
+      📅 Controle de Presença
+    </h1>
+
+  `;
+
+  (alunos || []).forEach(a => {
+
     html += `
-      <div style="margin-bottom:10px">
-        ${a.nome}
-        <button onclick="marcarPresenca('${a.email}', true)">✔️</button>
-        <button onclick="marcarPresenca('${a.email}', false)">❌</button>
+
+      <div style="
+        background:#111827;
+        padding:20px;
+        border-radius:14px;
+        margin-bottom:15px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+      ">
+
+        <div style="color:white;">
+          👨‍🎓 ${a.nome}
+        </div>
+
+        <div style="
+          display:flex;
+          gap:10px;
+        ">
+
+          <button
+            onclick="marcarPresenca('${a.email}', true)"
+            style="
+              background:#16a34a;
+              color:white;
+              border:none;
+              padding:10px 15px;
+              border-radius:8px;
+              cursor:pointer;
+            "
+          >
+            ✔️
+          </button>
+
+          <button
+            onclick="marcarPresenca('${a.email}', false)"
+            style="
+              background:#dc2626;
+              color:white;
+              border:none;
+              padding:10px 15px;
+              border-radius:8px;
+              cursor:pointer;
+            "
+          >
+            ❌
+          </button>
+
+        </div>
+
       </div>
+
     `;
+
   });
 
   conteudo.innerHTML = html;
+
 }
+
+//////////////////////////////////////////////////
+// 💾 SALVAR PRESENÇA
+//////////////////////////////////////////////////
 
 async function marcarPresenca(email, presente){
 
@@ -162,7 +357,8 @@ async function marcarPresenca(email, presente){
     data: new Date()
   }]);
 
-  alert("Salvo!");
+  alert("Presença salva 🚀");
+
 }
 
 //////////////////////////////////////////////////
@@ -170,9 +366,27 @@ async function marcarPresenca(email, presente){
 //////////////////////////////////////////////////
 
 function cronograma(){
-  conteudo.innerHTML = `<h3>📅 Cronograma</h3><p>Mesmo do aluno</p>`;
-}
 
-//////////////////////////////////////////////////
+  conteudo.innerHTML = `
+
+    <h1 style="
+      color:white;
+    ">
+      📅 Cronograma
+    </h1>
+
+    <div style="
+      background:#111827;
+      padding:25px;
+      border-radius:16px;
+      color:#cbd5e1;
+      margin-top:20px;
+    ">
+      Em breve integração completa do cronograma 🎬
+    </div>
+
+  `;
+
+}
 
 </script>
