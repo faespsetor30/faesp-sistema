@@ -862,11 +862,29 @@ async function abrirHistorico(disciplina, curso){
 
   data.forEach(h=>{
     html+=`
-      <tr>
-        <td>${h.professor}</td>
-        <td>${h.data_inicio}</td>
-        <td>${h.data_fim || "-"}</td>
-      </tr>`;
+     <tr>
+
+  <td>${h.professor}</td>
+
+  <td>${h.data_inicio}</td>
+
+  <td>${h.data_fim}</td>
+
+  <td>
+    <button onclick="excluirHistorico('${h.id}')"
+      style="
+        background:#dc2626;
+        color:white;
+        border:none;
+        padding:8px 12px;
+        border-radius:8px;
+        cursor:pointer;
+      ">
+      🗑️ Excluir
+    </button>
+  </td>
+
+</tr>
   });
 
   html+="</table>";
@@ -891,6 +909,22 @@ await client.from("disciplinas_historico").insert([{
 
 }]);
   abrirHistorico(disciplina, curso);
+}
+async function excluirHistorico(id){
+
+  const confirmar = confirm("Deseja excluir este histórico?");
+
+  if(!confirmar) return;
+
+  await client
+    .from("disciplinas_historico")
+    .delete()
+    .eq("id", id);
+
+  alert("Histórico excluído ✅");
+
+  location.reload();
+
 }
   //////////////////////////////////////////////////
 // 📝 NOTAS
