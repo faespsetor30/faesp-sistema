@@ -3,9 +3,42 @@
 
 <head>
 
+<title>FAESP - Professor</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:#0f172a;
+  min-height:100vh;
+}
+
+.fundo{
+  min-height:100vh;
+  padding:40px;
+  background:
+    linear-gradient(rgba(15,23,42,0.94), rgba(15,23,42,0.94)),
+    url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba');
+  background-size:cover;
+  background-position:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="fundo">
+
+<div id="conteudo"></div>
+
+</div>
+
+<script>
 
 const client = supabase.createClient(
   "https://nzygdvixqmiltelgzzrn.supabase.co",
@@ -19,6 +52,7 @@ let conteudo;
 //////////////////////////////////////////////////
 
 document.addEventListener("DOMContentLoaded", () => {
+
   conteudo = document.getElementById("conteudo");
 
   const usuario = JSON.parse(localStorage.getItem("usuario"));
@@ -76,6 +110,8 @@ async function minhasDisciplinas(){
       justify-content:space-between;
       align-items:center;
       margin-bottom:30px;
+      flex-wrap:wrap;
+      gap:20px;
     ">
 
       <div>
@@ -163,19 +199,40 @@ async function minhasDisciplinas(){
           ${d.curso}
         </p>
 
-        <button onclick="lancarNotas()" style="
+        <div style="
+          display:flex;
+          gap:10px;
           margin-top:15px;
-          width:100%;
-          padding:10px;
-          border:none;
-          border-radius:10px;
-          background:#e50914;
-          color:white;
-          font-weight:bold;
-          cursor:pointer;
+          flex-wrap:wrap;
         ">
-          📝 Lançar Notas
-        </button>
+
+          <button onclick="lancarNotas()" style="
+            flex:1;
+            padding:10px;
+            border:none;
+            border-radius:10px;
+            background:#e50914;
+            color:white;
+            font-weight:bold;
+            cursor:pointer;
+          ">
+            📝 Notas
+          </button>
+
+          <button onclick="lancarPresenca()" style="
+            flex:1;
+            padding:10px;
+            border:none;
+            border-radius:10px;
+            background:#2563eb;
+            color:white;
+            font-weight:bold;
+            cursor:pointer;
+          ">
+            📅 Presença
+          </button>
+
+        </div>
 
       </div>
 
@@ -223,6 +280,7 @@ async function lancarNotas(){
         display:flex;
         justify-content:space-between;
         align-items:center;
+        gap:15px;
       ">
 
         <div style="color:white;">
@@ -398,3 +456,6 @@ function cronograma(){
 }
 
 </script>
+
+</body>
+</html>
