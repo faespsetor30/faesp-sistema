@@ -365,9 +365,18 @@ async function salvarCadastro(){
       primeiro_acesso: true
     }]);
 
- if(error){
+if(error){
+
   console.log(error);
-  msgCadastro.innerText = error.message;
+
+  // 💙 EMAIL JÁ EXISTE
+  if(error.message.includes("usuarios_email_key")){
+    msgCadastro.innerText = "Já existe um usuário com este email 💙";
+    return;
+  }
+
+  // 💙 OUTROS ERROS
+  msgCadastro.innerText = "Erro ao realizar cadastro";
   return;
 }
 
