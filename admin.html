@@ -433,24 +433,6 @@ for(let dia=1; dia<=diasNoMes; dia++){
 
 html += "</table>";
 conteudo.innerHTML = html;
-
-// 🔥 CARREGA PROFESSORES
-const { data: professores } = await client
-  .from("usuarios")
-  .select("*")
-  .eq("tipo", "professor");
-
-const selectProfessor = document.getElementById("profHist");
-
-(professores || []).forEach(p => {
-
-  selectProfessor.innerHTML += `
-    <option value="${p.nome}">
-      ${p.nome}
-    </option>
-  `;
-
-});
   
   function verEvento(ev){
 
@@ -850,9 +832,7 @@ async function abrirHistorico(disciplina, curso){
 <input id="horarioHist" placeholder="Horário">
 
 <input id="inicioHist" type="date">
-<input id="diaHist" placeholder="Dia da semana">
 
-<input id="horarioHist" placeholder="Horário">
 <input id="fimHist" type="date">
 
     <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">Salvar</button>
