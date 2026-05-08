@@ -433,8 +433,10 @@ for(let dia=1; dia<=diasNoMes; dia++){
 
 html += "</table>";
 conteudo.innerHTML = html;
-  
-  function verEvento(ev){
+
+} // ✅ FECHA CRONOGRAMA
+
+function verEvento(ev){
 
   const modal = document.createElement("div");
 
@@ -721,7 +723,7 @@ async function cadastrarUsuario(){
   await client.from("usuarios").insert([{
     nome: nome.value,
     email: email.value,
-    tipo: tipo.value,
+   tipo: "aluno",
     curso: curso.value,
     cpf: cpf.value,
     status: "ativo"
@@ -984,7 +986,7 @@ async function salvarNota(email,nome,nota){
 
 async function frequencia(){
 
-  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","Aluno");
+  const { data: alunos } = await client.from("usuarios").select("*").eq("tipo","aluno");
   const { data: disciplinas } = await client.from("disciplinas_master").select("*");
 
   let html=`
