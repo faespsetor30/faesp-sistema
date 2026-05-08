@@ -850,7 +850,9 @@ async function abrirHistorico(disciplina, curso){
 <input id="horarioHist" placeholder="Horário">
 
 <input id="inicioHist" type="date">
+<input id="diaHist" placeholder="Dia da semana">
 
+<input id="horarioHist" placeholder="Horário">
 <input id="fimHist" type="date">
 
     <button class="btn" onclick="salvarHistorico('${disciplina}','${curso}')">Salvar</button>
@@ -913,20 +915,13 @@ const selectProfessor = document.getElementById("profHist");
 });
 async function salvarHistorico(disciplina, curso){
 await client.from("disciplinas_historico").insert([{
-
   disciplina,
   curso,
-
   professor: profHist.value,
-
   dia_semana: diaHist.value,
-
   horario: horarioHist.value,
-
   data_inicio: inicioHist.value,
-
   data_fim: fimHist.value || null
-
 }]);
   abrirHistorico(disciplina, curso);
 }
